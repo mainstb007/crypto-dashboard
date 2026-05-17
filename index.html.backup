@@ -2256,7 +2256,7 @@ function renderCoins() {
     <div class="coin-card" data-tier="${coin.tier}">
       <div class="coin-header">
         <div class="coin-info">
-          <h3><span class="coin-ticker ${selectedCoin === '${coin.symbol}' ? 'selected' : ''}" onclick="selectCoin('${coin.symbol}')" style="cursor: pointer;">${coin.symbol}</span> <span class="coin-rank">#${coinData.indexOf(coin) + 1}</span></h3>
+          <h3><span class="coin-ticker" onclick="selectCoin('${coin.symbol}')" style="cursor: pointer; ${selectedCoin === '${coin.symbol}' ? 'color: var(--info-border); font-weight: 700; background: var(--info-bg); padding: 2px 8px; border-radius: 4px;' : ''}">${coin.symbol}</span> <span class="coin-rank">#${coinData.indexOf(coin) + 1}</span></h3>
           <div style="font-size: 12px; color: var(--text-2);">${coin.name}</div>
           <div class="tier-badge ${coin.tier}">${getTierLabel(coin.tier)}</div>
           ${coin.prices.some(p => p.source === 'primary') ?
