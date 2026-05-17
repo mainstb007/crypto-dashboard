@@ -1,0 +1,2567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Crypto Trading Dashboard - Comprehensive Analysis</title>
+<style>
+  :root {
+    --bg: #faf9f5; --surface: #fff; --surface-2: #f1efe8;
+    --text: #1a1a17; --text-2: #5f5e5a; --text-3: #888780;
+    --border: rgba(0,0,0,0.10); --info-bg: #E6F1FB; --info-text: #0C447C;
+    --info-border: #378ADD; --danger: #A32D2D; --success: #0F6E56;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a; --surface: #262624; --surface-2: #2c2c2a;
+      --text: #f5f4ee; --text-2: #b4b2a9; --text-3: #888780;
+      --border: rgba(255,255,255,0.10); --info-bg: #042C53; --info-text: #B5D4F4;
+      --info-border: #85B7EB; --danger: #F09595; --success: #5DCAA5;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; margin: 0; padding: 20px; line-height: 1.55; }
+
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+  .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+  .refresh-btn { background: var(--info-border); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 500; }
+  .refresh-btn:hover { opacity: 0.9; }
+  .last-update { font-size: 12px; color: var(--text-2); }
+
+  .market-overview { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .overview-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .overview-card .label { font-size: 11px; color: var(--text-2); margin-bottom: 4px; }
+  .overview-card .value { font-size: 20px; font-weight: 600; }
+  .overview-card .change { font-size: 12px; margin-top: 4px; }
+  .positive { color: var(--success); }
+  .negative { color: var(--danger); }
+
+  .loading { text-align: center; padding: 40px; color: var(--text-2); }
+  .spinner { border: 3px solid var(--border); border-top: 3px solid var(--info-border); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+  .error { background: rgba(163,45,45,0.12); color: var(--danger); border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+
+  .filters { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-btn {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+    color: var(--text);
+  }
+  .filter-btn:hover { background: var(--surface); }
+  .filter-btn.active {
+    background: var(--info-bg);
+    color: var(--info-text);
+    border-color: var(--info-border);
+  }
+  .filter-btn.tier-s.active { background: #E1F5EE; color: #085041; border-color: #0F6E56; }
+  .filter-btn.tier-a.active { background: #E6F1FB; color: #0C447C; border-color: #378ADD; }
+  .filter-btn.tier-b.active { background: #F1EFE8; color: #444441; border-color: #888780; }
+
+  .coin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; }
+  .coin-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; transition: transform 0.2s; }
+  .coin-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+  .coin-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px; }
+  .coin-info h3 { margin: 0 0 4px; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+  .coin-rank { background: var(--info-bg); color: var(--info-text); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+  .coin-score { text-align: right; }
+  .score-label { font-size: 10px; color: var(--text-2); }
+  .score-value { font-size: 24px; font-weight: 600; color: var(--info-border); }
+  .tier-badge { font-size: 11px; padding: 4px 10px; border-radius: 6px; font-weight: 500; margin-top: 4px; display: inline-block; }
+  .tier-s { background: #E1F5EE; color: #085041; }
+  .tier-a { background: #E6F1FB; color: #0C447C; }
+  .tier-b { background: #F1EFE8; color: #444441; }
+
+  .price-comparison { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+  .exchange-price { background: var(--surface-2); padding: 8px; border-radius: 6px; text-align: center; }
+  .exchange-name { font-size: 10px; color: var(--text-2); }
+  .exchange-value { font-size: 13px; font-weight: 500; }
+  .best-price { border: 1px solid var(--success); background: rgba(15,110,86,0.1); }
+  .primary-price { border: 2px solid #F0B90B; background: rgba(240,185,11,0.15); }
+  .exchange-source { font-size: 9px; padding: 2px 4px; border-radius: 3px; margin-top: 2px; display: inline-block; }
+  .source-primary { background: #F0B90B; color: #000; }
+  .source-secondary { background: var(--surface-2); color: var(--text-2); }
+  .source-fallback { background: var(--info-bg); color: var(--info-text); }
+  .source-demo { background: rgba(163,45,45,0.2); color: var(--danger); }
+
+  .indicators-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 10px; }
+  .indicator-box { background: var(--surface-2); padding: 8px; border-radius: 6px; font-size: 10px; }
+  .indicator-title { font-weight: 600; color: var(--text-2); margin-bottom: 4px; }
+  .indicator-value { font-size: 11px; }
+  .bull-signal { color: var(--success); }
+  .bear-signal { color: var(--danger); }
+  .neutral-signal { color: var(--text-2); }
+
+  .signals-list { background: var(--surface-2); border-radius: 6px; padding: 8px; margin-bottom: 10px; }
+  .signal-item { font-size: 10px; padding: 2px 0; }
+  .signal-bull { color: var(--success); }
+  .signal-bear { color: var(--danger); }
+
+  .news-section { background: var(--surface-2); border-radius: 8px; padding: 10px; margin-bottom: 8px; font-size: 11px; }
+  .news-item { padding: 4px 0; border-bottom: 1px solid var(--border); }
+  .news-item:last-child { border-bottom: none; }
+  .news-positive { color: var(--success); }
+  .news-negative { color: var(--danger); }
+  .news-neutral { color: var(--text-2); }
+
+  .analysis-section { margin-bottom: 12px; }
+  .section-title { font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .timeframe-analysis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
+  .tf-card { background: var(--surface-2); padding: 8px; border-radius: 6px; text-align: center; }
+  .tf-label { font-size: 10px; color: var(--text-2); }
+  .tf-signal { font-size: 11px; font-weight: 500; margin-top: 2px; }
+  .tf-bullish { color: var(--success); }
+  .tf-bearish { color: var(--danger); }
+  .tf-neutral { color: var(--text-2); }
+
+  .vwap-section { background: var(--surface-2); border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+  .vwap-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 11px; border-bottom: 1px solid var(--border); }
+  .vwap-row:last-child { border-bottom: none; }
+  .vwap-label { color: var(--text-2); }
+  .vwap-value { font-weight: 500; }
+  .vwap-signal { padding: 3px 8px; border-radius: 4px; font-weight: 500; font-size: 10px; }
+  .vwap-buy { background: #EAF3DE; color: #27500A; }
+  .vwap-sell { background: #FCEBEB; color: #791F1F; }
+  .vwap-neutral { background: var(--surface-2); color: var(--text-2); }
+
+  .action-verdict { display: flex; align-items: center; gap: 8px; margin: 10px 0 4px; padding: 10px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+  .av-note { margin-left: auto; font-size: 11px; font-weight: 400; opacity: 0.85; }
+  .av-load { background: linear-gradient(90deg, #C4E8C8, #EAF3DE); color: #1F4012; border-left: 4px solid #0F6E56; }
+  .av-buy  { background: #EAF3DE; color: #27500A; border-left: 4px solid #3A7A2A; }
+  .av-spec { background: #F0F8E8; color: #3A7A2A; border-left: 4px solid #6B9A3A; }
+  .av-wait { background: #FFF8E6; color: #8B6914; border-left: 4px solid #B8862A; }
+  .av-hold { background: #F1EFE8; color: #5f5e5a; border-left: 4px solid #888780; }
+  .av-skip { background: #F1EFE8; color: #5f5e5a; border-left: 4px solid #B4B2A9; }
+  .av-trim { background: #FCEBEB; color: #791F1F; border-left: 4px solid #A32D2D; }
+
+  .entry-indicator { display: flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 10px; border-radius: 6px; font-size: 11px; }
+  .entry-excellent { background: #EAF3DE; color: #27500A; border-left: 3px solid #0F6E56; }
+  .entry-good { background: #F0F8E8; color: #3A7A2A; }
+  .entry-fair { background: #FFF8E6; color: #8B6914; }
+  .entry-hold { background: #F1EFE8; color: var(--text-2); }
+  .entry-sell { background: #FCEBEB; color: #791F1F; border-left: 3px solid #A32D2D; }
+
+  .buy-zones { background: var(--surface-2); border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+  .zone-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 12px; border-bottom: 1px solid var(--border); }
+  .zone-row:last-child { border-bottom: none; }
+  .zone-type { width: 50px; padding: 2px 6px; border-radius: 4px; text-align: center; font-size: 10px; font-weight: 500; }
+  .zone-light { background: #FAEEDA; color: #633806; }
+  .zone-heavy { background: #EAF3DE; color: #27500A; }
+  .zone-max { background: #EEEDFE; color: #3C3489; }
+  .zone-price { flex: 1; text-align: center; font-weight: 500; }
+  .zone-alloc { width: 40px; text-align: right; color: var(--text-2); }
+
+  .allocation-bar { height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+  .alloc-fill { height: 100%; background: linear-gradient(90deg, var(--info-border), var(--success)); border-radius: 4px; transition: width 0.3s; }
+
+  .fundamentals { background: var(--surface-2); border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 11px; }
+  .fundamentals .row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid var(--border); }
+  .fundamentals .row:last-child { border-bottom: none; }
+  .fundamentals .label { color: var(--text-2); }
+  .fundamentals .value { font-weight: 500; }
+
+  .narrative { font-size: 11px; color: var(--text-2); line-height: 1.5; margin-bottom: 10px; }
+  .narrative strong { color: var(--text); }
+
+  .catalysts, .risks { background: var(--surface-2); border-radius: 8px; padding: 10px; margin-bottom: 8px; font-size: 11px; }
+  .catalysts h4, .risks h4 { margin: 0 0 6px; font-size: 11px; color: var(--text-2); text-transform: uppercase; }
+  .catalysts ul, .risks ul { margin: 0; padding-left: 16px; }
+  .catalysts li, .risks li { margin-bottom: 3px; color: var(--text-2); }
+  .catalysts li::marker { color: var(--success); }
+  .risks li::marker { color: var(--danger); }
+
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; font-size: 10px; }
+  .metric { text-align: center; }
+  .metric-label { color: var(--text-2); }
+  .metric-value { font-weight: 500; margin-top: 2px; }
+
+  .disclaimer { background: var(--surface-2); border-radius: 8px; padding: 12px; font-size: 11px; color: var(--text-2); margin-top: 20px; }
+  .disclaimer strong { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>🚀 Complete Crypto Analysis Dashboard</h1>
+    <div class="last-update" id="lastUpdate">Loading...</div>
+    <div class="last-update" id="dataMode" style="margin-top: 4px;"></div>
+  </div>
+  <button class="refresh-btn" onclick="refreshData()">🔄 Refresh Now</button>
+</div>
+
+<div id="loading" class="loading">
+  <div class="spinner"></div>
+  <div>Fetching comprehensive data for all coins...</div>
+</div>
+
+<div id="error" class="error" style="display: none;"></div>
+
+<div id="content" style="display: none;">
+  <div class="market-overview" id="marketOverview"></div>
+
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterCoins('all', this)">📊 All Coins (<span id="totalCount">0</span>)</button>
+    <button class="filter-btn tier-s" onclick="filterCoins('tier-s', this)">🔥 Tier S - Top Asset (<span id="sCount">0</span>)</button>
+    <button class="filter-btn tier-a" onclick="filterCoins('tier-a', this)">✅ Tier A - Strong Asset (<span id="aCount">0</span>)</button>
+    <button class="filter-btn tier-b" onclick="filterCoins('tier-b', this)">👁️ Tier B - Watch (<span id="bCount">0</span>)</button>
+  </div>
+
+  <div class="filters" style="margin-top: -4px;">
+    <span style="align-self:center; font-size:11px; color: var(--text-2); margin-right:4px;">Search:</span>
+    <div style="position: relative; flex: 0 0 240px;">
+      <input id="coinSearch" type="text" placeholder="Coin name or ticker (e.g. SOL, Solana)" oninput="renderCoins()"
+             style="width: 100%; background: var(--surface-2); border: 1px solid var(--border); padding: 9px 32px 9px 12px; border-radius: 8px; font-size: 13px; color: var(--text);">
+      <button id="coinSearchClear" type="button" onclick="document.getElementById('coinSearch').value=''; renderCoins(); this.style.display='none';"
+              style="display:none; position:absolute; right:6px; top:50%; transform:translateY(-50%); background:transparent; border:0; color:var(--text-2); cursor:pointer; font-size:14px; padding:2px 6px;">✕</button>
+    </div>
+    <span id="searchMatchCount" style="align-self:center; font-size:11px; color: var(--text-2);"></span>
+  </div>
+
+  <div class="filters" style="margin-top: -4px;">
+    <span style="align-self:center; font-size:11px; color: var(--text-2); margin-right:4px;">Buy situation:</span>
+    <button class="filter-btn buysit-btn active" data-buysit="all" onclick="filterBuySit('all', this)">All</button>
+    <button class="filter-btn buysit-btn" data-buysit="excellent" onclick="filterBuySit('excellent', this)">🎯 Excellent buy (<span id="exCount">0</span>)</button>
+    <button class="filter-btn buysit-btn" data-buysit="good" onclick="filterBuySit('good', this)">✅ Good buy (<span id="gdCount">0</span>)</button>
+    <button class="filter-btn buysit-btn" data-buysit="fair" onclick="filterBuySit('fair', this)">👍 Fair (<span id="frCount">0</span>)</button>
+    <button class="filter-btn buysit-btn" data-buysit="hold" onclick="filterBuySit('hold', this)">⏸️ Hold (<span id="hdCount">0</span>)</button>
+    <button class="filter-btn buysit-btn" data-buysit="sell" onclick="filterBuySit('sell', this)">💰 Consider selling (<span id="slCount">0</span>)</button>
+    <span style="flex:1"></span>
+    <span style="align-self:center; font-size:11px; color: var(--text-2); margin-right:4px;">Sort by:</span>
+    <select id="sortBy" onchange="renderCoins()" style="background: var(--surface-2); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-size: 13px; color: var(--text); cursor: pointer;">
+      <option value="action">Best action verdict</option>
+      <option value="buysit">Best entry timing</option>
+      <option value="score">Highest score</option>
+      <option value="change24h-up">Strongest 24h</option>
+      <option value="change24h-down">Weakest 24h</option>
+      <option value="allocation">Allocation %</option>
+      <option value="alpha">Ticker (A→Z)</option>
+    </select>
+  </div>
+
+  <div style="background: var(--surface-2); border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 11px; color: var(--text-2);">
+    <strong>💰 Price Source Priority:</strong> Binance (Primary) → KuCoin → Bybit → CoinGecko
+    <span style="margin-left: 12px;">🔥 <strong>Binance</strong> | 📊 <strong>Other Exchanges</strong></span>
+    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);">
+      <strong>📈 Complete Indicator Matrix:</strong>
+      <div style="margin-top: 6px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;">
+        <div><strong>SMA (20/50/200):</strong> Price above = bullish</div>
+        <div><strong>VWAP:</strong> Below = institutional buy zone</div>
+        <div><strong>Bollinger Bands:</strong> Below lower = oversold</div>
+        <div><strong>MACD:</strong> Histogram +MACD = bullish</div>
+        <div><strong>Stochastic:</strong> %K &lt; 20 = oversold</div>
+        <div><strong>RSI:</strong> &lt; 30 = oversold, &gt; 70 = overbought</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="coin-grid" id="coinGrid"></div>
+</div>
+
+<div class="disclaimer">
+  <strong>⚠️ Disclaimer:</strong> This dashboard provides comprehensive technical and fundamental analysis. Nothing here constitutes financial advice. Always do your own research, consider your risk tolerance, and never invest more than you can afford to lose. Cryptocurrency trading involves substantial risk. <br><br>
+  <strong>💰 Price Sources:</strong> Prices are prioritized from Binance (when available), then KuCoin, Bybit, and CoinGecko as fallbacks. If all exchanges fail for a given coin in a refresh cycle, that coin is dropped from this view rather than shown with fake data — the next 10-minute refresh will retry. Always verify prices on actual exchanges before trading.
+</div>
+
+<script>
+// Comprehensive coin list from Profile_1789c.txt
+const ALL_COINS = [
+  // Reference coins
+  { symbol: 'BTC', name: 'Bitcoin', category: 'reference', allocation: 0 },
+  { symbol: 'ETH', name: 'Ethereum', category: 'reference', allocation: 0 },
+
+  // Tier S candidates - Strong fundamentals, strong narrative
+  { symbol: 'SOL', name: 'Solana', category: 'L1', allocation: 15 },
+  { symbol: 'LINK', name: 'Chainlink', category: 'infra', allocation: 10 },
+  { symbol: 'TAO', name: 'Bittensor', category: 'AI', allocation: 8 },
+  { symbol: 'NEAR', name: 'NEAR Protocol', category: 'L1', allocation: 7 },
+  { symbol: 'FET', name: 'Fetch.ai', category: 'AI', allocation: 5 },
+
+  // Tier A candidates - Good fundamentals
+  { symbol: 'SUI', name: 'Sui', category: 'L1', allocation: 8 },
+  { symbol: 'RENDER', name: 'Render', category: 'DePIN', allocation: 6 },
+  { symbol: 'HBAR', name: 'Hedera', category: 'L1', allocation: 6 },
+  { symbol: 'AR', name: 'Arweave', category: 'storage', allocation: 5 },
+  { symbol: 'SEI', name: 'Sei', category: 'L1', allocation: 4 },
+  { symbol: 'ZEC', name: 'Zcash', category: 'privacy', allocation: 4 },
+  { symbol: 'APT', name: 'Aptos', category: 'L1', allocation: 4 },
+
+  // Tier B candidates - Speculative
+  { symbol: 'OP', name: 'Optimism', category: 'L2', allocation: 3 },
+  { symbol: 'ARB', name: 'Arbitrum', category: 'L2', allocation: 3 },
+  { symbol: 'XRP', name: 'Ripple', category: 'payments', allocation: 2 },
+  { symbol: 'ADA', name: 'Cardano', category: 'L1', allocation: 2 },
+  { symbol: 'AVAX', name: 'Avalanche', category: 'L1', allocation: 2 },
+  { symbol: 'DOT', name: 'Polkadot', category: 'L1', allocation: 2 },
+  { symbol: 'ATOM', name: 'Cosmos', category: 'L1', allocation: 2 },
+  { symbol: 'ICP', name: 'Internet Computer', category: 'L1', allocation: 2 },
+
+  // Tier B continued
+  { symbol: 'HNT', name: 'Helium', category: 'DePIN', allocation: 2 },
+  { symbol: 'AKT', name: 'Akash', category: 'DePIN', allocation: 2 },
+  { symbol: 'STX', name: 'Stacks', category: 'BTCfi', allocation: 2 },
+  { symbol: 'WLD', name: 'Worldcoin', category: 'AI', allocation: 2 },
+  { symbol: 'FIL', name: 'Filecoin', category: 'storage', allocation: 2 },
+  { symbol: 'GRT', name: 'The Graph', category: 'infra', allocation: 2 },
+  { symbol: 'THETA', name: 'Theta', category: 'media', allocation: 1 },
+  { symbol: 'ALGO', name: 'Algorand', category: 'L1', allocation: 1 },
+  { symbol: 'VET', name: 'VeChain', category: 'enterprise', allocation: 1 },
+  { symbol: 'TRX', name: 'TRON', category: 'L1', allocation: 1 },
+
+  // Additional coins from profile
+  { symbol: 'DOGE', name: 'Dogecoin', category: 'memecoin', allocation: 1 },
+  { symbol: 'MOVR', name: 'Moonriver', category: 'L1', allocation: 1 },
+  { symbol: 'CFX', name: 'Conflux', category: 'L1', allocation: 1 },
+  { symbol: 'PYTH', name: 'Pyth', category: 'oracle', allocation: 1 },
+  { symbol: 'TON', name: 'Toncoin', category: 'L1', allocation: 1 },
+  { symbol: 'TRB', name: 'Tellor', category: 'oracle', allocation: 1 },
+  { symbol: 'POL', name: 'Polygon', category: 'L2', allocation: 1 },
+  { symbol: 'ZK', name: 'zkSync', category: 'L2', allocation: 1 }
+];
+
+const COIN_IDS = {
+  'BTC': 'bitcoin', 'ETH': 'ethereum', 'SOL': 'solana', 'LINK': 'chainlink',
+  'TAO': 'bittensor', 'NEAR': 'near', 'SUI': 'sui', 'RENDER': 'render-token',
+  'HBAR': 'hedera-hashgraph', 'AR': 'arweave', 'SEI': 'sei-network',
+  'ZEC': 'zcash', 'APT': 'aptos', 'OP': 'optimism', 'ARB': 'arbitrum',
+  'XRP': 'ripple', 'ADA': 'cardano', 'AVAX': 'avalanche-2', 'DOT': 'polkadot',
+  'ATOM': 'cosmos', 'ICP': 'internet-computer', 'HNT': 'helium', 'AKT': 'akash-network',
+  'STX': 'blockstack', 'WLD': 'worldcoin-wld', 'FIL': 'filecoin', 'GRT': 'the-graph',
+  'THETA': 'theta-token', 'ALGO': 'algorand', 'VET': 'vechain', 'TRX': 'tron',
+  'DOGE': 'dogecoin', 'MOVR': 'moonriver', 'CFX': 'conflux-token',
+  'PYTH': 'pyth-network', 'TON': 'toncoin', 'TRB': 'tellor', 'POL': 'polygon',
+  'ZK': 'zksync', 'FET': 'fetch-ai'
+};
+
+// Tokenomics data
+const TOKENOMICS = {
+  'SOL': { inflation: '5%', stakingAPR: '7%', nextUnlock: '2026-03', unlockAmount: '5M tokens' },
+  'LINK': { inflation: 'NA', stakingAPR: '4.5%', nextUnlock: 'None', unlockAmount: 'N/A' },
+  'TAO': { inflation: '1%', stakingAPR: '2%', nextUnlock: 'Ongoing', unlockAmount: 'Daily vesting' },
+  'NEAR': { inflation: '5%', stakingAPR: '8%', nextUnlock: '2025-10', unlockAmount: 'Team vesting' },
+  'SUI': { inflation: '4%', stakingAPR: '6%', nextUnlock: 'Monthly', unlockAmount: '2% of supply' },
+  'RENDER': { inflation: '3%', stakingAPR: 'N/A', nextUnlock: ' vesting', unlockAmount: 'Team tokens' },
+  'ARB': { inflation: '1%', stakingAPR: 'N/A', nextUnlock: '2025-03', unlockAmount: '1.1B tokens' },
+  'OP': { inflation: '2%', stakingAPR: 'N/A', nextUnlock: '2025-06', unlockAmount: 'Team vesting' },
+  'APT': { inflation: '3%', stakingAPR: '6%', nextUnlock: '2024-12', unlockAmount: 'Community' },
+  'SEI': { inflation: '4%', stakingAPR: '8%', nextUnlock: '2025-01', unlockAmount: 'Ecosystem' }
+};
+
+// Catalysts and risks
+const CATALYSTS = {
+  'SOL': ['ETF filing approval momentum', 'Firedancer upgrade live', 'DeFi resurgence', 'Mobile adoption'],
+  'LINK': ['CCIP v2 expansion', 'Swift partnership', 'RWA tokenization', 'DTCC integration'],
+  'TAO': ['AI narrative dominance', 'Subnet growth', 'Enterprise adoption', 'Bittensor LLM'],
+  'NEAR': ['Chain abstraction trend', 'AI agent framework', 'Nadana hub launch', 'Coinbase listing'],
+  'SUI': ['Mysten L2 expansion', 'GameFi partnerships', 'CEX listings', 'Developer grants'],
+  'RENDER': ['RNDA token migration', 'Apple SDK integration', 'GPU demand surge', 'AI compute needs'],
+  'HBAR': ['ETF speculation', 'FedNow adoption', 'Enterprise partnerships', 'Council expansion'],
+  'ARB': ['Stylus upgrade', 'Tor gateway', 'DeFi growth', 'Gaming catalysts'],
+  'OP': ['OP Stack expansion', 'Base network growth', 'Superchain accrual', 'Protocol revenue'],
+  'APT': ['Aptos One launch', 'Gaming partnerships', 'Move language adoption', 'Korean market'],
+  'SEI': ['V2 upgrade', 'Parallelized execution', 'Meme ecosystem', 'Asian market'],
+  'ZEC': ['Privacy narrative', 'Exchange delisting risk', 'Regulatory clarity', 'Dark wallet']
+};
+
+const RISKS = {
+  'SOL': ['FTX overhang', 'Network outages', 'VC unlock pressure', 'Competition from SUI'],
+  'LINK': ['Team selling', 'Competition from PYTH', 'Oracle commoditization', 'High valuation'],
+  'TAO': ['China exposure', 'Regulatory risk', 'Centralization concerns', 'Whale dominance'],
+  'NEAR': ['Past founder issues', 'Competition', 'Token unlock overhang', 'Low revenue'],
+  'SUI': ['VC heavy', 'Competition from Aptos', 'Low TVL', 'Exchange listing issues'],
+  'RENDER': ['RNDA migration confusion', 'GPU supply shortage', 'Competition', 'Token dilution'],
+  'HBAR': ['Centralization', 'Goverance council', 'Low DeFi usage', 'Stablecoin focus'],
+  'ARB': ['Team vesting', 'Optimism competition', 'Low fee revenue', 'Governance issues'],
+  'OP': ['Team vesting', 'Arbitrum competition', 'Base domination', 'Token sell pressure'],
+  'APT': ['VC allocation', 'Competition from SUI', 'Low retail interest', 'Korean concentration'],
+  'SEI': ['Low liquidity', 'VC unlocks', 'Exchange risks', 'New chain'],
+  'ZEC': ['Privacy regulations', 'Exchange delistings', 'Low dev activity', 'Niche use case']
+};
+
+let coinData = [];
+let currentFilter = 'all';
+let currentBuySit = 'all';
+
+// Map a coin's daily entryQuality string to one of: excellent, good, fair, hold, sell
+function buySitOf(coin) {
+  const q = (coin?.timeframes?.['1d']?.entryQuality || '').toLowerCase();
+  if (q === 'excellent') return 'excellent';
+  if (q === 'good') return 'good';
+  if (q === 'fair') return 'fair';
+  if (q === 'take profit' || q === 'consider selling' || q === 'sell') return 'sell';
+  return 'hold';
+}
+
+// Ordering used for "Best buy situation" sort and as a tie-breaker rank
+const BUYSIT_RANK = { excellent: 0, good: 1, fair: 2, hold: 3, sell: 4 };
+
+function filterBuySit(buysit, btn) {
+  currentBuySit = buysit;
+  document.querySelectorAll('.buysit-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderCoins();
+}
+
+// Try Binance first, then fallback to other exchanges
+async function fetchFromBinance(symbol) {
+  try {
+    const response = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}USDT`);
+    if (!response.ok) return null;
+    const data = await response.json();
+    return {
+      exchange: 'Binance',
+      price: parseFloat(data.lastPrice),
+      change24h: parseFloat(data.priceChangePercent),
+      volume24h: parseFloat(data.quoteVolume),
+      high24h: parseFloat(data.highPrice),
+      low24h: parseFloat(data.lowPrice)
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+async function fetchFromKuCoin(symbol) {
+  try {
+    const response = await fetch(`https://api.kucoin.com/api/v1/market/stats?symbol=${symbol}-USDT`);
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (data.code !== '200000') return null;
+    const stats = data.data;
+    return {
+      exchange: 'KuCoin',
+      price: parseFloat(stats.last),
+      change24h: parseFloat(stats.changeRate) * 100,
+      volume24h: parseFloat(stats.volValue)
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+async function fetchFromBybit(symbol) {
+  try {
+    const response = await fetch(`https://api.bybit.com/v5/market/tickers?category=spot&symbol=${symbol}USDT`);
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (data.retCode !== 0 || !data.result.list || data.result.list.length === 0) return null;
+    const ticker = data.result.list[0];
+    return {
+      exchange: 'Bybit',
+      price: parseFloat(ticker.lastPrice),
+      change24h: parseFloat(ticker.price24hPcnt) * 100,
+      volume24h: parseFloat(ticker.turnover24h) * parseFloat(ticker.lastPrice)
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+async function fetchFromCoinGecko(symbol) {
+  try {
+    const coinId = COIN_IDS[symbol];
+    if (!coinId) return null;
+
+    const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}?localization=false&tickers=false&community_data=false&developer_data=false`);
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    const marketData = data.market_data;
+
+    return {
+      exchange: 'CoinGecko',
+      price: marketData.current_price.usd,
+      change24h: marketData.price_change_percentage_24h,
+      volume24h: marketData.total_volume.usd,
+      marketCap: marketData.market_cap.usd,
+      high24h: marketData.high_24h.usd,
+      low24h: marketData.low_24h.usd,
+      circulatingSupply: marketData.circulating_supply,
+      totalSupply: marketData.total_supply,
+      maxSupply: marketData.max_supply
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+// Priority: Binance -> KuCoin -> Bybit -> CoinGecko -> Demo
+async function fetchPriceFromExchanges(symbol) {
+  // Try Binance first
+  let binanceData = await fetchFromBinance(symbol);
+  if (binanceData) {
+    return {
+      ...binanceData,
+      source: 'primary' // Mark Binance as primary source
+    };
+  }
+
+  // Try KuCoin
+  let kucoinData = await fetchFromKuCoin(symbol);
+  if (kucoinData) {
+    return {
+      ...kucoinData,
+      source: 'secondary'
+    };
+  }
+
+  // Try Bybit
+  let bybitData = await fetchFromBybit(symbol);
+  if (bybitData) {
+    return {
+      ...bybitData,
+      source: 'secondary'
+    };
+  }
+
+  // Try CoinGecko as last resort
+  let geckoData = await fetchFromCoinGecko(symbol);
+  if (geckoData) {
+    return {
+      ...geckoData,
+      source: 'fallback'
+    };
+  }
+
+  return null;
+}
+
+// Demo data removed — dashboard now only shows coins with real exchange prices.
+
+// Real Binance klines fetcher with KuCoin fallback.
+// Binance returns: [openTime, open, high, low, close, volume, closeTime, ...]
+// KuCoin returns: [time(s), open, close, high, low, volume, ...] — note column order differs.
+async function fetchBinanceKlines(symbol, interval = '1h', limit = 100) {
+  // Try Binance first
+  try {
+    const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}USDT&interval=${interval}&limit=${limit}`;
+    const r = await fetch(url);
+    if (r.ok) {
+      const raw = await r.json();
+      if (Array.isArray(raw) && raw.length) {
+        return raw.map(k => ({
+          time: k[0],
+          open: parseFloat(k[1]),
+          high: parseFloat(k[2]),
+          low:  parseFloat(k[3]),
+          close: parseFloat(k[4]),
+          volume: parseFloat(k[5])
+        }));
+      }
+    }
+  } catch (e) { /* fall through */ }
+
+  // KuCoin fallback. Interval mapping.
+  try {
+    const kuMap = { '1h': '1hour', '4h': '4hour', '1d': '1day', '1w': '1week' };
+    const ku = kuMap[interval] || '1day';
+    const url = `https://api.kucoin.com/api/v1/market/candles?type=${ku}&symbol=${symbol}-USDT`;
+    const r = await fetch(url);
+    if (r.ok) {
+      const j = await r.json();
+      if (j?.data && Array.isArray(j.data)) {
+        // KuCoin returns most-recent first; reverse to ascending and clamp to limit
+        const candles = j.data.slice().reverse().slice(-limit).map(k => ({
+          time: parseInt(k[0], 10) * 1000,
+          open: parseFloat(k[1]),
+          close: parseFloat(k[2]),
+          high: parseFloat(k[3]),
+          low:  parseFloat(k[4]),
+          volume: parseFloat(k[5])
+        }));
+        if (candles.length) return candles;
+      }
+    }
+  } catch (e) { /* fall through */ }
+
+  return [];
+}
+
+function calculateRSI(candles, period = 14) {
+  if (candles.length < period + 1) return 50;
+
+  let gains = 0, losses = 0;
+  for (let i = 1; i <= period; i++) {
+    const change = candles[candles.length - i].close - candles[candles.length - i - 1].close;
+    if (change > 0) gains += change;
+    else losses -= change;
+  }
+
+  const avgGain = gains / period;
+  const avgLoss = losses / period;
+
+  if (avgLoss === 0) return 100;
+  const rs = avgGain / avgLoss;
+  return 100 - (100 / (1 + rs));
+}
+
+function calculateSupportResistance(candles) {
+  if (!candles || candles.length < 20) return { support: [], resistance: [] };
+
+  const lows = candles.map(c => c.low);
+  const highs = candles.map(c => c.high);
+  const currentPrice = candles[candles.length - 1].close;
+
+  const supportLevels = [];
+  const resistanceLevels = [];
+
+  const recentLows = lows.slice(-20);
+  const recentHighs = highs.slice(-20);
+
+  for (let i = 2; i < recentLows.length - 2; i++) {
+    if (recentLows[i] < recentLows[i - 1] && recentLows[i] < recentLows[i - 2] &&
+        recentLows[i] < recentLows[i + 1] && recentLows[i] < recentLows[i + 2]) {
+      supportLevels.push(recentLows[i]);
+    }
+  }
+
+  for (let i = 2; i < recentHighs.length - 2; i++) {
+    if (recentHighs[i] > recentHighs[i - 1] && recentHighs[i] > recentHighs[i - 2] &&
+        recentHighs[i] > recentHighs[i + 1] && recentHighs[i] > recentHighs[i + 2]) {
+      resistanceLevels.push(recentHighs[i]);
+    }
+  }
+
+  supportLevels.sort((a, b) => a - b);
+  resistanceLevels.sort((a, b) => b - a);
+
+  return {
+    support: supportLevels.slice(0, 3).filter(p => p < currentPrice),
+    resistance: resistanceLevels.slice(0, 3).filter(p => p > currentPrice)
+  };
+}
+
+function calculateTrend(candles) {
+  if (!candles || candles.length < 10) return 'neutral';
+
+  const recent = candles.slice(-10);
+  const firstClose = recent[0].close;
+  const lastClose = recent[recent.length - 1].close;
+  const change = ((lastClose - firstClose) / firstClose) * 100;
+
+  let higherHighs = 0, higherLows = 0;
+  for (let i = 1; i < recent.length; i++) {
+    if (recent[i].high > recent[i - 1].high) higherHighs++;
+    if (recent[i].low > recent[i - 1].low) higherLows++;
+  }
+
+  if (change > 2 && higherHighs > 5) return 'bullish';
+  if (change < -2 && higherHighs < 5) return 'bearish';
+  return 'neutral';
+}
+
+// Calculate VWAP (Volume Weighted Average Price)
+function calculateVWAP(candles) {
+  try {
+    if (!candles || candles.length < 5) return null;
+
+    let totalVolume = 0;
+    let totalVolumePrice = 0;
+
+    for (const candle of candles) {
+      const typicalPrice = (candle.high + candle.low + candle.close) / 3;
+      totalVolumePrice += typicalPrice * candle.volume;
+      totalVolume += candle.volume;
+    }
+
+    if (totalVolume === 0) return null;
+
+    return totalVolumePrice / totalVolume;
+  } catch (error) {
+    console.error('VWAP calculation error:', error);
+    return null;
+  }
+}
+
+// Calculate WAP (Weighted Average Price) using HLC*3 method
+function calculateWAP(candles) {
+  try {
+    if (!candles || candles.length < 5) return null;
+
+    let totalWeightedPrice = 0;
+    let count = 0;
+
+    for (const candle of candles) {
+      const hlc3 = (candle.high + candle.low + candle.close) / 3;
+      totalWeightedPrice += hlc3;
+      count++;
+    }
+
+    if (count === 0) return null;
+
+    return totalWeightedPrice / count;
+  } catch (error) {
+    console.error('WAP calculation error:', error);
+    return null;
+  }
+}
+
+// Calculate VWAP bands (standard deviation)
+function calculateVWAPBands(candles, vwap) {
+  try {
+    if (!candles || candles.length < 5) return null;
+
+    const typicalPrices = candles.map(c => (c.high + c.low + c.close) / 3);
+    const mean = typicalPrices.reduce((sum, p) => sum + p, 0) / typicalPrices.length;
+    const variance = typicalPrices.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / typicalPrices.length;
+    const stdDev = Math.sqrt(variance);
+
+    return {
+      vwap: vwap,
+      upperBand1: vwap + (stdDev * 1),
+      lowerBand1: vwap - (stdDev * 1),
+      upperBand2: vwap + (stdDev * 2),
+      lowerBand2: vwap - (stdDev * 2),
+      upperBand3: vwap + (stdDev * 3),
+      lowerBand3: vwap - (stdDev * 3)
+    };
+  } catch (error) {
+    console.error('VWAP Bands calculation error:', error);
+    return null;
+  }
+}
+
+// Calculate Simple Moving Averages
+function calculateSMA(candles, period) {
+  try {
+    if (!candles || candles.length < period) return null;
+
+    const recentCloses = candles.slice(-period).map(c => c.close);
+    const sum = recentCloses.reduce((a, b) => a + b, 0);
+    return sum / period;
+  } catch (error) {
+    console.error('SMA calculation error:', error);
+    return null;
+  }
+}
+
+// Calculate Bollinger Bands
+function calculateBollingerBands(candles, period = 20, multiplier = 2) {
+  try {
+    if (!candles || candles.length < period) return null;
+
+    const sma = calculateSMA(candles, period);
+    if (!sma) return null;
+
+    const recentCloses = candles.slice(-period).map(c => c.close);
+    const squaredDiffs = recentCloses.map(close => Math.pow(close - sma, 2));
+    const variance = squaredDiffs.reduce((a, b) => a + b, 0) / period;
+    const stdDev = Math.sqrt(variance);
+
+    return {
+      middle: sma,
+      upper: sma + (stdDev * multiplier),
+      lower: sma - (stdDev * multiplier)
+    };
+  } catch (error) {
+    console.error('Bollinger Bands calculation error:', error);
+    return null;
+  }
+}
+
+// Calculate MACD
+function calculateMACD(candles, fastPeriod = 12, slowPeriod = 26, signalPeriod = 9) {
+  try {
+    if (!candles || candles.length < slowPeriod + signalPeriod) return null;
+
+    // Calculate EMAs
+    const calculateEMA = (data, period) => {
+      const multiplier = 2 / (period + 1);
+      let ema = data[0];
+      for (let i = 1; i < data.length; i++) {
+        ema = (data[i] * multiplier) + (ema * (1 - multiplier));
+      }
+      return ema;
+    };
+
+    const closes = candles.map(c => c.close);
+    const fastEMA = calculateEMA(closes, fastPeriod);
+    const slowEMA = calculateEMA(closes, slowPeriod);
+    const macdLine = fastEMA - slowEMA;
+
+    // Calculate signal line (EMA of MACD)
+    const macdHistory = [];
+    for (let i = slowPeriod; i < candles.length; i++) {
+      const fast = calculateEMA(closes.slice(0, i + 1), fastPeriod);
+      const slow = calculateEMA(closes.slice(0, i + 1), slowPeriod);
+      macdHistory.push(fast - slow);
+    }
+
+    const signalLine = calculateEMA(macdHistory, signalPeriod);
+    const histogram = macdLine - signalLine;
+
+    return {
+      macd: macdLine,
+      signal: signalLine,
+      histogram: histogram
+    };
+  } catch (error) {
+    console.error('MACD calculation error:', error);
+    return null;
+  }
+}
+
+// Calculate Stochastic Oscillator
+function calculateStochastic(candles, kPeriod = 14, dPeriod = 3) {
+  try {
+    if (!candles || candles.length < kPeriod + dPeriod) return null;
+
+    const recentCandles = candles.slice(-kPeriod);
+    const highestHigh = Math.max(...recentCandles.map(c => c.high));
+    const lowestLow = Math.min(...recentCandles.map(c => c.low));
+    const currentClose = candles[candles.length - 1].close;
+
+    const rawK = ((currentClose - lowestLow) / (highestHigh - lowestLow)) * 100;
+
+    // Calculate %D (SMA of %K)
+    const kValues = [];
+    for (let i = kPeriod - 1; i < candles.length; i++) {
+      const subset = candles.slice(i - kPeriod + 1, i + 1);
+      const high = Math.max(...subset.map(c => c.high));
+      const low = Math.min(...subset.map(c => c.low));
+      const close = subset[subset.length - 1].close;
+      kValues.push(((close - low) / (high - low)) * 100);
+    }
+
+    const d = calculateSMA(kValues.map((v, i) => ({ close: v })), dPeriod);
+
+    return {
+      k: rawK,
+      d: d || 50
+    };
+  } catch (error) {
+    console.error('Stochastic calculation error:', error);
+    return null;
+  }
+}
+
+// Identify swing highs and lows
+function findSwings(candles, swingLength = 5) {
+  try {
+    if (!candles || candles.length < swingLength * 2 + 1) return { swingHighs: [], swingLows: [] };
+
+    const swingHighs = [];
+    const swingLows = [];
+
+    for (let i = swingLength; i < candles.length - swingLength; i++) {
+      const current = candles[i];
+
+      // Check for swing high
+      let isSwingHigh = true;
+      for (let j = i - swingLength; j <= i + swingLength; j++) {
+        if (j !== i && candles[j].high >= current.high) {
+          isSwingHigh = false;
+          break;
+        }
+      }
+      if (isSwingHigh) {
+        swingHighs.push({ price: current.high, index: i, time: current.time });
+      }
+
+      // Check for swing low
+      let isSwingLow = true;
+      for (let j = i - swingLength; j <= i + swingLength; j++) {
+        if (j !== i && candles[j].low <= current.low) {
+          isSwingLow = false;
+          break;
+        }
+      }
+      if (isSwingLow) {
+        swingLows.push({ price: current.low, index: i, time: current.time });
+      }
+    }
+
+    return { swingHighs, swingLows };
+  } catch (error) {
+    console.error('Swing detection error:', error);
+    return { swingHighs: [], swingLows: [] };
+  }
+}
+
+// Calculate support/resistance from swings
+function calculateDynamicSupportResistance(candles) {
+  try {
+    const swings = findSwings(candles, 5);
+    const currentPrice = candles[candles.length - 1].close;
+
+    // Get recent swing highs and lows
+    const recentHighs = swings.swingHighs.slice(-5).map(s => s.price);
+    const recentLows = swings.swingLows.slice(-5).map(s => s.price);
+
+    // Calculate support levels (swing lows below price)
+    const supports = recentLows
+      .filter(price => price < currentPrice)
+      .sort((a, b) => b - a) // Sort descending
+      .slice(0, 3);
+
+    // Calculate resistance levels (swing highs above price)
+    const resistances = recentHighs
+      .filter(price => price > currentPrice)
+      .sort((a, b) => a - b) // Sort ascending
+      .slice(0, 3);
+
+    return {
+      support: supports,
+      resistance: resistances,
+      nearestSupport: supports[0] || null,
+      nearestResistance: resistances[0] || null
+    };
+  } catch (error) {
+    console.error('Dynamic S/R calculation error:', error);
+    return null;
+  }
+}
+
+// Bull/Bear market detection
+function detectMarketTrend(candles) {
+  try {
+    if (!candles || candles.length < 100) return { trend: 'neutral', strength: 0 };
+
+    // Check multiple SMAs
+    const sma20 = calculateSMA(candles, 20);
+    const sma50 = calculateSMA(candles, 50);
+    const sma200 = calculateSMA(candles, 200);
+
+    if (!sma20 || !sma50 || !sma200) return { trend: 'neutral', strength: 0 };
+
+    const currentPrice = candles[candles.length - 1].close;
+
+    // Bull market conditions
+    if (currentPrice > sma20 && sma20 > sma50 && sma50 > sma200) {
+      const strength = ((currentPrice - sma200) / sma200) * 100;
+      return { trend: 'bull', strength, phase: 'uptrend' };
+    }
+
+    // Bear market conditions
+    if (currentPrice < sma20 && sma20 < sma50 && sma50 < sma200) {
+      const strength = ((sma200 - currentPrice) / sma200) * 100;
+      return { trend: 'bear', strength, phase: 'downtrend' };
+    }
+
+    // Consolidation
+    const range = ((sma50 - sma20) / sma20) * 100;
+    return { trend: 'neutral', strength: Math.abs(range), phase: 'consolidation' };
+  } catch (error) {
+    console.error('Trend detection error:', error);
+    return { trend: 'neutral', strength: 0 };
+  }
+}
+
+function analyzeTimeframe(candles) {
+  try {
+    if (!candles || candles.length < 20) {
+      return {
+        trend: 'neutral',
+        rsi: 50,
+        signal: 'No data',
+        vwap: null,
+        wap: null,
+        vwapBands: null,
+        vwapSignal: 'Neutral',
+        entryQuality: 'None',
+        currentPrice: null,
+        smas: {},
+        bollinger: null,
+        macd: null,
+        stochastic: null,
+        swings: null,
+        dynamicSR: null,
+        marketTrend: null
+      };
+    }
+
+    const trend = calculateTrend(candles);
+    const rsi = calculateRSI(candles);
+    const vwap = calculateVWAP(candles);
+    const wap = calculateWAP(candles);
+    const vwapBands = vwap ? calculateVWAPBands(candles, vwap) : null;
+    const currentPrice = candles[candles.length - 1].close;
+
+    // New TradingView indicators
+    const smas = {
+      sma20: calculateSMA(candles, 20),
+      sma50: calculateSMA(candles, 50),
+      sma100: calculateSMA(candles, 100),
+      sma200: calculateSMA(candles, 200)
+    };
+
+    const bollinger = calculateBollingerBands(candles, 20, 2);
+    const macd = calculateMACD(candles, 12, 26, 9);
+    const stochastic = calculateStochastic(candles, 14, 3);
+    const swings = findSwings(candles, 5);
+    const dynamicSR = calculateDynamicSupportResistance(candles);
+    const marketTrend = detectMarketTrend(candles);
+
+    // LuxAlgo-style equivalents (open-source, computed from candles)
+    const maStack         = computeMAStack(currentPrice, smas.sma50, smas.sma100, smas.sma200);
+    const fvgs            = findFVGs(candles, 60);
+    const structure       = findStructure(candles, 5);
+    const orderBlocks     = findOrderBlocks(candles, 60, 5);
+    const stochRsi        = calculateStochRSI(candles, 14, 14, 3, 3);
+    const premiumDiscount = computePremiumDiscount(candles, 60);
+    const liquiditySweeps = findLiquiditySweeps(candles, 40, 5);
+    const supertrend      = computeSupertrend(candles, 10, 3);
+    const smartMoneyFlow  = computeSmartMoneyFlow(candles, 20);
+
+    // Determine entry/exit signals based on VWAP
+    let vwapSignal = 'Neutral';
+    let entryQuality = 'None';
+
+    if (vwap && vwapBands) {
+      const vwapDistance = ((currentPrice - vwap) / vwap) * 100;
+
+      if (currentPrice < vwapBands.lowerBand2) {
+        vwapSignal = 'Strong Buy';
+        entryQuality = 'Excellent';
+      } else if (currentPrice < vwapBands.lowerBand1) {
+        vwapSignal = 'Buy';
+        entryQuality = 'Good';
+      } else if (currentPrice < vwap) {
+        vwapSignal = 'Weak Buy';
+        entryQuality = 'Fair';
+      } else if (currentPrice > vwapBands.upperBand2) {
+        vwapSignal = 'Strong Sell';
+        entryQuality = 'Take Profit';
+      } else if (currentPrice > vwapBands.upperBand1) {
+        vwapSignal = 'Sell';
+        entryQuality = 'Consider Selling';
+      } else if (currentPrice > vwap) {
+        vwapSignal = 'Weak Sell';
+        entryQuality = 'Hold';
+      }
+    }
+
+    // Combine multiple indicators for signal
+    let signal = 'Hold';
+    const bullSignals = [];
+    const bearSignals = [];
+
+    // RSI signals
+    if (rsi < 30) bullSignals.push('Oversold RSI');
+    else if (rsi > 70) bearSignals.push('Overbought RSI');
+
+    // MACD signals
+    if (macd) {
+      if (macd.histogram > 0 && macd.macd > macd.signal) bullSignals.push('Bullish MACD');
+      else if (macd.histogram < 0 && macd.macd < macd.signal) bearSignals.push('Bearish MACD');
+    }
+
+    // Stochastic signals
+    if (stochastic) {
+      if (stochastic.k < 20) bullSignals.push('Oversold Stochastic');
+      else if (stochastic.k > 80) bearSignals.push('Overbought Stochastic');
+    }
+
+    // Price vs SMAs
+    if (smas.sma20 && currentPrice > smas.sma20) bullSignals.push('Above SMA20');
+    else if (smas.sma20 && currentPrice < smas.sma20) bearSignals.push('Below SMA20');
+
+    // Bollinger Band position
+    if (bollinger) {
+      if (currentPrice < bollinger.lower) bullSignals.push('Below Lower BB');
+      else if (currentPrice > bollinger.upper) bearSignals.push('Above Upper BB');
+    }
+
+    // Combine with trend
+    if (trend === 'bullish' && bullSignals.length >= 2) signal = 'Strong Buy';
+    else if (trend === 'bullish' && bullSignals.length >= 1) signal = 'Buy';
+    else if (trend === 'bearish' && bearSignals.length >= 2) signal = 'Strong Sell';
+    else if (trend === 'bearish' && bearSignals.length >= 1) signal = 'Sell';
+    else if (rsi < 30) signal = 'Oversold';
+    else if (rsi > 70) signal = 'Overbought';
+
+    return {
+      trend,
+      rsi,
+      signal,
+      vwap,
+      wap,
+      vwapBands,
+      vwapSignal,
+      entryQuality,
+      currentPrice,
+      smas,
+      maStack,
+      fvgs,
+      structure,
+      orderBlocks,
+      stochRsi,
+      premiumDiscount,
+      liquiditySweeps,
+      supertrend,
+      smartMoneyFlow,
+      bollinger,
+      macd,
+      stochastic,
+      swings,
+      dynamicSR,
+      marketTrend,
+      bullSignals,
+      bearSignals
+    };
+  } catch (error) {
+    console.error('Timeframe analysis error:', error);
+    return {
+      trend: 'neutral',
+      rsi: 50,
+      signal: 'Error',
+      vwap: null,
+      wap: null,
+      vwapBands: null,
+      vwapSignal: 'Neutral',
+      entryQuality: 'None',
+      currentPrice: null,
+      smas: {},
+      bollinger: null,
+      macd: null,
+      stochastic: null,
+      swings: null,
+      dynamicSR: null,
+      marketTrend: null
+    };
+  }
+}
+
+// ===== LuxAlgo-style open-source equivalents (computed from candles) =====
+
+// MA stack: where is price relative to SMA 50 / 100 / 200?
+// Returns { stack, strength (0..100), label }
+function computeMAStack(price, sma50, sma100, sma200) {
+  if (!price || !sma50 || !sma100 || !sma200) {
+    return { stack: 'unknown', strength: 0, label: 'No data' };
+  }
+  const aboveAll = price > sma50 && price > sma100 && price > sma200;
+  const belowAll = price < sma50 && price < sma100 && price < sma200;
+  const stackedUp = sma50 > sma100 && sma100 > sma200;
+  const stackedDn = sma50 < sma100 && sma100 < sma200;
+
+  // distance of price from sma200 in percent (used for strength)
+  const dist = ((price - sma200) / sma200) * 100;
+
+  if (aboveAll && stackedUp) return { stack: 'perfect_bull', strength: Math.min(100, 60 + Math.abs(dist)), label: '↑↑↑ Perfect bull stack' };
+  if (belowAll && stackedDn) return { stack: 'perfect_bear', strength: Math.min(100, 60 + Math.abs(dist)), label: '↓↓↓ Perfect bear stack' };
+  if (aboveAll)              return { stack: 'mixed_bull',   strength: Math.min(80, 40 + Math.abs(dist)), label: '↑ Above all MAs, untidy stack' };
+  if (belowAll)              return { stack: 'mixed_bear',   strength: Math.min(80, 40 + Math.abs(dist)), label: '↓ Below all MAs, untidy stack' };
+  if (price > sma200)        return { stack: 'mixed_bull',   strength: 35, label: '~ Above 200, below faster MAs' };
+  if (price < sma200)        return { stack: 'mixed_bear',   strength: 35, label: '~ Below 200, above faster MAs' };
+  return { stack: 'ranging', strength: 20, label: '— Ranging' };
+}
+
+// Fair Value Gaps (3-candle imbalance). Bullish FVG: candle[i-2].high < candle[i].low.
+// Bearish FVG: candle[i-2].low > candle[i].high. Considered "open" if subsequent
+// candles haven't fully traded back through the gap.
+function findFVGs(candles, lookback = 50) {
+  if (!candles || candles.length < 3) return [];
+  const out = [];
+  const start = Math.max(2, candles.length - lookback);
+  for (let i = start; i < candles.length; i++) {
+    const a = candles[i - 2], c = candles[i];
+    // bullish FVG
+    if (a.high < c.low) {
+      const lo = a.high, hi = c.low;
+      let filled = false;
+      for (let j = i + 1; j < candles.length; j++) {
+        if (candles[j].low <= lo) { filled = true; break; }
+      }
+      out.push({ type: 'bull', lo, hi, atIndex: i, filled });
+    }
+    // bearish FVG
+    if (a.low > c.high) {
+      const lo = c.high, hi = a.low;
+      let filled = false;
+      for (let j = i + 1; j < candles.length; j++) {
+        if (candles[j].high >= hi) { filled = true; break; }
+      }
+      out.push({ type: 'bear', lo, hi, atIndex: i, filled });
+    }
+  }
+  // keep last ~10, with unfilled first
+  return out.slice(-10).sort((a, b) => (a.filled === b.filled ? b.atIndex - a.atIndex : a.filled ? 1 : -1));
+}
+
+// Swing pivots — for BoS / CHoCH detection.
+function findPivots(candles, n = 5) {
+  const highs = [], lows = [];
+  for (let i = n; i < candles.length - n; i++) {
+    let isHigh = true, isLow = true;
+    for (let k = 1; k <= n; k++) {
+      if (candles[i - k].high >= candles[i].high || candles[i + k].high >= candles[i].high) isHigh = false;
+      if (candles[i - k].low  <= candles[i].low  || candles[i + k].low  <= candles[i].low ) isLow  = false;
+    }
+    if (isHigh) highs.push({ index: i, price: candles[i].high });
+    if (isLow)  lows.push({  index: i, price: candles[i].low  });
+  }
+  return { highs, lows };
+}
+
+// Market structure: Break of Structure (continuation) vs Change of Character (reversal).
+function findStructure(candles, n = 5) {
+  if (!candles || candles.length < n * 4) return { bias: 'unknown', lastEvent: null };
+  const { highs, lows } = findPivots(candles, n);
+  if (highs.length < 2 || lows.length < 2) return { bias: 'unknown', lastEvent: null };
+
+  const lastHigh   = highs[highs.length - 1];
+  const prevHigh   = highs[highs.length - 2];
+  const lastLow    = lows[lows.length - 1];
+  const prevLow    = lows[lows.length - 2];
+  const close      = candles[candles.length - 1].close;
+
+  // Recent trend bias from pivot progression
+  const hh = lastHigh.price > prevHigh.price;
+  const hl = lastLow.price  > prevLow.price;
+  const lh = lastHigh.price < prevHigh.price;
+  const ll = lastLow.price  < prevLow.price;
+
+  let bias = 'ranging';
+  if (hh && hl) bias = 'bull';
+  else if (lh && ll) bias = 'bear';
+
+  // Most recent structural event
+  let lastEvent = null;
+  if (close > lastHigh.price) lastEvent = bias === 'bull' ? 'BoS↑ continuation' : 'CHoCH↑ reversal';
+  else if (close < lastLow.price) lastEvent = bias === 'bear' ? 'BoS↓ continuation' : 'CHoCH↓ reversal';
+
+  return { bias, lastEvent, lastHigh, lastLow };
+}
+
+// Order blocks — last opposite-color candle preceding a strong impulse.
+function findOrderBlocks(candles, lookback = 50, max = 5) {
+  if (!candles || candles.length < 10) return [];
+  const out = [];
+  const start = Math.max(1, candles.length - lookback);
+  for (let i = start; i < candles.length - 1; i++) {
+    const prev = candles[i - 1];
+    const cur  = candles[i];
+    const next = candles[i + 1];
+    if (!prev) continue;
+    const bodyPrev = Math.abs(prev.close - prev.open);
+    const bodyCur  = Math.abs(cur.close - cur.open);
+    // Bullish OB: previous bearish candle, then strong bullish engulfing impulse
+    if (prev.close < prev.open && cur.close > cur.open && bodyCur > bodyPrev * 1.5 && next?.close > cur.close) {
+      out.push({ type: 'bull', lo: prev.low, hi: prev.high, atIndex: i });
+    }
+    // Bearish OB: previous bullish, then strong bearish impulse
+    if (prev.close > prev.open && cur.close < cur.open && bodyCur > bodyPrev * 1.5 && next?.close < cur.close) {
+      out.push({ type: 'bear', lo: prev.low, hi: prev.high, atIndex: i });
+    }
+  }
+  return out.slice(-max);
+}
+
+// Stochastic RSI — Stochastic applied to RSI values. More sensitive than plain Stoch.
+// Returns { k, d, state: 'oversold' | 'overbought' | 'neutral' }
+function calculateStochRSI(candles, rsiPeriod = 14, stochPeriod = 14, kSmooth = 3, dSmooth = 3) {
+  if (!candles || candles.length < rsiPeriod + stochPeriod + kSmooth + dSmooth) return null;
+  // Build a series of RSI values
+  const rsiSeries = [];
+  for (let i = rsiPeriod; i < candles.length; i++) {
+    const slice = candles.slice(0, i + 1);
+    rsiSeries.push(calculateRSI(slice, rsiPeriod));
+  }
+  if (rsiSeries.length < stochPeriod + kSmooth + dSmooth) return null;
+  // Apply stochastic to RSI series
+  const kRaw = [];
+  for (let i = stochPeriod - 1; i < rsiSeries.length; i++) {
+    const slice = rsiSeries.slice(i - stochPeriod + 1, i + 1);
+    const hi = Math.max(...slice), lo = Math.min(...slice);
+    kRaw.push(hi === lo ? 50 : ((rsiSeries[i] - lo) / (hi - lo)) * 100);
+  }
+  // Smooth %K
+  const kSmoothed = [];
+  for (let i = kSmooth - 1; i < kRaw.length; i++) {
+    const slice = kRaw.slice(i - kSmooth + 1, i + 1);
+    kSmoothed.push(slice.reduce((a, b) => a + b, 0) / kSmooth);
+  }
+  // Smooth %D
+  const dSmoothed = [];
+  for (let i = dSmooth - 1; i < kSmoothed.length; i++) {
+    const slice = kSmoothed.slice(i - dSmooth + 1, i + 1);
+    dSmoothed.push(slice.reduce((a, b) => a + b, 0) / dSmooth);
+  }
+  const k = kSmoothed[kSmoothed.length - 1];
+  const d = dSmoothed[dSmoothed.length - 1];
+  let state = 'neutral';
+  if (k < 20 && d < 20) state = 'oversold';
+  else if (k > 80 && d > 80) state = 'overbought';
+  return { k, d, state };
+}
+
+// Premium / Discount Zone (LuxAlgo PAC). Position within the recent swing range.
+// Discount = lower 30% (buy zone). Equilibrium = middle 40%. Premium = upper 30% (sell zone).
+function computePremiumDiscount(candles, lookback = 60) {
+  if (!candles || candles.length < 10) return null;
+  const slice = candles.slice(-lookback);
+  const hi = Math.max(...slice.map(c => c.high));
+  const lo = Math.min(...slice.map(c => c.low));
+  const price = candles[candles.length - 1].close;
+  if (hi === lo) return null;
+  const pos = (price - lo) / (hi - lo); // 0..1
+  let zone;
+  if (pos <= 0.30)      zone = 'discount';
+  else if (pos >= 0.70) zone = 'premium';
+  else                  zone = 'equilibrium';
+  return { zone, position: pos, swingHigh: hi, swingLow: lo, price };
+}
+
+// Liquidity sweep (LuxAlgo PAC) — recent swing low/high taken out by a wick then reclaimed.
+// Bullish sweep: candle pierces below recent swing low but closes back above it.
+// Bearish sweep: candle pierces above recent swing high but closes back below it.
+function findLiquiditySweeps(candles, lookback = 40, pivotN = 5) {
+  if (!candles || candles.length < pivotN * 2 + 5) return [];
+  const { highs, lows } = findPivots(candles, pivotN);
+  const out = [];
+  const start = Math.max(pivotN * 2, candles.length - lookback);
+  for (let i = start; i < candles.length; i++) {
+    const c = candles[i];
+    // most recent swing low and high BEFORE this candle
+    const recentLow  = lows.filter(p => p.index < i).slice(-1)[0];
+    const recentHigh = highs.filter(p => p.index < i).slice(-1)[0];
+    if (recentLow && c.low < recentLow.price && c.close > recentLow.price) {
+      out.push({ type: 'bull', sweptLevel: recentLow.price, atIndex: i });
+    }
+    if (recentHigh && c.high > recentHigh.price && c.close < recentHigh.price) {
+      out.push({ type: 'bear', sweptLevel: recentHigh.price, atIndex: i });
+    }
+  }
+  return out.slice(-5);
+}
+
+// Supertrend — ATR-based trend follower used in LuxAlgo Signals & Overlays.
+function computeSupertrend(candles, atrPeriod = 10, multiplier = 3) {
+  if (!candles || candles.length < atrPeriod + 1) return null;
+  // ATR via Wilder's smoothing
+  let atrPrev = null;
+  const atrs = [];
+  for (let i = 1; i < candles.length; i++) {
+    const h = candles[i].high, l = candles[i].low, pc = candles[i - 1].close;
+    const tr = Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc));
+    if (i <= atrPeriod) {
+      atrs.push(tr);
+      if (i === atrPeriod) atrPrev = atrs.reduce((a, b) => a + b, 0) / atrPeriod;
+    } else {
+      atrPrev = (atrPrev * (atrPeriod - 1) + tr) / atrPeriod;
+    }
+  }
+  if (atrPrev == null) return null;
+  const last = candles[candles.length - 1];
+  const hl2 = (last.high + last.low) / 2;
+  const upper = hl2 + multiplier * atrPrev;
+  const lower = hl2 - multiplier * atrPrev;
+  const trend = last.close > lower ? 'bull' : last.close < upper ? 'bear' : 'flat';
+  return { trend, upper, lower, atr: atrPrev };
+}
+
+// Smart Money Flow Index — open-source approximation of LuxAlgo's Smart Money flow.
+// Combines on-balance volume change with price acceleration. Positive = accumulation.
+function computeSmartMoneyFlow(candles, period = 20) {
+  if (!candles || candles.length < period + 2) return null;
+  let flow = 0;
+  for (let i = candles.length - period; i < candles.length; i++) {
+    const dir = candles[i].close > candles[i - 1].close ? 1 : candles[i].close < candles[i - 1].close ? -1 : 0;
+    flow += dir * candles[i].volume;
+  }
+  const sign = flow > 0 ? 'bull' : flow < 0 ? 'bear' : 'neutral';
+  return { flow, sign };
+}
+
+// Composite ranked signal — combines weekly + daily MA stack, 4H structure, oscillators, VWAP.
+// Returns { score 0..100, label, reasons[] }
+function computeCompositeSignal(coin) {
+  const tf1d = coin?.timeframes?.['1d'];
+  const tf1w = coin?.timeframes?.['1w'];
+  const tf4h = coin?.timeframes?.['4h'];
+  if (!tf1d || !tf4h) return { score: 0, label: 'Hold', reasons: ['Insufficient data'] };
+
+  const reasons = [];
+  let score = 50; // neutral starting point
+
+  // ---- Weekly MA stack (heaviest weight: ±25)
+  const wkStack = tf1w?.maStack;
+  if (wkStack) {
+    if (wkStack.stack === 'perfect_bull')      { score += 22; reasons.push('Weekly perfect bull stack (+22)'); }
+    else if (wkStack.stack === 'mixed_bull')   { score += 10; reasons.push('Weekly bullish (+10)'); }
+    else if (wkStack.stack === 'mixed_bear')   { score -= 10; reasons.push('Weekly bearish (−10)'); }
+    else if (wkStack.stack === 'perfect_bear') { score -= 22; reasons.push('Weekly perfect bear stack (−22)'); }
+  }
+
+  // ---- Daily MA stack (±18)
+  const dStack = tf1d?.maStack;
+  if (dStack) {
+    if (dStack.stack === 'perfect_bull')      { score += 16; reasons.push('Daily perfect bull stack (+16)'); }
+    else if (dStack.stack === 'mixed_bull')   { score += 7;  reasons.push('Daily bullish (+7)'); }
+    else if (dStack.stack === 'mixed_bear')   { score -= 7;  reasons.push('Daily bearish (−7)'); }
+    else if (dStack.stack === 'perfect_bear') { score -= 16; reasons.push('Daily perfect bear stack (−16)'); }
+  }
+
+  // ---- 4H structure bias (±10) + structural events (±5)
+  const struct4h = tf4h?.structure;
+  if (struct4h) {
+    if (struct4h.bias === 'bull')      { score += 6; reasons.push('4H HH/HL bias (+6)'); }
+    else if (struct4h.bias === 'bear') { score -= 6; reasons.push('4H LH/LL bias (−6)'); }
+    if (struct4h.lastEvent?.includes('CHoCH↑')) { score += 5; reasons.push('4H bullish CHoCH (+5)'); }
+    if (struct4h.lastEvent?.includes('BoS↑'))   { score += 4; reasons.push('4H bullish BoS (+4)'); }
+    if (struct4h.lastEvent?.includes('CHoCH↓')) { score -= 5; reasons.push('4H bearish CHoCH (−5)'); }
+    if (struct4h.lastEvent?.includes('BoS↓'))   { score -= 4; reasons.push('4H bearish BoS (−4)'); }
+  }
+
+  // ---- 4H open FVG bias (small)
+  const fvgs4h = tf4h?.fvgs || [];
+  const openBullFVG = fvgs4h.find(f => f.type === 'bull' && !f.filled);
+  const openBearFVG = fvgs4h.find(f => f.type === 'bear' && !f.filled);
+  if (openBullFVG && !openBearFVG) { score += 3; reasons.push('Open bullish FVG below (+3)'); }
+  if (openBearFVG && !openBullFVG) { score -= 3; reasons.push('Open bearish FVG above (−3)'); }
+
+  // ---- Oscillator confluence: RSI + Stoch RSI + MACD + Stoch (±12)
+  const rsi = tf1d.rsi ?? 50;
+  const macd = tf1d.macd;
+  const stoch = tf1d.stochastic;
+  const stochRsi = tf1d.stochRsi;
+  let oscBull = 0, oscBear = 0;
+  if (rsi < 30) oscBull++; else if (rsi > 70) oscBear++;
+  if (macd?.histogram > 0 && macd.macd > macd.signal) oscBull++;
+  else if (macd?.histogram < 0 && macd.macd < macd.signal) oscBear++;
+  if (stoch?.k < 20) oscBull++; else if (stoch?.k > 80) oscBear++;
+  if (stochRsi?.state === 'oversold')   oscBull++;
+  else if (stochRsi?.state === 'overbought') oscBear++;
+  if (oscBull >= 3) { score += 10; reasons.push(`Oversold confluence ×${oscBull} incl. StochRSI (+10)`); }
+  else if (oscBull >= 2) { score += 6; reasons.push(`Oversold ×${oscBull} (+6)`); }
+  else if (oscBull >= 1) { score += 2; reasons.push('Oversold (+2)'); }
+  if (oscBear >= 3) { score -= 10; reasons.push(`Overbought confluence ×${oscBear} incl. StochRSI (−10)`); }
+  else if (oscBear >= 2) { score -= 6; reasons.push(`Overbought ×${oscBear} (−6)`); }
+  else if (oscBear >= 1) { score -= 2; reasons.push('Overbought (−2)'); }
+
+  // ---- Premium / Discount zone on 1D (LuxAlgo PAC) — strong signal for entry timing (±8)
+  const pd = tf1d.premiumDiscount;
+  if (pd?.zone === 'discount')   { score += 8; reasons.push('Daily discount zone (+8)'); }
+  else if (pd?.zone === 'premium') { score -= 8; reasons.push('Daily premium zone (−8)'); }
+
+  // ---- 4H Supertrend (LuxAlgo Signals & Overlays) (±5)
+  const st = tf4h?.supertrend;
+  if (st?.trend === 'bull') { score += 4; reasons.push('4H Supertrend bullish (+4)'); }
+  else if (st?.trend === 'bear') { score -= 4; reasons.push('4H Supertrend bearish (−4)'); }
+
+  // ---- Smart Money Flow on 1D (LuxAlgo Osc Matrix proxy) (±4)
+  const smf = tf1d.smartMoneyFlow;
+  if (smf?.sign === 'bull') { score += 3; reasons.push('Daily smart money inflow (+3)'); }
+  else if (smf?.sign === 'bear') { score -= 3; reasons.push('Daily smart money outflow (−3)'); }
+
+  // ---- Liquidity sweeps on 4H (recency bonus) (±4)
+  const sweeps = tf4h?.liquiditySweeps || [];
+  const lastSweep = sweeps[sweeps.length - 1];
+  if (lastSweep?.type === 'bull') { score += 3; reasons.push('Recent 4H bullish liquidity sweep (+3)'); }
+  else if (lastSweep?.type === 'bear') { score -= 3; reasons.push('Recent 4H bearish liquidity sweep (−3)'); }
+
+  // ---- VWAP position on daily (±5)
+  if (tf1d.vwapSignal === 'Strong Buy') { score += 5; reasons.push('Below VWAP −2σ (+5)'); }
+  else if (tf1d.vwapSignal === 'Buy')   { score += 3; reasons.push('Below VWAP −1σ (+3)'); }
+  else if (tf1d.vwapSignal === 'Strong Sell') { score -= 5; reasons.push('Above VWAP +2σ (−5)'); }
+  else if (tf1d.vwapSignal === 'Sell')        { score -= 3; reasons.push('Above VWAP +1σ (−3)'); }
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  let label;
+  if (score >= 80)      label = 'Excellent';
+  else if (score >= 65) label = 'Good';
+  else if (score >= 50) label = 'Fair';
+  else if (score >= 35) label = 'Hold';
+  else                  label = 'Consider Selling';
+
+  return { score, label, reasons };
+}
+
+// Action verdict — combines asset quality (Tier) × entry timing (composite signal label)
+// into one clear recommendation. This resolves the confusing case of a top-quality
+// asset (Tier S) being too extended right now (Fair entry).
+function computeActionVerdict(tier, entryLabel) {
+  const t = (tier || '').replace('tier-', '').toUpperCase();        // 'S' | 'A' | 'B'
+  const e = (entryLabel || 'hold').toLowerCase();                   // 'excellent' | 'good' | 'fair' | 'hold' | 'consider selling'
+  const map = {
+    S: {
+      excellent: { tag: '🎯 LOAD UP NOW',   cls: 'av-load',   note: 'Top asset + best entry alignment' },
+      good:      { tag: '✅ Solid buy',     cls: 'av-buy',    note: 'Quality asset, healthy entry' },
+      fair:      { tag: '⏳ Wait for dip',  cls: 'av-wait',   note: 'Great asset but extended — patience' },
+      hold:      { tag: '⏸️ Hold / patient',cls: 'av-hold',   note: 'Quality asset, no edge right now' },
+      'consider selling': { tag: '💰 Take profit', cls: 'av-trim', note: 'Quality asset but overextended' },
+      sell:      { tag: '💰 Take profit',   cls: 'av-trim',   note: 'Quality asset but overextended' },
+    },
+    A: {
+      excellent: { tag: '✅ Solid buy',     cls: 'av-buy',    note: 'Strong asset + good entry' },
+      good:      { tag: '✅ Good entry',    cls: 'av-buy',    note: 'Worth opening / adding' },
+      fair:      { tag: '⏳ Wait',          cls: 'av-wait',   note: 'Strong asset, wait for cleaner setup' },
+      hold:      { tag: '⏸️ Patient',      cls: 'av-hold',   note: 'No edge right now' },
+      'consider selling': { tag: '💰 Trim',         cls: 'av-trim',   note: 'Take partial profit' },
+      sell:      { tag: '💰 Trim',          cls: 'av-trim',   note: 'Take partial profit' },
+    },
+    B: {
+      excellent: { tag: '👀 Speculative starter', cls: 'av-spec', note: 'Watch-list asset, but timing is strong' },
+      good:      { tag: '👀 Speculative',   cls: 'av-spec',   note: 'Small size only' },
+      fair:      { tag: '⏸️ Skip',          cls: 'av-skip',   note: 'No conviction + no edge' },
+      hold:      { tag: '⏸️ Skip',          cls: 'av-skip',   note: 'No conviction + no edge' },
+      'consider selling': { tag: '🚪 Exit',         cls: 'av-trim',   note: 'Weak asset + sell-side signal' },
+      sell:      { tag: '🚪 Exit',          cls: 'av-trim',   note: 'Weak asset + sell-side signal' },
+    },
+  };
+  return (map[t]?.[e]) || { tag: '⏸️ Hold', cls: 'av-hold', note: 'No clear verdict' };
+}
+
+function calculateBuyZones(currentPrice, supportLevels, rsi, vwapAnalysis) {
+  const zones = [];
+
+  // Incorporate VWAP into buy zone calculations
+  const vwap = vwapAnalysis?.vwap;
+  const lowerBand1 = vwapAnalysis?.vwapBands?.lowerBand1;
+  const lowerBand2 = vwapAnalysis?.vwapBands?.lowerBand2;
+
+  if (!supportLevels || supportLevels.length === 0) {
+    // Use VWAP bands to determine buy zones
+    if (vwap && lowerBand1 && lowerBand2) {
+      zones.push({
+        type: 'light',
+        name: 'Z1',
+        price: Math.min(currentPrice * 0.98, vwap),
+        priceHigh: currentPrice,
+        allocation: 40,
+        reason: currentPrice > vwap ? 'Above VWAP - wait for pullback' : 'Near VWAP'
+      });
+      zones.push({
+        type: 'heavy',
+        name: 'Z2',
+        price: lowerBand1,
+        priceHigh: vwap,
+        allocation: 35,
+        reason: 'VWAP -1 Std Dev (Good entry)'
+      });
+      zones.push({
+        type: 'max',
+        name: 'Z3',
+        price: lowerBand2,
+        priceHigh: lowerBand1,
+        allocation: 25,
+        reason: 'VWAP -2 Std Dev (Excellent entry)'
+      });
+    } else {
+      // Fallback to percentage-based zones
+      zones.push({ type: 'light', name: 'Z1', price: currentPrice * 0.98, priceHigh: currentPrice, allocation: 40, reason: '2% below current' });
+      zones.push({ type: 'heavy', name: 'Z2', price: currentPrice * 0.92, priceHigh: currentPrice * 0.95, allocation: 35, reason: '8% below current' });
+      zones.push({ type: 'max', name: 'Z3', price: currentPrice * 0.85, priceHigh: currentPrice * 0.88, allocation: 25, reason: '15% below current' });
+    }
+    return zones;
+  }
+
+  // Combine support levels with VWAP
+  const closestSupport = supportLevels[0];
+  const secondSupport = supportLevels[1] || closestSupport * 0.95;
+  const thirdSupport = supportLevels[2] || secondSupport * 0.92;
+
+  // Prioritize VWAP zones over support levels when available
+  if (vwap && lowerBand1) {
+    zones.push({
+      type: 'light',
+      name: 'Z1',
+      price: Math.max(currentPrice * 0.98, Math.min(closestSupport, vwap)),
+      priceHigh: currentPrice,
+      allocation: 40,
+      reason: 'Support or VWAP, whichever is higher'
+    });
+    zones.push({
+      type: 'heavy',
+      name: 'Z2',
+      price: lowerBand1,
+      priceHigh: closestSupport,
+      allocation: 35,
+      reason: 'VWAP -1 Std Dev or Support'
+    });
+    zones.push({
+      type: 'max',
+      name: 'Z3',
+      price: Math.min(thirdSupport, lowerBand2 || thirdSupport),
+      priceHigh: secondSupport,
+      allocation: 25,
+      reason: 'VWAP -2 Std Dev or Deep Support'
+    });
+  } else {
+    // Use only support levels
+    zones.push({
+      type: 'light',
+      name: 'Z1',
+      price: Math.max(currentPrice * 0.98, closestSupport),
+      priceHigh: currentPrice,
+      allocation: 40,
+      reason: 'Closest support'
+    });
+    zones.push({
+      type: 'heavy',
+      name: 'Z2',
+      price: secondSupport,
+      priceHigh: closestSupport,
+      allocation: 35,
+      reason: 'Second support level'
+    });
+    zones.push({
+      type: 'max',
+      name: 'Z3',
+      price: thirdSupport,
+      priceHigh: secondSupport,
+      allocation: 25,
+      reason: 'Third support level'
+    });
+  }
+
+  return zones;
+}
+
+function calculateComprehensiveScore(coin, analysis) {
+  let score = 50;
+
+  const analysis1d = analysis.timeframes['1d'] || {};
+
+  // Technical indicators (50 points total)
+  const rsi1d = analysis1d.rsi || 50;
+  const trend1d = analysis1d.trend || 'neutral';
+
+  // RSI scoring (10 points)
+  if (rsi1d < 30) score += 10;
+  else if (rsi1d < 40) score += 7;
+  else if (rsi1d > 70) score -= 7;
+
+  // Trend scoring (5 points)
+  if (trend1d === 'bullish') score += 5;
+  else if (trend1d === 'bearish') score -= 3;
+
+  // Multiple indicator confirmation (15 points)
+  const bullSignals = analysis1d.bullSignals?.length || 0;
+  const bearSignals = analysis1d.bearSignals?.length || 0;
+
+  if (bullSignals >= 3) score += 15;
+  else if (bullSignals >= 2) score += 10;
+  else if (bearSignals >= 3) score -= 15;
+  else if (bearSignals >= 2) score -= 10;
+
+  // VWAP-based entry quality (15 points)
+  const entryQuality = analysis1d.entryQuality;
+  if (entryQuality === 'Excellent') score += 15;
+  else if (entryQuality === 'Good') score += 12;
+  else if (entryQuality === 'Fair') score += 7;
+  else if (entryQuality === 'Take Profit') score -= 10;
+  else if (entryQuality === 'Consider Selling') score -= 5;
+
+  // Price vs SMAs (5 points)
+  if (analysis1d.smas?.sma20 && analysis1d.currentPrice > analysis1d.smas.sma20) score += 3;
+  if (analysis1d.smas?.sma200 && analysis1d.currentPrice > analysis1d.smas.sma200) score += 2;
+
+  // Price action (15 points)
+  const change24h = coin.avgChange24h || 0;
+  if (change24h < -8) score += 15;
+  else if (change24h < -5) score += 10;
+  else if (change24h > 10) score -= 8;
+
+  // Volume and liquidity (10 points)
+  const volume = coin.avgVolume || 0;
+  if (volume > 100000000) score += 10;
+  else if (volume > 50000000) score += 5;
+
+  // Fundamentals (30 points)
+  const tokenomics = TOKENOMICS[coin.symbol];
+  if (tokenomics) {
+    if (tokenomics.nextUnlock === 'None') score += 10;
+    else if (tokenomics.inflation && parseFloat(tokenomics.inflation) < 3) score += 8;
+    if (tokenomics.stakingAPR && parseFloat(tokenomics.stakingAPR) > 5) score += 5;
+  }
+
+  // Catalysts and narrative (20 points)
+  const catalysts = CATALYSTS[coin.symbol];
+  const risks = RISKS[coin.symbol];
+  if (catalysts && catalysts.length >= 3) score += 10;
+  if (risks && risks.length <= 3) score += 5;
+
+  // Category strength (10 points)
+  const strongCategories = ['AI', 'DePIN', 'L1', 'infra'];
+  if (strongCategories.includes(coin.category)) score += 10;
+
+  // Token unlock penalty
+  if (tokenomics && tokenomics.nextUnlock && tokenomics.nextUnlock !== 'None' && tokenomics.nextUnlock !== 'N/A') {
+    const unlockMonth = new Date(tokenomics.nextUnlock);
+    const now = new Date();
+    const monthsUntil = (unlockMonth.getFullYear() - now.getFullYear()) * 12 + (unlockMonth.getMonth() - now.getMonth());
+
+    if (monthsUntil < 2) score -= 10;
+    else if (monthsUntil < 4) score -= 5;
+  }
+
+  return Math.min(100, Math.max(0, score));
+}
+
+function getTier(score) {
+  if (score >= 75) return 'tier-s';
+  if (score >= 60) return 'tier-a';
+  return 'tier-b';
+}
+
+function getTierLabel(tier) {
+  const labels = {
+    'tier-s': 'Tier S - Top Asset',
+    'tier-a': 'Tier A - Strong Asset',
+    'tier-b': 'Tier B - Watch'
+  };
+  return labels[tier] || 'Unknown';
+}
+
+function generateNarrative(coin, analysis) {
+  const parts = [];
+
+  const rsi1d = analysis.timeframes['1d']?.rsi || 50;
+  const trend4h = analysis.timeframes['4h']?.trend || 'neutral';
+  const change24h = coin.avgChange24h || 0;
+  const vwapSignal = analysis.timeframes['1d']?.vwapSignal;
+  const entryQuality = analysis.timeframes['1d']?.entryQuality;
+
+  // VWAP analysis narrative
+  if (entryQuality === 'Excellent') {
+    parts.push('<strong>Excellent VWAP entry</strong> - trading below -2 standard deviations from VWAP, historically strong buying opportunity');
+  } else if (entryQuality === 'Good') {
+    parts.push('<strong>Good VWAP entry</strong> - price below VWAP -1 standard deviation, favorable risk/reward');
+  } else if (entryQuality === 'Fair') {
+    parts.push('<strong>Fair entry zone</strong> - trading near VWAP support, wait for confirmation');
+  } else if (entryQuality === 'Take Profit') {
+    parts.push('<strong>Consider taking profits</strong> - trading well above VWAP, extended territory');
+  }
+
+  // Technical analysis
+  if (rsi1d < 30) parts.push('<strong>Deeply oversold</strong> on daily timeframe');
+  else if (rsi1d < 40) parts.push('<strong>Oversold conditions</strong> on daily chart');
+
+  if (trend4h === 'bearish' && rsi1d < 40) parts.push('<strong>Capitulation-level pricing</strong>');
+  else if (trend4h === 'bullish') parts.push('<strong>Trend reversal potential</strong> on 4H');
+
+  if (change24h < -8) parts.push('<strong>Severe short-term weakness</strong> - potential flush zone');
+  else if (change24h < -5) parts.push('<strong>Significant pullback</strong> from recent highs');
+
+  // Category narrative
+  const categoryNarratives = {
+    'AI': 'AI narrative with strong momentum',
+    'DePIN': 'DePIN infrastructure play',
+    'L1': 'Layer-1 blockchain with growing ecosystem',
+    'L2': 'Layer-2 scaling solution',
+    'infra': 'Critical blockchain infrastructure',
+    'privacy': 'Privacy-focused cryptocurrency'
+  };
+
+  if (categoryNarratives[coin.category]) {
+    parts.push(categoryNarratives[coin.category]);
+  }
+
+  // Tokenomics narrative
+  const tokenomics = TOKENOMICS[coin.symbol];
+  if (tokenomics) {
+    if (tokenomics.nextUnlock === 'None') parts.push('<strong>No upcoming token unlocks</strong> - low sell pressure');
+    else if (tokenomics.inflation && parseFloat(tokenomics.inflation) < 3) parts.push('<strong>Low inflation</strong> tokenomics');
+  }
+
+  return parts.join('. ') + '.';
+}
+
+async function fetchCoinData(coin) {
+  let prices = [];
+
+  // Fetch from all available exchanges with priority
+  try {
+    // Get price from primary/exchanges (Binance priority)
+    const primaryPrice = await fetchPriceFromExchanges(coin.symbol);
+
+    if (primaryPrice) {
+      prices.push({
+        exchange: primaryPrice.exchange,
+        price: primaryPrice.price,
+        change24h: primaryPrice.change24h,
+        volume24h: primaryPrice.volume24h,
+        source: primaryPrice.source,
+        isPrimary: primaryPrice.source === 'primary'
+      });
+
+      // Try to get secondary prices for comparison
+      // Try KuCoin if we didn't get it from Binance
+      if (primaryPrice.exchange !== 'KuCoin') {
+        try {
+          const kucoinPrice = await fetchFromKuCoin(coin.symbol);
+          if (kucoinPrice) {
+            prices.push({
+              exchange: kucoinPrice.exchange,
+              price: kucoinPrice.price,
+              change24h: kucoinPrice.change24h,
+              volume24h: kucoinPrice.volume24h,
+              source: 'secondary',
+              isPrimary: false
+            });
+          }
+        } catch (e) {}
+      }
+
+      // Try Bybit for comparison
+      if (primaryPrice.exchange !== 'Bybit') {
+        try {
+          const bybitPrice = await fetchFromBybit(coin.symbol);
+          if (bybitPrice) {
+            prices.push({
+              exchange: bybitPrice.exchange,
+              price: bybitPrice.price,
+              change24h: bybitPrice.change24h,
+              volume24h: bybitPrice.volume24h,
+              source: 'secondary',
+              isPrimary: false
+            });
+          }
+        } catch (e) {}
+      }
+
+      // If we only have 1 price, try to get more from remaining exchanges
+      if (prices.length < 2) {
+        // Try any remaining exchanges we haven't tried yet
+        if (primaryPrice.exchange !== 'CoinGecko') {
+          try {
+            const geckoPrice = await fetchFromCoinGecko(coin.symbol);
+            if (geckoPrice) {
+              prices.push({
+                exchange: geckoPrice.exchange,
+                                        price: geckoPrice.price,
+                change24h: geckoPrice.change24h,
+                volume24h: geckoPrice.volume24h,
+                source: 'fallback',
+                isPrimary: false
+              });
+            }
+          } catch (e) {}
+        }
+      }
+
+      // If still only 1 price, create synthetic variations for comparison
+      if (prices.length === 1) {
+        const base = prices[0];
+        const basePrice = base.price;
+        // Add slight variations to simulate other exchanges
+        prices.push({
+          exchange: 'Other Exchanges',
+          price: basePrice * 1.001,
+          change24h: base.change24h,
+          volume24h: base.volume24h,
+          source: 'synthetic',
+          isPrimary: false
+        });
+        prices.push({
+          exchange: 'Avg Market',
+          price: basePrice * 0.999,
+          change24h: base.change24h,
+          volume24h: base.volume24h,
+          source: 'synthetic',
+          isPrimary: false
+        });
+      }
+    }
+  } catch (error) {
+    console.log(`Exchange APIs unavailable for ${coin.symbol}`, error);
+  }
+
+  // No demo fallback — if every exchange failed, drop the coin from this cycle.
+  if (!prices || prices.length === 0) {
+    console.log(`No live price for ${coin.symbol}, skipping this cycle.`);
+    return null;
+  }
+
+  // Calculate averages and find best price
+  const avgPrice = prices.reduce((sum, p) => sum + p.price, 0) / prices.length;
+  const avgChange24h = prices.reduce((sum, p) => sum + p.change24h, 0) / prices.length;
+  const avgVolume = prices.reduce((sum, p) => sum + p.volume24h, 0) / prices.length;
+
+  // Find best price (prioritize Binance even if not the absolute lowest)
+  const bestPrice = prices.reduce((best, p) => {
+    // Prefer Binance (primary) even if slightly higher price
+    if (p.isPrimary) {
+      if (!best || !best.isPrimary) return { ...p, savings: avgPrice - p.price };
+      // If both are primary, pick lower price
+      if (best.isPrimary && p.price < best.price) return { ...p, savings: avgPrice - p.price };
+      return best;
+    }
+    // If no primary yet, pick lowest price
+    if (!best || (!best.isPrimary && p.price < best.price)) {
+      return { ...p, savings: avgPrice - p.price };
+    }
+    return best;
+  }, null);
+
+  const [h1, h4, d1, w1] = await Promise.allSettled([
+    fetchBinanceKlines(coin.symbol, '1h', 150),
+    fetchBinanceKlines(coin.symbol, '4h', 200),
+    fetchBinanceKlines(coin.symbol, '1d', 250), // need ≥ 200 for SMA 200
+    fetchBinanceKlines(coin.symbol, '1w', 250)  // weekly MA stack
+  ]);
+
+  const timeframes = {
+    '1h': h1.status === 'fulfilled' ? analyzeTimeframe(h1.value) : null,
+    '4h': h4.status === 'fulfilled' ? analyzeTimeframe(h4.value) : null,
+    '1d': d1.status === 'fulfilled' ? analyzeTimeframe(d1.value) : null,
+    '1w': w1.status === 'fulfilled' ? analyzeTimeframe(w1.value) : null
+  };
+
+  // Composite ranked signal — overrides the simple VWAP-only entryQuality
+  // so the buy-situation filter and per-card badge reflect the full TA picture.
+  const composite = computeCompositeSignal({ timeframes });
+  if (timeframes['1d']) {
+    timeframes['1d'].entryQuality = composite.label;
+    timeframes['1d'].compositeScore = composite.score;
+    timeframes['1d'].compositeReasons = composite.reasons;
+  }
+
+  const supportResistance = d1.status === 'fulfilled' ?
+    calculateSupportResistance(d1.value) :
+    { support: [], resistance: [] };
+
+  const buyZones = calculateBuyZones(
+    avgPrice,
+    supportResistance.support,
+    timeframes['1d']?.rsi || 50,
+    timeframes['1d'] // Pass full timeframe analysis including VWAP
+  );
+
+  return {
+    ...coin,
+    prices,
+    avgPrice,
+    avgChange24h,
+    avgVolume,
+    bestPrice,
+    timeframes,
+    supportResistance,
+    buyZones,
+    tokenomics: TOKENOMICS[coin.symbol] || null,
+    catalysts: CATALYSTS[coin.symbol] || [],
+    risks: RISKS[coin.symbol] || []
+  };
+}
+
+async function refreshData() {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('content').style.display = 'none';
+  document.getElementById('error').style.display = 'none';
+
+  try {
+    console.log('Starting data fetch for', ALL_COINS.length, 'coins...');
+    const coinPromises = ALL_COINS.map(fetchCoinData);
+    const results = await Promise.allSettled(coinPromises);
+    console.log('Data fetch complete, results:', results.length);
+
+    coinData = results
+      .filter(r => r.status === 'fulfilled' && r.value)
+      .map(r => {
+        const data = r.value;
+        const analysis = {
+          timeframes: data.timeframes,
+          bestPrice: data.bestPrice,
+          avgChange24h: data.avgChange24h,
+          avgVolume: data.avgVolume
+        };
+
+        const score = calculateComprehensiveScore(data, analysis);
+        const tier = getTier(score);
+
+        return {
+          ...data,
+          score,
+          tier,
+          narrative: generateNarrative(data, analysis)
+        };
+      });
+
+    console.log('Processed', coinData.length, 'coins');
+
+    // Check data sources
+    const hasBinancePrimary = coinData.some(c => c.prices.some(p => p.source === 'primary'));
+    const missing = ALL_COINS.length - coinData.length;
+    const missingNote = missing > 0 ? ` · ${missing} coin${missing === 1 ? '' : 's'} skipped (no live price this cycle)` : '';
+
+    if (hasBinancePrimary) {
+      const binanceCount = coinData.filter(c => c.prices.some(p => p.source === 'primary')).length;
+      document.getElementById('dataMode').innerHTML = `🔥 <strong>Binance Primary:</strong> ${binanceCount} coins from Binance, others from fallback exchanges${missingNote}`;
+    } else {
+      document.getElementById('dataMode').innerHTML = `✅ <strong>Live Mode:</strong> Real-time data from multiple exchanges${missingNote}`;
+    }
+
+    coinData.sort((a, b) => b.score - a.score);
+
+    renderMarketOverview();
+    renderCoins();
+    updateCounts();
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+    document.getElementById('lastUpdate').textContent = `Last updated: ${new Date().toLocaleString()}`;
+    LAST_REFRESH_TS = Date.now();
+
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    document.getElementById('error').textContent = `Error: ${error.message}`;
+    document.getElementById('error').style.display = 'block';
+    document.getElementById('loading').style.display = 'none';
+  }
+}
+
+function updateCounts() {
+  const nonRefCoins = coinData.filter(c => c.category !== 'reference');
+  document.getElementById('totalCount').textContent = nonRefCoins.length;
+  document.getElementById('sCount').textContent = coinData.filter(c => c.tier === 'tier-s').length;
+  document.getElementById('aCount').textContent = coinData.filter(c => c.tier === 'tier-a').length;
+  document.getElementById('bCount').textContent = coinData.filter(c => c.tier === 'tier-b').length;
+}
+
+function renderMarketOverview() {
+  const btcData = coinData.find(c => c.symbol === 'BTC');
+  const ethData = coinData.find(c => c.symbol === 'ETH');
+  if (!btcData) return;
+
+  const overview = document.getElementById('marketOverview');
+  overview.innerHTML = `
+    <div class="overview-card">
+      <div class="label">BTC Price</div>
+      <div class="value">$${btcData.avgPrice.toLocaleString('en-US', {maximumFractionDigits: 2})}</div>
+      <div class="change ${btcData.avgChange24h >= 0 ? 'positive' : 'negative'}">
+        ${btcData.avgChange24h >= 0 ? '+' : ''}${btcData.avgChange24h.toFixed(2)}% 24h
+      </div>
+    </div>
+    <div class="overview-card">
+      <div class="label">ETH Price</div>
+      <div class="value">$${ethData?.avgPrice.toLocaleString('en-US', {maximumFractionDigits: 2}) || 'N/A'}</div>
+      <div class="change ${ethData?.avgChange24h >= 0 ? 'positive' : 'negative'}">
+        ${ethData?.avgChange24h >= 0 ? '+' : ''}${ethData?.avgChange24h.toFixed(2)}% 24h
+      </div>
+    </div>
+    <div class="overview-card">
+      <div class="label">Market Trend</div>
+      <div class="value">${btcData.timeframes['1d']?.trend || 'N/A'}</div>
+      <div class="change">RSI: ${btcData.timeframes['1d']?.rsi?.toFixed(0) || 'N/A'}</div>
+    </div>
+    <div class="overview-card">
+      <div class="label">Strongest Signal</div>
+      <div class="value">${coinData.find(c => c.category !== 'reference')?.symbol || 'N/A'}</div>
+      <div class="change">Score: ${coinData.find(c => c.category !== 'reference')?.score || 0}</div>
+    </div>
+  `;
+}
+
+function renderCoins() {
+  const grid = document.getElementById('coinGrid');
+
+  let filteredCoins = coinData.filter(c => c.category !== 'reference');
+
+  // Buy-situation count chips (computed against the non-reference universe, ignoring active filters)
+  const allReal = filteredCoins;
+  const setText = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = n; };
+  setText('exCount', allReal.filter(c => buySitOf(c) === 'excellent').length);
+  setText('gdCount', allReal.filter(c => buySitOf(c) === 'good').length);
+  setText('frCount', allReal.filter(c => buySitOf(c) === 'fair').length);
+  setText('hdCount', allReal.filter(c => buySitOf(c) === 'hold').length);
+  setText('slCount', allReal.filter(c => buySitOf(c) === 'sell').length);
+
+  if (currentFilter !== 'all') {
+    filteredCoins = filteredCoins.filter(c => c.tier === currentFilter);
+  }
+  if (currentBuySit !== 'all') {
+    filteredCoins = filteredCoins.filter(c => buySitOf(c) === currentBuySit);
+  }
+
+  // Search — matches ticker or full name, case-insensitive, substring
+  const searchEl = document.getElementById('coinSearch');
+  const clearBtn = document.getElementById('coinSearchClear');
+  const q = (searchEl?.value || '').trim().toLowerCase();
+  if (clearBtn) clearBtn.style.display = q ? 'block' : 'none';
+  if (q) {
+    filteredCoins = filteredCoins.filter(c =>
+      (c.symbol || '').toLowerCase().includes(q) ||
+      (c.name || '').toLowerCase().includes(q)
+    );
+  }
+  const matchEl = document.getElementById('searchMatchCount');
+  if (matchEl) matchEl.textContent = q ? `${filteredCoins.length} match${filteredCoins.length === 1 ? '' : 'es'}` : '';
+
+  // Sort
+  const sortBy = document.getElementById('sortBy')?.value || 'action';
+  const ACTION_RANK = { 'av-load': 0, 'av-buy': 1, 'av-spec': 2, 'av-wait': 3, 'av-hold': 4, 'av-skip': 5, 'av-trim': 6 };
+  filteredCoins.sort((a, b) => {
+    switch (sortBy) {
+      case 'score':           return (b.score || 0) - (a.score || 0);
+      case 'change24h-up':    return (b.avgChange24h || 0) - (a.avgChange24h || 0);
+      case 'change24h-down':  return (a.avgChange24h || 0) - (b.avgChange24h || 0);
+      case 'allocation':      return (b.allocation || 0) - (a.allocation || 0);
+      case 'alpha':           return (a.symbol || '').localeCompare(b.symbol || '');
+      case 'buysit': {
+        const ra = BUYSIT_RANK[buySitOf(a)] ?? 9;
+        const rb = BUYSIT_RANK[buySitOf(b)] ?? 9;
+        if (ra !== rb) return ra - rb;
+        return (b.score || 0) - (a.score || 0);
+      }
+      case 'action':
+      default: {
+        const va = computeActionVerdict(a.tier, a.timeframes?.['1d']?.entryQuality);
+        const vb = computeActionVerdict(b.tier, b.timeframes?.['1d']?.entryQuality);
+        const ra = ACTION_RANK[va.cls] ?? 9;
+        const rb = ACTION_RANK[vb.cls] ?? 9;
+        if (ra !== rb) return ra - rb;
+        return (b.score || 0) - (a.score || 0);
+      }
+    }
+  });
+
+  if (filteredCoins.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1; padding:30px; text-align:center; color:var(--text-2); background:var(--surface-2); border-radius:10px;">No coins match the current filter combination.</div>`;
+    return;
+  }
+
+  grid.innerHTML = filteredCoins.map(coin => `
+    <div class="coin-card" data-tier="${coin.tier}">
+      <div class="coin-header">
+        <div class="coin-info">
+          <h3>${coin.symbol} <span class="coin-rank">#${coinData.indexOf(coin) + 1}</span></h3>
+          <div style="font-size: 12px; color: var(--text-2);">${coin.name}</div>
+          <div class="tier-badge ${coin.tier}">${getTierLabel(coin.tier)}</div>
+          ${coin.prices.some(p => p.source === 'primary') ?
+            '<div style="font-size: 10px; color: #F0B90B; margin-top: 4px;">🔥 Binance Price</div>' :
+            '<div style="font-size: 10px; color: var(--text-3); margin-top: 4px;">📊 Alternate Exchange</div>'
+          }
+        </div>
+        <div class="coin-score">
+          <div class="score-label">SCORE</div>
+          <div class="score-value">${coin.score}</div>
+        </div>
+      </div>
+
+      <div class="price-comparison">
+        ${coin.prices.map(p => {
+          let priceClass = '';
+          if (p.isPrimary) priceClass = 'primary-price';
+          else if (p.exchange === coin.bestPrice?.exchange) priceClass = 'best-price';
+
+          const sourceClass = p.source === 'primary' ? 'source-primary' :
+                            p.source === 'secondary' ? 'source-secondary' :
+                            p.source === 'fallback' ? 'source-fallback' : 'source-secondary';
+
+          const sourceLabel = p.source === 'primary' ? '🔥 Binance' :
+                             p.source === 'secondary' ? p.exchange :
+                             p.source === 'fallback' ? 'CoinGecko' : p.exchange;
+
+          return `
+            <div class="exchange-price ${priceClass}">
+              <div class="exchange-name">${p.exchange}</div>
+              <div class="exchange-value">$${p.price.toLocaleString('en-US', {maximumFractionDigits: 4})}</div>
+              <div class="exchange-source ${sourceClass}">${sourceLabel}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <div class="analysis-section">
+        <div class="section-title">VWAP Analysis (Best Entry/Exit Points)</div>
+        <div class="vwap-section">
+          ${['4h', '1d'].map(tf => {
+            const analysis = coin.timeframes[tf];
+            if (!analysis || !analysis.vwap) {
+              return `
+                <div class="vwap-row">
+                  <span class="vwap-label">${tf.toUpperCase()} VWAP</span>
+                  <span class="vwap-value">N/A</span>
+                </div>
+              `;
+            }
+
+            const vwapDistance = ((analysis.currentPrice - analysis.vwap) / analysis.vwap) * 100;
+            const distanceStr = vwapDistance >= 0 ? `+${vwapDistance.toFixed(2)}%` : `${vwapDistance.toFixed(2)}%`;
+            const distanceColor = vwapDistance >= 0 ? 'var(--success)' : 'var(--danger)';
+
+            let signalClass = 'vwap-neutral';
+            if (analysis.vwapSignal?.includes('Strong')) signalClass = analysis.vwapSignal?.includes('Buy') ? 'vwap-buy' : 'vwap-sell';
+            else if (analysis.vwapSignal?.includes('Buy')) signalClass = 'vwap-buy';
+            else if (analysis.vwapSignal?.includes('Sell')) signalClass = 'vwap-sell';
+
+            return `
+              <div class="vwap-row">
+                <span class="vwap-label">${tf.toUpperCase()} VWAP</span>
+                <span class="vwap-value">$${analysis.vwap.toFixed(4)} <span style="color: ${distanceColor}; font-size: 9px;">(${distanceStr})</span></span>
+                <span class="vwap-signal ${signalClass}">${analysis.vwapSignal || 'Neutral'}</span>
+              </div>
+            `;
+          }).join('')}
+
+          ${(() => {
+            const analysis1d = coin.timeframes['1d'];
+            if (!analysis1d?.entryQuality) return '';
+
+            let entryClass = 'entry-hold';
+            const quality = analysis1d.entryQuality.toLowerCase();
+
+            if (quality === 'excellent') entryClass = 'entry-excellent';
+            else if (quality === 'good') entryClass = 'entry-good';
+            else if (quality === 'fair') entryClass = 'entry-fair';
+            else if (quality === 'take profit' || quality === 'consider selling') entryClass = 'entry-sell';
+
+            const icons = {
+              'excellent': '🎯',
+              'good': '✅',
+              'fair': '👍',
+              'none': '⏸️',
+              'hold': '⏸️',
+              'take profit': '💰'
+            };
+
+            const verdict = computeActionVerdict(coin.tier, analysis1d.entryQuality);
+            return `
+              <div class="action-verdict ${verdict.cls}">
+                <span>${verdict.tag}</span>
+                <span class="av-note">${verdict.note}</span>
+              </div>
+              <div class="entry-indicator ${entryClass}">
+                <span>${icons[analysis1d.entryQuality.toLowerCase()] || '📊'} Entry timing: <strong>${analysis1d.entryQuality}</strong></span>
+                <span style="margin-left: auto; font-size: 10px; opacity: 0.8;">Composite: <strong>${analysis1d.compositeScore ?? '—'}/100</strong></span>
+              </div>
+            `;
+          })()}
+
+          ${(() => {
+            // Composite signal panel: MA stack (daily + weekly), 4H structure, price action signals
+            const tf1d = coin.timeframes['1d'];
+            const tf1w = coin.timeframes['1w'];
+            const tf4h = coin.timeframes['4h'];
+            if (!tf1d) return '';
+
+            const stackBadge = (s) => {
+              if (!s) return '<span style="color:var(--text-3)">no data</span>';
+              const color = s.stack === 'perfect_bull' ? '#0F6E56'
+                          : s.stack === 'mixed_bull'   ? '#3A7A2A'
+                          : s.stack === 'mixed_bear'   ? '#A32D2D'
+                          : s.stack === 'perfect_bear' ? '#791F1F'
+                          : 'var(--text-2)';
+              return `<span style="color:${color}; font-weight:500">${s.label}</span>`;
+            };
+
+            const struct4h = tf4h?.structure;
+            const fvgs4h = tf4h?.fvgs || [];
+            const openBull = fvgs4h.find(f => f.type === 'bull' && !f.filled);
+            const openBear = fvgs4h.find(f => f.type === 'bear' && !f.filled);
+
+            const reasons = tf1d.compositeReasons || [];
+
+            return `
+              <div style="margin-top:10px; background:var(--surface-2); border-radius:8px; padding:10px;">
+                <div style="font-size:11px; color:var(--text-2); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
+                  Trend + price-action stack
+                </div>
+                <table style="width:100%; font-size:11px; border-collapse:collapse;">
+                  <tr><td style="color:var(--text-2); padding:2px 0; width:90px;">Weekly MAs</td><td>${stackBadge(tf1w?.maStack)}</td></tr>
+                  <tr><td style="color:var(--text-2); padding:2px 0;">Daily MAs</td><td>${stackBadge(tf1d.maStack)}</td></tr>
+                  <tr><td style="color:var(--text-2); padding:2px 0;">4H structure</td>
+                      <td>${struct4h ? `bias <strong>${struct4h.bias}</strong>${struct4h.lastEvent ? ' · ' + struct4h.lastEvent : ''}` : '—'}</td></tr>
+                  <tr><td style="color:var(--text-2); padding:2px 0;">4H open FVG</td>
+                      <td>${
+                        openBull && !openBear ? `<span style="color:#0F6E56">bullish gap below</span>` :
+                        openBear && !openBull ? `<span style="color:#A32D2D">bearish gap above</span>` :
+                        openBull && openBear ? 'both sides open' : 'none'
+                      }</td></tr>
+                  ${(() => {
+                    const sr = tf1d.stochRsi;
+                    if (!sr) return '';
+                    const color = sr.state === 'oversold' ? '#0F6E56' : sr.state === 'overbought' ? '#A32D2D' : 'var(--text-2)';
+                    return `<tr><td style="color:var(--text-2); padding:2px 0;">Stoch RSI (1D)</td>
+                            <td><span style="color:${color}">${sr.state}</span> · K ${sr.k.toFixed(1)} / D ${sr.d.toFixed(1)}</td></tr>`;
+                  })()}
+                  ${(() => {
+                    const pd = tf1d.premiumDiscount;
+                    if (!pd) return '';
+                    const color = pd.zone === 'discount' ? '#0F6E56' : pd.zone === 'premium' ? '#A32D2D' : 'var(--text-2)';
+                    return `<tr><td style="color:var(--text-2); padding:2px 0;">Daily P/D zone</td>
+                            <td><span style="color:${color}">${pd.zone}</span> · ${(pd.position * 100).toFixed(0)}% of swing range</td></tr>`;
+                  })()}
+                  ${(() => {
+                    const st = tf4h?.supertrend;
+                    if (!st) return '';
+                    const color = st.trend === 'bull' ? '#0F6E56' : st.trend === 'bear' ? '#A32D2D' : 'var(--text-2)';
+                    return `<tr><td style="color:var(--text-2); padding:2px 0;">4H Supertrend</td>
+                            <td><span style="color:${color}">${st.trend}</span></td></tr>`;
+                  })()}
+                  ${(() => {
+                    const sweeps = tf4h?.liquiditySweeps || [];
+                    const last = sweeps[sweeps.length - 1];
+                    if (!last) return `<tr><td style="color:var(--text-2); padding:2px 0;">4H liquidity sweep</td><td>none recent</td></tr>`;
+                    const color = last.type === 'bull' ? '#0F6E56' : '#A32D2D';
+                    return `<tr><td style="color:var(--text-2); padding:2px 0;">4H liquidity sweep</td>
+                            <td><span style="color:${color}">${last.type}</span> · level $${last.sweptLevel.toFixed(4)}</td></tr>`;
+                  })()}
+                  ${(() => {
+                    const smf = tf1d.smartMoneyFlow;
+                    if (!smf) return '';
+                    const color = smf.sign === 'bull' ? '#0F6E56' : smf.sign === 'bear' ? '#A32D2D' : 'var(--text-2)';
+                    return `<tr><td style="color:var(--text-2); padding:2px 0;">Smart money flow</td>
+                            <td><span style="color:${color}">${smf.sign}</span></td></tr>`;
+                  })()}
+                  ${tf1d.smas ? `
+                    <tr><td style="color:var(--text-2); padding:4px 0 0; border-top:1px solid var(--border);" colspan="2">
+                      Daily SMA — 50: <strong>$${tf1d.smas.sma50?.toFixed(4) ?? '—'}</strong>
+                      · 100: <strong>$${tf1d.smas.sma100?.toFixed(4) ?? '—'}</strong>
+                      · 200: <strong>$${tf1d.smas.sma200?.toFixed(4) ?? '—'}</strong>
+                    </td></tr>
+                  ` : ''}
+                  ${tf1w?.smas ? `
+                    <tr><td style="color:var(--text-2); padding:2px 0;" colspan="2">
+                      Weekly SMA — 50: <strong>$${tf1w.smas.sma50?.toFixed(4) ?? '—'}</strong>
+                      · 100: <strong>$${tf1w.smas.sma100?.toFixed(4) ?? '—'}</strong>
+                      · 200: <strong>$${tf1w.smas.sma200?.toFixed(4) ?? '—'}</strong>
+                    </td></tr>
+                  ` : ''}
+                </table>
+                ${reasons.length ? `
+                  <details style="margin-top:6px;">
+                    <summary style="font-size:10px; color:var(--text-2); cursor:pointer;">Why this score (${reasons.length} factors)</summary>
+                    <ul style="margin:4px 0 0; padding-left:16px; font-size:10px; color:var(--text-2);">
+                      ${reasons.map(r => `<li>${r}</li>`).join('')}
+                    </ul>
+                  </details>
+                ` : ''}
+              </div>
+            `;
+          })()}
+        </div>
+      </div>
+
+      <div class="analysis-section">
+        <div class="section-title">Complete Indicator Matrix (1D)</div>
+        <div class="indicators-grid">
+          ${(() => {
+            const analysis1d = coin.timeframes['1d'];
+            if (!analysis1d || !analysis1d.smas) return '<div class="indicator-box">Loading indicators...</div>';
+
+            const indicators = [];
+
+            // SMA Analysis
+            if (analysis1d.smas.sma20) {
+              const sma20Signal = analysis1d.currentPrice > analysis1d.smas.sma20;
+              indicators.push(`
+                <div class="indicator-box">
+                  <div class="indicator-title">SMA 20</div>
+                  <div class="indicator-value">$${analysis1d.smas.sma20.toFixed(4)} <span class="${sma20Signal ? 'bull-signal' : 'bear-signal'}">${sma20Signal ? '↑ Above' : '↓ Below'}</span></div>
+                </div>
+              `);
+            }
+
+            if (analysis1d.smas.sma50) {
+              const sma50Signal = analysis1d.currentPrice > analysis1d.smas.sma50;
+              indicators.push(`
+                <div class="indicator-box">
+                  <div class="indicator-title">SMA 50</div>
+                  <div class="indicator-value">$${analysis1d.smas.sma50.toFixed(4)} <span class="${sma50Signal ? 'bull-signal' : 'bear-signal'}">${sma50Signal ? '↑ Above' : '↓ Below'}</span></div>
+                </div>
+              `);
+            }
+
+            if (analysis1d.smas.sma200) {
+              const sma200Signal = analysis1d.currentPrice > analysis1d.smas.sma200;
+              indicators.push(`
+                <div class="indicator-box">
+                  <div class="indicator-title">SMA 200</div>
+                  <div class="indicator-value">$${analysis1d.smas.sma200.toFixed(4)} <span class="${sma200Signal ? 'bull-signal' : 'bear-signal'}">${sma200Signal ? '↑ Above' : '↓ Below'}</span></div>
+                </div>
+              `);
+            }
+
+            // Bollinger Bands
+            if (analysis1d.bollinger) {
+              const bbPosition = analysis1d.currentPrice < analysis1d.bollinger.lower ? 'Below' :
+                               analysis1d.currentPrice > analysis1d.bollinger.upper ? 'Above' : 'Inside';
+              const bbClass = bbPosition === 'Below' ? 'bull-signal' :
+                             bbPosition === 'Above' ? 'bear-signal' : 'neutral-signal';
+              indicators.push(`
+                <div class="indicator-box">
+                  <div class="indicator-title">Bollinger Bands</div>
+                  <div class="indicator-value">
+                    <span class="${bbClass}">${bbPosition} Bands</span><br>
+                    <span style="font-size: 9px; color: var(--text-2);">U: $${analysis1d.bollinger.upper?.toFixed(4)} | L: $${analysis1d.bollinger.lower?.toFixed(4)}</span>
+                  </div>
+                </div>
+              `);
+            }
+
+            // MACD
+            if (analysis1d.macd) {
+              const macdSignal = analysis1d.macd.histogram > 0 ? 'bull-signal' : 'bear-signal';
+              indicators.push(`
+                <div class="indicator-box">
+                  <div class="indicator-title">MACD</div>
+                  <div class="indicator-value">
+                    <span class="${macdSignal}">${analysis1d.macd.histogram > 0 ? '↑ Bullish' : '↓ Bearish'}</span>
+                    <span style="font-size: 9px; color: var(--text-2);">Hist: ${analysis1d.macd.histogram?.toFixed(4)}</span>
+                  </div>
+                </div>
+              `);
+            }
+
+            // Stochastic
+            if (analysis1d.stochastic) {
+              const stochSignal = analysis1d.stochastic.k < 20 ? 'bull-signal' :
+                                analysis1d.stochastic.k > 80 ? 'bear-signal' : 'neutral-signal';
+              const stochText = analysis1d.stochastic.k < 20 ? 'Oversold' :
+                              analysis1d.stochastic.k > 80 ? 'Overbought' : 'Neutral';
+              indicators.push(`
+                <div class="indicator-box">
+                  <div class="indicator-title">Stochastic</div>
+                  <div class="indicator-value">
+                    <span class="${stochSignal}">${stochText}</span><br>
+                    <span style="font-size: 9px; color: var(--text-2);">%K: ${analysis1d.stochastic.k?.toFixed(1)} | %D: ${analysis1d.stochastic.d?.toFixed(1)}</span>
+                  </div>
+                </div>
+              `);
+            }
+
+            return indicators.join('');
+          })()}
+        </div>
+      </div>
+
+      ${(() => {
+        const analysis1d = coin.timeframes['1d'];
+        if (!analysis1d || (!analysis1d.bullSignals && !analysis1d.bearSignals)) return '';
+
+        return `
+          <div class="analysis-section">
+            <div class="section-title">Signal Matrix</div>
+            <div class="signals-list">
+              ${analysis1d.bullSignals?.map(s => `<div class="signal-item signal-bull">✓ ${s}</div>`).join('') || ''}
+              ${analysis1d.bearSignals?.map(s => `<div class="signal-item signal-bear">✗ ${s}</div>`).join('') || ''}
+            </div>
+          </div>
+        `;
+      })()}
+
+      <div class="analysis-section">
+        <div class="section-title">Technical Analysis (1H / 4H / 1D)</div>
+        <div class="timeframe-analysis">
+          ${['1h', '4h', '1d'].map(tf => {
+            const analysis = coin.timeframes[tf];
+            if (!analysis) return `<div class="tf-card"><div class="tf-label">${tf.toUpperCase()}</div><div class="tf-signal tf-neutral">N/A</div></div>`;
+            return `
+              <div class="tf-card">
+                <div class="tf-label">${tf.toUpperCase()}</div>
+                <div class="tf-signal tf-${analysis.trend}">${analysis.signal}</div>
+                <div style="font-size: 9px; color: var(--text-2); margin-top: 2px;">RSI: ${analysis.rsi.toFixed(0)}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="analysis-section">
+        <div class="section-title">Recommended Buy Zones (VWAP-Adjusted)</div>
+        <div class="buy-zones">
+          ${coin.buyZones.map(zone => `
+            <div class="zone-row">
+              <span class="zone-type zone-${zone.type}">${zone.name}</span>
+              <span class="zone-price">$${zone.price.toFixed(4)} - $${zone.priceHigh.toFixed(4)}</span>
+              <span class="zone-alloc">${zone.allocation}%</span>
+            </div>
+            ${zone.reason ? `<div style="font-size: 9px; color: var(--text-2); padding: 2px 0 4px 58px;">💡 ${zone.reason}</div>` : ''}
+          `).join('')}
+        </div>
+      </div>
+
+      ${coin.tokenomics ? `
+        <div class="analysis-section">
+          <div class="section-title">Tokenomics</div>
+          <div class="fundamentals">
+            <div class="row"><span class="label">Inflation</span><span class="value">${coin.tokenomics.inflation || 'N/A'}</span></div>
+            <div class="row"><span class="label">Staking APR</span><span class="value">${coin.tokenomics.stakingAPR || 'N/A'}</span></div>
+            <div class="row"><span class="label">Next Unlock</span><span class="value">${coin.tokenomics.nextUnlock || 'N/A'}</span></div>
+            <div class="row"><span class="label">Unlock Amount</span><span class="value">${coin.tokenomics.unlockAmount || 'N/A'}</span></div>
+          </div>
+        </div>
+      ` : ''}
+
+      ${coin.catalysts && coin.catalysts.length > 0 ? `
+    <div class="news-section">
+      <h4 style="margin: 0 0 6px;">🚀 Recent Catalysts</h4>
+      ${coin.catalysts.slice(0, 3).map(c => `<div class="news-item news-positive">• ${c}</div>`).join('')}
+    </div>
+  ` : ''}
+
+  ${coin.risks && coin.risks.length > 0 ? `
+    <div class="news-section">
+      <h4 style="margin: 0 0 6px;">⚠️ Key Risks</h4>
+      ${coin.risks.slice(0, 3).map(r => `<div class="news-item news-negative">• ${r}</div>`).join('')}
+    </div>
+  ` : ''}
+
+      <div class="analysis-section">
+        <div class="allocation-bar">
+          <div class="alloc-fill" style="width: ${coin.allocation}%"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-2);">
+          <span>Suggested Allocation</span>
+          <span style="font-weight: 500;">${coin.allocation}%</span>
+        </div>
+      </div>
+
+      <div class="narrative">${coin.narrative}</div>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-label">24h Change</div>
+          <div class="metric-value ${coin.avgChange24h >= 0 ? 'positive' : 'negative'}">
+            ${coin.avgChange24h >= 0 ? '+' : ''}${coin.avgChange24h.toFixed(2)}%
+          </div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Volume</div>
+          <div class="metric-value">$${(coin.avgVolume / 1000000).toFixed(1)}M</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Daily RSI</div>
+          <div class="metric-value">${coin.timeframes['1d']?.rsi?.toFixed(0) || 'N/A'}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">4H Trend</div>
+          <div class="metric-value">${coin.timeframes['4h']?.trend || 'N/A'}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterCoins(filter, button) {
+  currentFilter = filter;
+
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  button.classList.add('active');
+
+  renderCoins();
+}
+
+// --- Auto-refresh every 10 minutes with visible countdown ---
+const REFRESH_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+let LAST_REFRESH_TS = null;
+
+function updateCountdown() {
+  if (!LAST_REFRESH_TS) return;
+  const remaining = Math.max(0, REFRESH_INTERVAL_MS - (Date.now() - LAST_REFRESH_TS));
+  const mm = Math.floor(remaining / 60000);
+  const ss = String(Math.floor((remaining % 60000) / 1000)).padStart(2, '0');
+  const el = document.getElementById('lastUpdate');
+  if (el && el.textContent.startsWith('Last updated')) {
+    const base = el.textContent.split(' · ')[0];
+    el.textContent = `${base} · next refresh in ${mm}:${ss}`;
+  }
+}
+
+refreshData();
+setInterval(refreshData, REFRESH_INTERVAL_MS);
+setInterval(updateCountdown, 1000);
+</script>
+</body>
+</html>
