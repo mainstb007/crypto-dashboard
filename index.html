@@ -271,6 +271,11 @@
     <button class="filter-btn tier-a" onclick="filterCoins('tier-a', this)">✅ Tier A - Strong Asset (<span id="aCount">0</span>)</button>
     <button class="filter-btn tier-b" onclick="filterCoins('tier-b', this)">👁️ Tier B - Watch (<span id="bCount">0</span>)</button>
   </div>
+  </div>
+
+  <div class="filters" id="clearSelectionContainer" style="display: none;">
+    <span style="align-self:center; font-size:12px; color: var(--text-2); margin-right:8px;">🔍 Selected: <strong id="selectedCoinName" style="color: var(--info-border);"></strong></span>
+    <button class="filter-btn" onclick="clearCoinSelection()" style="background: var(--danger); color: white; border-color: var(--danger);">✕ Clear Selection</button>
 
   <div class="filters" style="margin-top: -4px;">
     <span style="align-self:center; font-size:11px; color: var(--text-2); margin-right:4px;">Search:</span>
@@ -496,6 +501,7 @@ const RISKS = {
 let coinData = [];
 let currentFilter = 'all';
 let currentBuySit = 'all';
+let selectedCoin = null;
 
 // Map a coin's daily entryQuality string to one of: excellent, good, fair, hold, sell
 function buySitOf(coin) {
@@ -2195,6 +2201,11 @@ function renderCoins() {
   const matchEl = document.getElementById('searchMatchCount');
   if (matchEl) matchEl.textContent = q ? `${filteredCoins.length} match${filteredCoins.length === 1 ? '' : 'es'}` : '';
 
+	  // Selected coin filtering
+	  if (selectedCoin) {
+	    filteredCoins = filteredCoins.filter(c => c.symbol === selectedCoin);
+	  }
+
   // Sort
   const sortBy = document.getElementById('sortBy')?.value || 'action';
   const ACTION_RANK = { 'av-load': 0, 'av-buy': 1, 'av-spec': 2, 'av-wait': 3, 'av-hold': 4, 'av-skip': 5, 'av-trim': 6 };
@@ -2232,7 +2243,7 @@ function renderCoins() {
     <div class="coin-card" data-tier="${coin.tier}">
       <div class="coin-header">
         <div class="coin-info">
-          <h3>${coin.symbol} <span class="coin-rank">#${coinData.indexOf(coin) + 1}</span></h3>
+          <h3><span class="coin-ticker" onclick="selectCoin('${coin.symbol}')" style="cursor: pointer; ${selectedCoin === '${coin.symbol}' ? 'color: var(--info-border); font-weight: 700; background: var(--info-bg); padding: 2px 8px; border-radius: 4px;' : ''}">${coin.symbol} <span class="coin-rank">#${coinData.indexOf(coin) + 1}</span></h3>
           <div style="font-size: 12px; color: var(--text-2);">${coin.name}</div>
           <div class="tier-badge ${coin.tier}">${getTierLabel(coin.tier)}</div>
           ${coin.prices.some(p => p.source === 'primary') ?
@@ -2650,6 +2661,21 @@ function filterCoins(filter, button) {
 
   renderCoins();
 }
+
+	function selectCoin(coinSymbol) {
+	  if (selectedCoin === coinSymbol) {
+	    // Toggle off if clicking the same coin
+	    selectedCoin = null;
+	  } else {
+	    selectedCoin = coinSymbol;
+	  }
+	  renderCoins();
+	}
+
+	function clearCoinSelection() {
+	  selectedCoin = null;
+	  renderCoins();
+	}
 
 // --- Auto-refresh every 10 minutes with visible countdown ---
 const REFRESH_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
