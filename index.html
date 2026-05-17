@@ -19,6 +19,19 @@
       --info-border: #85B7EB; --danger: #F09595; --success: #5DCAA5;
     }
   }
+  /* Manual theme overrides */
+  [data-theme="light"] {
+    --bg: #faf9f5; --surface: #fff; --surface-2: #f1efe8;
+    --text: #1a1a17; --text-2: #5f5e5a; --text-3: #888780;
+    --border: rgba(0,0,0,0.10); --info-bg: #E6F1FB; --info-text: #0C447C;
+    --info-border: #378ADD; --danger: #A32D2D; --success: #0F6E56;
+  }
+  [data-theme="dark"] {
+    --bg: #1c1c1a; --surface: #262624; --surface-2: #2c2c2a;
+    --text: #f5f4ee; --text-2: #b4b2a9; --text-3: #888780;
+    --border: rgba(255,255,255,0.10); --info-bg: #042C53; --info-text: #B5D4F4;
+    --info-border: #85B7EB; --danger: #F09595; --success: #5DCAA5;
+  }
   * { box-sizing: border-box; }
   body { background: var(--bg); color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; margin: 0; padding: 20px; line-height: 1.55; }
 
@@ -185,6 +198,35 @@
 
   .disclaimer { background: var(--surface-2); border-radius: 8px; padding: 12px; font-size: 11px; color: var(--text-2); margin-top: 20px; }
   .disclaimer strong { color: var(--text); }
+
+  /* Theme dropdown styles */
+  .theme-option {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 12px 16px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text);
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+  }
+  .theme-option:hover {
+    background: var(--surface-2);
+  }
+  .theme-option.active {
+    background: var(--info-bg);
+    color: var(--info-text);
+    font-weight: 500;
+  }
+  .theme-option:first-child {
+    border-radius: 8px 8px 0 0;
+  }
+  .theme-option:last-child {
+    border-radius: 0 0 8px 8px;
+  }
 </style>
 </head>
 <body>
@@ -194,7 +236,23 @@
     <div class="last-update" id="lastUpdate">Loading...</div>
     <div class="last-update" id="dataMode" style="margin-top: 4px;"></div>
   </div>
-  <button class="refresh-btn" onclick="refreshData()">🔄 Refresh Now</button>
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <div style="position: relative;">
+      <button class="refresh-btn" onclick="toggleThemeDropdown()" id="themeBtn">🌓 Theme</button>
+      <div id="themeDropdown" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; min-width: 140px;">
+        <button class="theme-option" onclick="setTheme('system')" id="themeSystem">
+          <span style="margin-right: 8px;">💻</span> System
+        </button>
+        <button class="theme-option" onclick="setTheme('light')" id="themeLight">
+          <span style="margin-right: 8px;">☀️</span> Light
+        </button>
+        <button class="theme-option" onclick="setTheme('dark')" id="themeDark">
+          <span style="margin-right: 8px;">🌙</span> Dark
+        </button>
+      </div>
+    </div>
+    <button class="refresh-btn" onclick="refreshData()">🔄 Refresh Now</button>
+  </div>
 </div>
 
 <div id="loading" class="loading">
@@ -271,6 +329,56 @@
 </div>
 
 <script>
+// Theme management
+let currentTheme = localStorage.getItem('theme') || 'system';
+
+function setTheme(theme) {
+  currentTheme = theme;
+  localStorage.setItem('theme', theme);
+  applyTheme();
+  updateThemeUI();
+}
+
+function applyTheme() {
+  const html = document.documentElement;
+
+  // Remove any existing theme overrides
+  if (currentTheme === 'system') {
+    // Remove manual override and let system preference work
+    html.removeAttribute('data-theme');
+  } else if (currentTheme === 'light') {
+    // Force light mode
+    html.setAttribute('data-theme', 'light');
+  } else if (currentTheme === 'dark') {
+    // Force dark mode
+    html.setAttribute('data-theme', 'dark');
+  }
+}
+
+function updateThemeUI() {
+  // Update active state in dropdown
+  document.querySelectorAll('.theme-option').forEach(btn => btn.classList.remove('active'));
+  document.getElementById('theme' + currentTheme.charAt(0).toUpperCase() + currentTheme.slice(1)).classList.add('active');
+}
+
+function toggleThemeDropdown() {
+  const dropdown = document.getElementById('themeDropdown');
+  dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+  const dropdown = document.getElementById('themeDropdown');
+  const themeBtn = document.getElementById('themeBtn');
+  if (dropdown && themeBtn && !themeBtn.contains(event.target) && !dropdown.contains(event.target)) {
+    dropdown.style.display = 'none';
+  }
+});
+
+// Initialize theme on page load
+applyTheme();
+updateThemeUI();
+
 // Comprehensive coin list from Profile_1789c.txt
 const ALL_COINS = [
   // Reference coins
