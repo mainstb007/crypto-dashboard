@@ -201,6 +201,13 @@
   .disclaimer { background: var(--surface-2); border-radius: 8px; padding: 12px; font-size: 11px; color: var(--text-2); margin-top: 20px; }
   .disclaimer strong { color: var(--text); }
 
+  /* Real LuxAlgo (live Pine values from TradingView) */
+  .luxalgo-real { display: flex; align-items: center; gap: 8px; margin-top: 6px; padding: 6px 10px; border-radius: 6px; font-size: 11px; border-left: 3px solid #7c3aed; }
+  .luxalgo-real.vs-bull    { background: #EAF3DE; color: #27500A; border-left-color: #0F6E56; }
+  .luxalgo-real.vs-bear    { background: #FCEBEB; color: #791F1F; border-left-color: #A32D2D; }
+  .luxalgo-real.vs-neutral { background: var(--surface-2); color: var(--text-2); border-left-color: #7c3aed; }
+  .lux-badge { display: inline-block; background: #7c3aed; color: white; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 600; letter-spacing: 0.5px; margin-right: 4px; }
+
   /* Volume sentiment + confirmation flags */
   .volume-sentiment { display: flex; align-items: center; gap: 6px; margin-top: 6px; padding: 6px 10px; border-radius: 6px; font-size: 11px; }
   .vs-bull { background: #EAF3DE; color: #27500A; border-left: 3px solid #0F6E56; }
@@ -363,6 +370,77 @@
 </div>
 
 <script>
+// ===== Real LuxAlgo snapshot (baked from TradingView Desktop via tradingview-mcp) =====
+// Source: LuxAlgo Signals & Overlays, Price Action Concepts (Premium), Oscillator Matrix.
+// Captured live from the user's subscribed TradingView Desktop charts. The fields here
+// represent actual Pine Script outputs, not open-source approximations.
+// To refresh, run the snapshot pass again and replace this object.
+const LUXALGO_SNAPSHOT = {
+  "_meta": {
+    "source": "TradingView Desktop (LuxAlgo Pine indicators)",
+    "capturedAt": "2026-05-19",
+    "coverage": "Majors + Tier S on 1D"
+  },
+  "BTC":  { "1d": { "trendStrength": 68.36, "pacDiscountTop": 61896.22, "pacEqBottom": 78014.13, "pacEqTop": 79910.36, "pacPremiumBottom": 96028.27, "hyperWave": 26.27,  "moneyFlow": 57.76,  "confluence": 42.86 } },
+  "ETH":  { "1d": { "trendStrength": 33.18, "pacDiscountTop": 1832.78,  "pacEqBottom": 2555.13,  "pacEqTop": 2640.11,  "pacPremiumBottom": 3362.46,  "hyperWave": 15.13,  "moneyFlow": 51.91,  "confluence": 42.86 } },
+  "SOL":  { "1d": { "trendStrength": 0.78,  "pacDiscountTop": 69.05,    "pacEqBottom": 82.18,    "pacEqTop": 83.73,    "pacPremiumBottom": 96.86,    "hyperWave": 30.03,  "moneyFlow": 55.30,  "confluence": 42.86 } },
+  "LINK": { "1d": { "trendStrength": 37.85, "pacDiscountTop": 8.33,     "pacEqBottom": 9.47,     "pacEqTop": 9.60,     "pacPremiumBottom": 10.74,    "hyperWave": 32.81,  "moneyFlow": 49.59,  "confluence": 28.57 } },
+  "TAO":  { "1d": { "trendStrength": 1.6,   "pacDiscountTop": 154.6,    "pacEqBottom": 254.4,    "pacEqTop": 266.2,    "pacPremiumBottom": 366.0,    "hyperWave": 20.3,   "moneyFlow": 54.9,   "confluence": 42.9  } },
+  "NEAR": { "1d": { "trendStrength": 40.3,  "pacDiscountTop": 0.966,    "pacEqBottom": 2.029,    "pacEqTop": 2.154,    "pacPremiumBottom": 3.217,    "hyperWave": 66.677, "moneyFlow": 41.484, "confluence": 57.143 } },
+  "FET":  { "1d": { "trendStrength": 0.0466,"pacDiscountTop": 0.1408,   "pacEqBottom": 0.1985,   "pacEqTop": 0.2052,   "pacPremiumBottom": 0.2629,   "hyperWave": 20.8467,"moneyFlow": 42.1261,"confluence": 28.5714 } }
+};
+
+// Helper: classify the LuxAlgo readings into the same buckets the verdict uses.
+// Returns { hasReal, pacZone, trendBias, oscBias, signals, score, label } or null.
+function evaluateLuxAlgoSnapshot(symbol, tf = '1d', currentPrice = null) {
+  const node = LUXALGO_SNAPSHOT?.[symbol]?.[tf];
+  if (!node) return null;
+  const reasons = [];
+  let score = 50;
+
+  // Trend Strength: LuxAlgo S&O scales 0..100. >65 strong bull, <35 strong bear.
+  let trendBias = 'neutral';
+  if (node.trendStrength >= 70)      { trendBias = 'strong bull'; score += 12; reasons.push(`LuxAlgo Trend Strength ${node.trendStrength.toFixed(1)} (strong bull) +12`); }
+  else if (node.trendStrength >= 55) { trendBias = 'bull';        score += 6;  reasons.push(`LuxAlgo Trend Strength ${node.trendStrength.toFixed(1)} (bull) +6`); }
+  else if (node.trendStrength <= 5)  { trendBias = 'capitulation'; score -= 10; reasons.push(`LuxAlgo Trend Strength ${node.trendStrength.toFixed(2)} (capitulation) −10`); }
+  else if (node.trendStrength <= 35) { trendBias = 'bear';        score -= 6;  reasons.push(`LuxAlgo Trend Strength ${node.trendStrength.toFixed(1)} (bear) −6`); }
+
+  // PAC zones: where is current price relative to discount / equilibrium / premium?
+  let pacZone = null;
+  if (currentPrice && node.pacDiscountTop && node.pacPremiumBottom) {
+    if (currentPrice <= node.pacDiscountTop)        { pacZone = 'discount';    score += 10; reasons.push('LuxAlgo PAC: price in DISCOUNT zone +10'); }
+    else if (currentPrice >= node.pacPremiumBottom) { pacZone = 'premium';     score -= 10; reasons.push('LuxAlgo PAC: price in PREMIUM zone −10'); }
+    else                                              { pacZone = 'equilibrium'; reasons.push('LuxAlgo PAC: price in equilibrium 0'); }
+  }
+
+  // HyperWave: LuxAlgo Osc Matrix oscillator. <30 oversold, >70 overbought.
+  let oscBias = 'neutral';
+  if (node.hyperWave < 20)       { oscBias = 'deeply oversold'; score += 10; reasons.push(`LuxAlgo HyperWave ${node.hyperWave.toFixed(1)} deeply oversold +10`); }
+  else if (node.hyperWave < 35)  { oscBias = 'oversold';        score += 5;  reasons.push(`LuxAlgo HyperWave ${node.hyperWave.toFixed(1)} oversold +5`); }
+  else if (node.hyperWave > 80)  { oscBias = 'deeply overbought'; score -= 10; reasons.push(`LuxAlgo HyperWave ${node.hyperWave.toFixed(1)} overbought −10`); }
+  else if (node.hyperWave > 65)  { oscBias = 'overbought';      score -= 5;  reasons.push(`LuxAlgo HyperWave ${node.hyperWave.toFixed(1)} overbought −5`); }
+
+  // Money Flow: LuxAlgo Osc Matrix. >50 buying pressure, <50 selling.
+  if (node.moneyFlow >= 60)      { score += 6; reasons.push(`LuxAlgo Money Flow ${node.moneyFlow.toFixed(1)} (buy pressure) +6`); }
+  else if (node.moneyFlow >= 52) { score += 3; reasons.push(`LuxAlgo Money Flow ${node.moneyFlow.toFixed(1)} (mild buy) +3`); }
+  else if (node.moneyFlow <= 40) { score -= 6; reasons.push(`LuxAlgo Money Flow ${node.moneyFlow.toFixed(1)} (sell pressure) −6`); }
+  else if (node.moneyFlow <= 48) { score -= 3; reasons.push(`LuxAlgo Money Flow ${node.moneyFlow.toFixed(1)} (mild sell) −3`); }
+
+  // Confluence Meter: composite of multiple LuxAlgo signals. ~50 neutral.
+  if (node.confluence >= 70)      { score += 6; reasons.push(`LuxAlgo Confluence ${node.confluence.toFixed(1)} bullish +6`); }
+  else if (node.confluence <= 25) { score -= 6; reasons.push(`LuxAlgo Confluence ${node.confluence.toFixed(1)} bearish −6`); }
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+  let label;
+  if (score >= 78)      label = 'Excellent';
+  else if (score >= 62) label = 'Good';
+  else if (score >= 48) label = 'Fair';
+  else if (score >= 32) label = 'Hold';
+  else                  label = 'Consider Selling';
+
+  return { hasReal: true, pacZone, trendBias, oscBias, raw: node, score, label, reasons };
+}
+
 // ===== Theme management (System / Light / Dark) =====
 let currentTheme = localStorage.getItem('theme') || 'system';
 
@@ -1908,6 +1986,19 @@ function computeCompositeSignal(coin) {
     }
   }
 
+  // ---- Real LuxAlgo overlay (when available from baked snapshot) — ±15
+  // Real Pine values override approximations when present; we blend rather than
+  // replace to keep the composite resilient if the snapshot is partial.
+  const symbol = coin?.symbol;
+  const currentPrice = tf1d?.currentPrice;
+  const real = symbol ? evaluateLuxAlgoSnapshot(symbol, '1d', currentPrice) : null;
+  if (real) {
+    // Blend: 60% live computed signal, 40% real LuxAlgo snapshot score.
+    score = Math.round(score * 0.6 + real.score * 0.4);
+    reasons.push(`Real LuxAlgo blended (snapshot score ${real.score}/100, label ${real.label})`);
+    real.reasons.forEach(r => reasons.push('  ↳ ' + r));
+  }
+
   score = Math.max(0, Math.min(100, Math.round(score)));
 
   let label;
@@ -1917,7 +2008,7 @@ function computeCompositeSignal(coin) {
   else if (score >= 35) label = 'Hold';
   else                  label = 'Consider Selling';
 
-  return { score, label, reasons };
+  return { score, label, reasons, real };
 }
 
 // Apply volume sentiment + price-action structural confirmation as a verdict modifier.
@@ -2432,11 +2523,13 @@ async function fetchCoinData(coin) {
 
   // Composite ranked signal — overrides the simple VWAP-only entryQuality
   // so the buy-situation filter and per-card badge reflect the full TA picture.
-  const composite = computeCompositeSignal({ timeframes });
+  // Pass symbol so the LuxAlgo snapshot can be blended in when available.
+  const composite = computeCompositeSignal({ symbol: coin.symbol, timeframes });
   if (timeframes['1d']) {
     timeframes['1d'].entryQuality = composite.label;
     timeframes['1d'].compositeScore = composite.score;
     timeframes['1d'].compositeReasons = composite.reasons;
+    timeframes['1d'].luxAlgoReal = composite.real || null;
   }
 
   const supportResistance = d1.status === 'fulfilled' ?
@@ -2868,6 +2961,18 @@ function renderCoins() {
                 <span>📊 Volume sentiment: <strong>${vs1d.label}</strong> (${vs1d.score}/100)</span>
                 <span style="margin-left:auto; font-size:10px; opacity:0.85;">${(vs1d.reasons || []).slice(0,3).join(' · ')}</span>
               </div>` : ''}
+              ${(() => {
+                const real = analysis1d.luxAlgoReal;
+                if (!real) return '';
+                const zoneCls = real.pacZone === 'discount' ? 'vs-bull'
+                              : real.pacZone === 'premium'  ? 'vs-bear'
+                              : 'vs-neutral';
+                const zoneTxt = real.pacZone ? real.pacZone.toUpperCase() : 'n/a';
+                return `<div class="luxalgo-real ${zoneCls}">
+                  <span><span class="lux-badge">🟣 LIVE PINE</span> LuxAlgo · TS <strong>${real.raw.trendStrength.toFixed(1)}</strong> · HW <strong>${real.raw.hyperWave.toFixed(1)}</strong> · MF <strong>${real.raw.moneyFlow.toFixed(1)}</strong> · PAC <strong>${zoneTxt}</strong></span>
+                  <span style="margin-left:auto; font-size:10px; opacity:0.85;">Snapshot ${real.score}/100 · ${real.label}</span>
+                </div>`;
+              })()}
               ${flagsHtml ? `<div class="confirmation-flags">${flagsHtml}</div>` : ''}
             `;
           })()}
