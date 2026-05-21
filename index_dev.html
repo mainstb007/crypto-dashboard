@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Crypto Trading Dashboard - DEV MODE (Mock Data)</title>
+<style>
+  :root {
+    --bg: #faf9f5; --surface: #fff; --surface-2: #f1efe8;
+    --text: #1a1a17; --text-2: #5f5e5a; --text-3: #888780;
+    --border: rgba(0,0,0,0.10); --info-bg: #E6F1FB; --info-text: #0C447C;
+    --info-border: #378ADD; --danger: #A32D2D; --success: #0F6E56;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a; --surface: #262624; --surface-2: #2c2c2a;
+      --text: #f5f4ee; --text-2: #b4b2a9; --text-3: #888780;
+      --border: rgba(255,255,255,0.10); --info-bg: #042C53; --info-text: #B5D4F4;
+      --info-border: #85B7EB; --danger: #F09595; --success: #5DCAA5;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; margin: 0; padding: 20px; line-height: 1.55; }
+
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+  .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+  .dev-badge { background: #FFA500; color: white; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+  .refresh-btn { background: var(--info-border); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 500; }
+  .refresh-btn:hover { opacity: 0.9; }
+  .last-update { font-size: 12px; color: var(--text-2); }
+
+  .market-overview { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .overview-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .overview-card .label { font-size: 11px; color: var(--text-2); margin-bottom: 4px; }
+  .overview-card .value { font-size: 20px; font-weight: 600; }
+  .overview-card .change { font-size: 12px; margin-top: 4px; }
+  .positive { color: var(--success); }
+  .negative { color: var(--danger); }
+
+  .loading { text-align: center; padding: 40px; color: var(--text-2); }
+  .error { background: rgba(163,45,45,0.12); color: var(--danger); border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+
+  .filters { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-btn {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+    color: var(--text);
+  }
+  .filter-btn:hover { background: var(--surface); }
+  .filter-btn.active {
+    background: var(--info-bg);
+    color: var(--info-text);
+    border-color: var(--info-border);
+  }
+
+  .coin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; }
+  .coin-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; transition: transform 0.2s; }
+  .coin-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+  .coin-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px; }
+  .coin-info h3 { margin: 0 0 4px; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+  .coin-rank { background: var(--info-bg); color: var(--info-text); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+  .coin-score { text-align: right; }
+  .score-label { font-size: 10px; color: var(--text-2); }
+  .score-value { font-size: 24px; font-weight: 600; color: var(--info-border); }
+  .tier-badge { font-size: 11px; padding: 4px 10px; border-radius: 6px; font-weight: 500; margin-top: 4px; display: inline-block; }
+  .tier-major { background: #FFF4D1; color: #6B5410; border: 1px solid #F0B90B; }
+  .tier-s { background: #E1F5EE; color: #085041; }
+  .tier-a { background: #E6F1FB; color: #0C447C; }
+  .tier-b { background: #F1EFE8; color: #444441; }
+
+  .price-comparison { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+  .exchange-price { background: var(--surface-2); padding: 8px; border-radius: 6px; text-align: center; }
+  .exchange-name { font-size: 10px; color: var(--text-2); }
+  .exchange-value { font-size: 13px; font-weight: 500; }
+  .exchange-diff { font-size: 10px; margin-top: 2px; }
+
+  .narrative { background: var(--surface-2); padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.5; margin-bottom: 12px; }
+  .narrative strong { color: var(--info-text); }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+  .metric { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--surface-2); border-radius: 6px; font-size: 12px; }
+  .metric-name { color: var(--text-2); }
+  .metric-value { font-weight: 500; }
+  .metric-bull { color: var(--success); }
+  .metric-bear { color: var(--danger); }
+
+  .counts { text-align: center; padding: 16px; color: var(--text-2); font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>🚀 Crypto Trading Dashboard <span class="dev-badge">DEV MODE</span></h1>
+    <div id="dataMode" style="font-size: 12px; color: var(--text-2); margin-top: 4px;">
+      🧪 <strong>Mock Data Mode:</strong> Using simulated data for development
+    </div>
+  </div>
+  <div style="text-align: right;">
+    <button class="refresh-btn" onclick="loadMockData()">🔄 Refresh Data</button>
+    <div id="lastUpdate" class="last-update">Last updated: Never</div>
+  </div>
+</div>
+
+<div id="error" class="error" style="display: none;"></div>
+
+<div id="loading" class="loading" style="display: none;">
+  <div class="spinner"></div>
+  <div>Loading cryptocurrency data...</div>
+</div>
+
+<div id="content">
+  <div class="market-overview" id="marketOverview"></div>
+
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterCoins('all')">All Coins <span id="totalCount">(0)</span></button>
+    <button class="filter-btn" onclick="filterCoins('tier-major')">Major <span id="mCount">(0)</span></button>
+    <button class="filter-btn" onclick="filterCoins('tier-s')">Tier S <span id="sCount">(0)</span></button>
+    <button class="filter-btn" onclick="filterCoins('tier-a')">Tier A <span id="aCount">(0)</span></button>
+    <button class="filter-btn" onclick="filterCoins('tier-b')">Tier B <span id="bCount">(0)</span></button>
+  </div>
+
+  <div class="coin-grid" id="coinGrid"></div>
+</div>
+
+<script>
+let coinData = [];
+let currentFilter = 'all';
+
+// Mock data for development
+function getMockData() {
+  return [
+    {
+      symbol: 'BTC',
+      name: 'Bitcoin',
+      avgPrice: 67500,
+      avgChange24h: 2.5,
+      avgVolume: 35000000000,
+      score: 85,
+      tier: 'tier-major',
+      category: 'major',
+      isMajor: true,
+      prices: [
+        { exchange: 'Binance', price: 67520, source: 'primary' },
+        { exchange: 'KuCoin', price: 67510, source: 'fallback' },
+        { exchange: 'Bybit', price: 67530, source: 'fallback' }
+      ],
+      narrative: '<strong>Bitcoin</strong> shows strong momentum with RSI at 58 (neutral zone). Price action remains above key moving averages with 4H structure showing HH/HL bias. Volume analysis indicates accumulation phase.',
+      mtfAnalysis: { rsi: 58, trend: 'bullish', support: 65800, resistance: 69200 }
+    },
+    {
+      symbol: 'ETH',
+      name: 'Ethereum',
+      avgPrice: 3450,
+      avgChange24h: 3.2,
+      avgVolume: 15000000000,
+      score: 78,
+      tier: 'tier-major',
+      category: 'major',
+      isMajor: true,
+      prices: [
+        { exchange: 'Binance', price: 3452, source: 'primary' },
+        { exchange: 'KuCoin', price: 3448, source: 'fallback' },
+        { exchange: 'Bybit', price: 3455, source: 'fallback' }
+      ],
+      narrative: '<strong>Ethereum</strong> displays robust buying pressure with MFI at 62 (bullish zone). Recent breakout above $3,400 resistance confirms continuation pattern. Network activity remains elevated.',
+      mtfAnalysis: { rsi: 62, trend: 'bullish', support: 3320, resistance: 3580 }
+    },
+    {
+      symbol: 'SOL',
+      name: 'Solana',
+      avgPrice: 145,
+      avgChange24h: 5.8,
+      avgVolume: 2800000000,
+      score: 82,
+      tier: 'tier-s',
+      category: 'L1',
+      prices: [
+        { exchange: 'Binance', price: 145.2, source: 'primary' },
+        { exchange: 'KuCoin', price: 144.9, source: 'fallback' },
+        { exchange: 'Bybit', price: 145.5, source: 'fallback' }
+      ],
+      narrative: '<strong>Solana</strong> exhibits exceptional strength with CMF at +0.08 (strong bullish). Price broke above $140 resistance with increasing volume. On-chain metrics show continued ecosystem growth.',
+      mtfAnalysis: { rsi: 68, trend: 'bullish', support: 138, resistance: 152 }
+    },
+    {
+      symbol: 'LINK',
+      name: 'Chainlink',
+      avgPrice: 14.5,
+      avgChange24h: 4.2,
+      avgVolume: 450000000,
+      score: 75,
+      tier: 'tier-s',
+      category: 'infra',
+      prices: [
+        { exchange: 'Binance', price: 14.52, source: 'primary' },
+        { exchange: 'KuCoin', price: 14.48, source: 'fallback' },
+        { exchange: 'Bybit', price: 14.55, source: 'fallback' }
+      ],
+      narrative: '<strong>Chainlink</strong> maintains upward trajectory with stochastic signaling continued momentum. Smart Money Flow shows positive accumulation pattern.',
+      mtfAnalysis: { rsi: 55, trend: 'bullish', support: 13.8, resistance: 15.2 }
+    }
+  ];
+}
+
+function formatPrice(price) {
+  if (price >= 1000) return '$' + price.toLocaleString('en-US', {maximumFractionDigits: 2});
+  if (price >= 1) return '$' + price.toFixed(2);
+  return '$' + price.toFixed(4);
+}
+
+function formatVolume(vol) {
+  if (vol >= 1e9) return '$' + (vol / 1e9).toFixed(1) + 'B';
+  if (vol >= 1e6) return '$' + (vol / 1e6).toFixed(1) + 'M';
+  return '$' + vol.toLocaleString();
+}
+
+function renderMarketOverview() {
+  const btc = coinData.find(c => c.symbol === 'BTC');
+  const eth = coinData.find(c => c.symbol === 'ETH');
+  if (!btc) return;
+
+  const overview = document.getElementById('marketOverview');
+  overview.innerHTML = `
+    <div class="overview-card">
+      <div class="label">BTC Price</div>
+      <div class="value">${formatPrice(btc.avgPrice)}</div>
+      <div class="change ${btc.avgChange24h >= 0 ? 'positive' : 'negative'}">
+        ${btc.avgChange24h >= 0 ? '+' : ''}${btc.avgChange24h.toFixed(2)}% 24h
+      </div>
+    </div>
+    <div class="overview-card">
+      <div class="label">ETH Price</div>
+      <div class="value">${formatPrice(eth?.avgPrice || 0)}</div>
+      <div class="change ${eth?.avgChange24h >= 0 ? 'positive' : 'negative'}">
+        ${eth?.avgChange24h >= 0 ? '+' : ''}${(eth?.avgChange24h || 0).toFixed(2)}% 24h
+      </div>
+    </div>
+    <div class="overview-card">
+      <div class="label">Total Tracked</div>
+      <div class="value">${coinData.length}</div>
+      <div class="label">Active coins</div>
+    </div>
+    <div class="overview-card">
+      <div class="label">Market Status</div>
+      <div class="value" style="font-size: 16px;">🟢 Bullish</div>
+      <div class="label">Risk: Medium</div>
+    </div>
+  `;
+}
+
+function renderCoins() {
+  const filtered = currentFilter === 'all' ? coinData : coinData.filter(c => c.tier === currentFilter);
+  const grid = document.getElementById('coinGrid');
+
+  grid.innerHTML = filtered.map(coin => {
+    const priceClass = coin.avgChange24h >= 0 ? 'positive' : 'negative';
+    const tierLabel = coin.tier === 'tier-major' ? 'Major' :
+                      coin.tier === 'tier-s' ? 'Tier S' :
+                      coin.tier === 'tier-a' ? 'Tier A' : 'Tier B';
+
+    return `
+      <div class="coin-card">
+        <div class="coin-header">
+          <div class="coin-info">
+            <h3>${coin.symbol} <span class="coin-rank">#${coin.symbol === 'BTC' ? '1' : coin.symbol === 'ETH' ? '2' : 'N/A'}</span></h3>
+            <div style="font-size: 12px; color: var(--text-2);">${coin.name}</div>
+            <div class="tier-badge ${coin.tier}">${tierLabel}</div>
+          </div>
+          <div class="coin-score">
+            <div class="score-label">Score</div>
+            <div class="score-value">${coin.score}</div>
+          </div>
+        </div>
+
+        <div class="price-comparison">
+          ${coin.prices.slice(0, 3).map(p => {
+            const diff = ((p.price - coin.avgPrice) / coin.avgPrice * 100).toFixed(2);
+            return `
+              <div class="exchange-price">
+                <div class="exchange-name">${p.exchange}</div>
+                <div class="exchange-value">${formatPrice(p.price)}</div>
+                <div class="exchange-diff ${parseFloat(diff) >= 0 ? 'positive' : 'negative'}">
+                  ${parseFloat(diff) >= 0 ? '+' : ''}${diff}%
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div>
+            <div style="font-size: 10px; color: var(--text-2);">Avg Price</div>
+            <div style="font-size: 16px; font-weight: 600;">${formatPrice(coin.avgPrice)}</div>
+          </div>
+          <div>
+            <div style="font-size: 10px; color: var(--text-2);">24h Change</div>
+            <div class="${priceClass}" style="font-size: 16px; font-weight: 500;">
+              ${coin.avgChange24h >= 0 ? '+' : ''}${coin.avgChange24h.toFixed(2)}%
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 10px; color: var(--text-2);">Volume</div>
+            <div style="font-size: 16px; font-weight: 500;">${formatVolume(coin.avgVolume)}</div>
+          </div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric">
+            <span class="metric-name">RSI (1D)</span>
+            <span class="metric-value ${coin.mtfAnalysis?.rsi > 70 ? 'metric-bull' : coin.mtfAnalysis?.rsi < 30 ? 'metric-bear' : ''}">
+              ${coin.mtfAnalysis?.rsi || 'N/A'}
+            </span>
+          </div>
+          <div class="metric">
+            <span class="metric-name">Trend</span>
+            <span class="metric-value ${coin.mtfAnalysis?.trend === 'bullish' ? 'metric-bull' : coin.mtfAnalysis?.trend === 'bearish' ? 'metric-bear' : ''}">
+              ${coin.mtfAnalysis?.trend || 'Neutral'}
+            </span>
+          </div>
+          <div class="metric">
+            <span class="metric-name">Support</span>
+            <span class="metric-value">${formatPrice(coin.mtfAnalysis?.support || 0)}</span>
+          </div>
+          <div class="metric">
+            <span class="metric-name">Resistance</span>
+            <span class="metric-value">${formatPrice(coin.mtfAnalysis?.resistance || 0)}</span>
+          </div>
+        </div>
+
+        <div class="narrative">${coin.narrative}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateCounts() {
+  document.getElementById('totalCount').textContent = `(${coinData.length})`;
+  document.getElementById('mCount').textContent = `(${coinData.filter(c => c.tier === 'tier-major').length})`;
+  document.getElementById('sCount').textContent = `(${coinData.filter(c => c.tier === 'tier-s').length})`;
+  document.getElementById('aCount').textContent = `(${coinData.filter(c => c.tier === 'tier-a').length})`;
+  document.getElementById('bCount').textContent = `(${coinData.filter(c => c.tier === 'tier-b').length})`;
+}
+
+function filterCoins(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  renderCoins();
+}
+
+async function loadMockData() {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('content').style.display = 'none';
+  document.getElementById('error').style.display = 'none';
+
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 800));
+
+  try {
+    coinData = getMockData();
+    renderMarketOverview();
+    renderCoins();
+    updateCounts();
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+    document.getElementById('lastUpdate').textContent = `Last updated: ${new Date().toLocaleString()}`;
+  } catch (error) {
+    document.getElementById('error').textContent = `Error: ${error.message}`;
+    document.getElementById('error').style.display = 'block';
+    document.getElementById('loading').style.display = 'none';
+  }
+}
+
+// Load data on page load
+loadMockData();
+</script>
+</body>
+</html>
