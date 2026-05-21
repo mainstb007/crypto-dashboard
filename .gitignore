@@ -1,0 +1,13 @@
+# Remove git folders from embedded repos
+crypto-dashboard-deploy/.git/
+tradingview-mcp/.git/
+
+# Node modules (if any)
+node_modules/
+
+# Lock files
+*.lock
+
+# OS files
+.DS_Store
+Thumbs.db
