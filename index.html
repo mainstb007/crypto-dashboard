@@ -387,7 +387,10 @@
   <div style="background: var(--surface); border-radius: 12px; padding: 24px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
       <h2 style="margin: 0; font-size: 24px;">📊 My Portfolio</h2>
-      <button onclick="closePortfolioModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-2);">✕</button>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <button onclick="renderPortfolioPositions()" style="padding: 6px 12px; background: var(--info-border); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500;">🔄 Refresh P&L</button>
+        <button onclick="closePortfolioModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-2);">✕</button>
+      </div>
     </div>
 
     <!-- Add Position Form -->
@@ -434,6 +437,12 @@
         <div style="font-size: 11px; color: var(--text-2); margin-bottom: 4px;">Positions</div>
         <div id="positionCount" style="font-size: 18px; font-weight: 600; color: var(--text);">0</div>
       </div>
+    </div>
+
+    <!-- Last Update Info -->
+    <div style="background: var(--surface-2); padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 11px; color: var(--text-2); display: flex; justify-content: space-between; align-items: center;">
+      <span>Auto-refresh: Every 30 seconds while open</span>
+      <span id="portfolioLastUpdate">Last update: Never</span>
     </div>
 
     <!-- Positions List -->
@@ -3541,20 +3550,30 @@ function openPortfolioPanel() {
   const modal = document.getElementById('portfolioModal');
   if (modal) {
     modal.style.display = 'flex';
+    console.log('Opening portfolio modal');
+
     // Render immediately when opened
     setTimeout(() => renderPortfolioPositions(), 100);
 
-    // Set up auto-refresh every 30 seconds while modal is open
-    if (!window.portfolioRefreshInterval) {
-      window.portfolioRefreshInterval = setInterval(() => {
-        if (modal.style.display !== 'none') {
-          renderPortfolioPositions();
-        } else {
-          clearInterval(window.portfolioRefreshInterval);
-          window.portfolioRefreshInterval = null;
-        }
-      }, 30000); // Refresh every 30 seconds
+    // Clear any existing interval
+    if (window.portfolioRefreshInterval) {
+      clearInterval(window.portfolioRefreshInterval);
+      window.portfolioRefreshInterval = null;
     }
+
+    // Set up auto-refresh every 30 seconds while modal is open
+    console.log('Setting up portfolio auto-refresh (30 seconds)');
+    window.portfolioRefreshInterval = setInterval(() => {
+      const modalCheck = document.getElementById('portfolioModal');
+      if (modalCheck && modalCheck.style.display !== 'none') {
+        console.log('Auto-refreshing portfolio...');
+        renderPortfolioPositions();
+      } else {
+        console.log('Modal closed, clearing interval');
+        clearInterval(window.portfolioRefreshInterval);
+        window.portfolioRefreshInterval = null;
+      }
+    }, 30000); // Refresh every 30 seconds
   }
 }
 
@@ -3632,11 +3651,23 @@ function removePosition(positionId) {
 
 // Render portfolio positions
 function renderPortfolioPositions() {
-  // Only update if portfolio modal is open
+  // Only update if portfolio modal is open and visible
   const portfolioModal = document.getElementById('portfolioModal');
-  if (!portfolioModal || portfolioModal.style.display === 'none') {
+  if (!portfolioModal) {
+    console.log('Portfolio modal not found');
     return;
   }
+
+  const modalDisplay = portfolioModal.style.display;
+  console.log('Portfolio modal display:', modalDisplay);
+
+  // Check if modal is visible (display should be 'flex' when open)
+  if (modalDisplay === 'none' || modalDisplay === '' || modalDisplay === undefined) {
+    console.log('Portfolio modal not visible, skipping update');
+    return;
+  }
+
+  console.log('Updating portfolio positions...');
 
   const portfolio = JSON.parse(localStorage.getItem('cryptoPortfolio') || '[]');
   const positionsList = document.getElementById('positionsList');
@@ -3655,10 +3686,77 @@ function renderPortfolioPositions() {
   let totalValue = 0;
   let totalPnL = 0;
 
+  console.log('Processing portfolio with', portfolio.length, 'positions');
+  console.log('CoinData available:', typeof coinData !== 'undefined' && coinData ? 'Yes (' + coinData.length + ' coins)' : 'No');
+
+  if (typeof coinData === 'undefined' || !coinData) {
+    console.log('WARNING: coinData is not available, using entry prices');
+  }
+
   const positionsHTML = portfolio.map(position => {
     // Find current price from dashboard data
-    const coinDataRow = typeof coinData !== 'undefined' && coinData ? coinData.find(c => c.symbol === position.symbol) : null;
-    const currentPrice = coinDataRow ? coinDataRow.avgPrice : position.entryPrice;
+    let currentPrice = position.entryPrice; // Default to entry price
+    let coinDataRow = null;
+
+    if (typeof coinData !== 'undefined' && coinData) {
+      coinDataRow = coinData.find(c => c.symbol === position.symbol);
+      if (coinDataRow) {
+        currentPrice = coinDataRow.avgPrice;
+        console.log(`Found ${position.symbol} in coinData: $${currentPrice}`);
+      } else {
+        console.log(`${position.symbol} not found in coinData, using entry price`);
+      }
+    }
+
+    console.log(`Position ${position.symbol}: entry=$${position.entryPrice}, current=$${currentPrice}`);
+
+    // Calculate current value and P&L
+    const currentValue = position.amount * currentPrice;
+    const pnl = currentValue - position.value;
+    const pnlPercent = position.entryPrice > 0 ? ((pnl / position.value) * 100) : 0;
+
+    totalValue += currentValue;
+    totalPnL += pnl;
+
+    // Format P&L with color
+    const pnlColor = pnl >= 0 ? 'var(--success)' : 'var(--danger)';
+    const pnlSign = pnl >= 0 ? '+' : '';
+
+    return `
+      <div style="background: var(--surface); padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="flex: 1;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <strong style="font-size: 16px;">${position.symbol}</strong>
+            <span style="font-size: 11px; color: var(--text-2); background: var(--surface-2); padding: 2px 6px; border-radius: 4px;">${position.type.toUpperCase()}</span>
+          </div>
+          <div style="font-size: 12px; color: var(--text-2);">
+            ${position.amount} @ $${position.entryPrice.toLocaleString()} → Now: $${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 14px; font-weight: 600; color: ${pnlColor};">
+            ${pnlSign}$${pnl.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} (${pnlSign}${pnlPercent.toFixed(2)}%)
+          </div>
+          <div style="font-size: 12px; color: var(--text-2); margin-top: 2px;">
+            Value: $${currentValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+          </div>
+          <button onclick="removePosition('${position.id}')" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 12px; margin-top: 4px;">Remove</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  console.log('Portfolio total value: $' + totalValue.toFixed(2));
+  console.log('Portfolio total P&L: $' + totalPnL.toFixed(2));
+
+  positionsList.innerHTML = positionsHTML;
+
+  // Update last update time
+  const lastUpdateEl = document.getElementById('portfolioLastUpdate');
+  if (lastUpdateEl) {
+    const now = new Date();
+    lastUpdateEl.textContent = `Last update: ${now.toLocaleTimeString()}`;
+  }
 
     // Calculate current value and P&L
     const currentValue = position.amount * currentPrice;
