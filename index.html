@@ -2806,7 +2806,13 @@ async function refreshData() {
     renderMajorsPanel();
     renderCoins();
     updateCounts();
-    renderPortfolioPositions(); // Update portfolio with new prices
+
+    // Safe portfolio update - don't let errors break the main dashboard
+    try {
+      renderPortfolioPositions(); // Update portfolio with new prices
+    } catch (portfolioError) {
+      console.warn('Portfolio update failed (non-critical):', portfolioError);
+    }
 
     document.getElementById('loading').style.display = 'none';
     document.getElementById('content').style.display = 'block';
