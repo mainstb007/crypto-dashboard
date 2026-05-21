@@ -1344,7 +1344,7 @@ function detectMarketTrend(candles) {
   }
 }
 
-function analyzeTimeframe(candles) {
+function analyzeTimeframe(candles, timeframe = '1d') {
   try {
     if (!candles || candles.length < 20) {
       return {
@@ -1363,7 +1363,10 @@ function analyzeTimeframe(candles) {
         stochastic: null,
         swings: null,
         dynamicSR: null,
-        marketTrend: null
+        marketTrend: null,
+        timeframe: timeframe,
+        verdict: {},
+        strength: 0
       };
     }
 
@@ -1468,6 +1471,21 @@ function analyzeTimeframe(candles) {
     else if (rsi < 30) signal = 'Oversold';
     else if (rsi > 70) signal = 'Overbought';
 
+    // Enhanced timeframe analysis with verdict
+    const verdict = generateTimeframeVerdict({
+      timeframe,
+      trend,
+      rsi,
+      signal,
+      entryQuality,
+      bullSignals: bullSignals.length,
+      bearSignals: bearSignals.length,
+      currentPrice,
+      smas,
+      vwap,
+      vwapSignal
+    });
+
     return {
       trend,
       rsi,
@@ -1496,7 +1514,10 @@ function analyzeTimeframe(candles) {
       dynamicSR,
       marketTrend,
       bullSignals,
-      bearSignals
+      bearSignals,
+      timeframe,
+      verdict,
+      strength: verdict.strength
     };
   } catch (error) {
     console.error('Timeframe analysis error:', error);
@@ -1519,6 +1540,230 @@ function analyzeTimeframe(candles) {
       marketTrend: null
     };
   }
+}
+
+// ===== Enhanced Multi-Timeframe Verdict System =====
+
+function generateTimeframeVerdict(data) {
+  const { timeframe, trend, rsi, signal, entryQuality, bullSignals, bearSignals, currentPrice, smas, vwap, vwapSignal } = data;
+
+  let verdict = {
+    timeframe: timeframe,
+    action: 'HOLD',
+    strength: 50,
+    confidence: 'Medium',
+    reasons: [],
+    indicators: {},
+    recommendation: ''
+  };
+
+  // Timeframe-specific analysis
+  switch(timeframe) {
+    case '1h':
+      verdict = analyze1HourTimeframe(data);
+      break;
+    case '4h':
+      verdict = analyze4HourTimeframe(data);
+      break;
+    case '1d':
+      verdict = analyzeDailyTimeframe(data);
+      break;
+    case '1w':
+      verdict = analyzeWeeklyTimeframe(data);
+      break;
+  }
+
+  return verdict;
+}
+
+function analyze1HourTimeframe(data) {
+  const { trend, rsi, signal, entryQuality, bullSignals, bearSignals, vwapSignal } = data;
+
+  let verdict = {
+    timeframe: '1H',
+    action: 'HOLD',
+    strength: 50,
+    confidence: 'Medium',
+    reasons: [],
+    indicators: { rsi, trend, vwapSignal },
+    recommendation: ''
+  };
+
+  // 1H is more sensitive - look for quick trades
+  if (rsi < 25 && (trend === 'bullish' || vwapSignal === 'Strong Buy')) {
+    verdict.action = 'STRONG BUY';
+    verdict.strength = 85;
+    verdict.confidence = 'High';
+    verdict.reasons.push('Extreme oversold on 1H with bullish momentum');
+    verdict.recommendation = 'Quick scalp trade possible - strong bounce potential';
+  } else if (rsi < 35 && bullSignals >= 2) {
+    verdict.action = 'BUY';
+    verdict.strength = 70;
+    verdict.reasons.push('Oversold conditions with multiple bullish signals');
+    verdict.recommendation = 'Good entry for short-term trades';
+  } else if (rsi > 75 && (trend === 'bearish' || vwapSignal === 'Strong Sell')) {
+    verdict.action = 'STRONG SELL';
+    verdict.strength = 80;
+    verdict.reasons.push('Overbought on 1H with bearish momentum');
+    verdict.recommendation = 'Take profits or consider short position';
+  } else if (entryQuality === 'Excellent' || entryQuality === 'Good') {
+    verdict.action = 'BUY';
+    verdict.strength = 75;
+    verdict.reasons.push(`Excellent VWAP entry: ${vwapSignal}`);
+    verdict.recommendation = 'Strong risk/reward for day trades';
+  } else {
+    verdict.action = 'HOLD';
+    verdict.strength = 50;
+    verdict.reasons.push('No clear 1H signal - wait for confirmation');
+    verdict.recommendation = 'Monitor for clearer setup';
+  }
+
+  return verdict;
+}
+
+function analyze4HourTimeframe(data) {
+  const { trend, rsi, signal, entryQuality, bullSignals, bearSignals, vwapSignal } = data;
+
+  let verdict = {
+    timeframe: '4H',
+    action: 'HOLD',
+    strength: 50,
+    confidence: 'Medium',
+    reasons: [],
+    indicators: { rsi, trend, vwapSignal },
+    recommendation: ''
+  };
+
+  // 4H is swing trading timeframe
+  if (rsi < 30 && trend === 'bullish' && entryQuality === 'Excellent') {
+    verdict.action = 'STRONG BUY';
+    verdict.strength = 90;
+    verdict.confidence = 'Very High';
+    verdict.reasons.push('Perfect 4H setup: oversold + bullish trend + excellent VWAP');
+    verdict.recommendation = 'High probability swing trade - strong buy signal';
+  } else if (rsi < 40 && (trend === 'bullish' || entryQuality === 'Good')) {
+    verdict.action = 'BUY';
+    verdict.strength = 75;
+    verdict.reasons.push('Good 4H entry with oversold RSI and favorable conditions');
+    verdict.recommendation = 'Solid swing trade setup';
+  } else if (rsi > 70 && trend === 'bearish') {
+    verdict.action = 'SELL';
+    verdict.strength = 75;
+    verdict.reasons.push('Overbought 4H with bearish trend - potential reversal');
+    verdict.recommendation = 'Consider taking profits or shorting';
+  } else if (bullSignals >= 3 && trend === 'bullish') {
+    verdict.action = 'BUY';
+    verdict.strength = 80;
+    verdict.reasons.push(`Multiple bullish signals (${bullSignals}) on 4H`);
+    verdict.recommendation = 'Strong confluence of buy signals';
+  } else {
+    verdict.action = 'HOLD';
+    verdict.strength = 50;
+    verdict.reasons.push('4H trend unclear - wait for better setup');
+    verdict.recommendation = 'Monitor for clearer direction';
+  }
+
+  return verdict;
+}
+
+function analyzeDailyTimeframe(data) {
+  const { trend, rsi, signal, entryQuality, bullSignals, bearSignals, vwapSignal } = data;
+
+  let verdict = {
+    timeframe: '1D',
+    action: 'HOLD',
+    strength: 50,
+    confidence: 'Medium',
+    reasons: [],
+    indicators: { rsi, trend, vwapSignal, entryQuality },
+    recommendation: ''
+  };
+
+  // Daily is the most important timeframe
+  if (entryQuality === 'Excellent' && rsi < 35 && trend === 'bullish') {
+    verdict.action = 'STRONG BUY';
+    verdict.strength = 95;
+    verdict.confidence = 'Very High';
+    verdict.reasons.push('Perfect daily setup: Excellent VWAP entry + oversold + bullish');
+    verdict.recommendation = 'Prime investment opportunity - strong multi-signal confluence';
+  } else if (entryQuality === 'Good' && rsi < 45) {
+    verdict.action = 'BUY';
+    verdict.strength = 80;
+    verdict.reasons.push('Good daily entry quality with favorable RSI');
+    verdict.recommendation = 'Good risk/reward investment entry';
+  } else if (entryQuality === 'Take Profit') {
+    verdict.action = 'TAKE PROFIT';
+    verdict.strength = 85;
+    verdict.reasons.push('Price extended above VWAP +2SD - take profits recommended');
+    verdict.recommendation = 'Strong signal to take profits or reduce position';
+  } else if (entryQuality === 'Consider Selling') {
+    verdict.action = 'REDUCE POSITION';
+    verdict.strength = 70;
+    verdict.reasons.push('Daily momentum fading - consider reducing exposure');
+    verdict.recommendation = 'Take partial profits and wait for better entry';
+  } else if (rsi < 25 && trend === 'bearish') {
+    verdict.action = 'WATCH';
+    verdict.strength = 60;
+    verdict.reasons.push('Capitulation-level oversold on daily - potential reversal zone');
+    verdict.recommendation = 'Monitor closely for reversal signals - contrarian opportunity';
+  } else if (trend === 'bullish' && rsi < 50) {
+    verdict.action = 'BUY';
+    verdict.strength = 70;
+    verdict.reasons.push('Bullish daily trend with room to run');
+    verdict.recommendation = 'Trend-following entry with good risk/reward';
+  } else {
+    verdict.action = 'HOLD';
+    verdict.strength = 50;
+    verdict.reasons.push('Daily trend unclear - maintain current position');
+    verdict.recommendation = 'Wait for clearer directional signal';
+  }
+
+  return verdict;
+}
+
+function analyzeWeeklyTimeframe(data) {
+  const { trend, rsi, signal, entryQuality, bullSignals, bearSignals, smas } = data;
+
+  let verdict = {
+    timeframe: '1W',
+    action: 'HOLD',
+    strength: 50,
+    confidence: 'Low',
+    reasons: [],
+    indicators: { rsi, trend, smas },
+    recommendation: ''
+  };
+
+  // Weekly is for long-term trends and investment decisions
+  if (smas.sma50 && smas.sma200 && smas.sma50 > smas.sma200) {
+    verdict.action = 'BULLISH INVESTMENT';
+    verdict.strength = 80;
+    verdict.confidence = 'High';
+    verdict.reasons.push('Golden cross on weekly (50MA > 200MA) - long-term bullish');
+    verdict.recommendation = ' Favorable long-term investment environment';
+  } else if (smas.sma50 && smas.sma200 && smas.sma50 < smas.sma200) {
+    verdict.action = 'BEARISH INVESTMENT';
+    verdict.strength = 30;
+    verdict.reasons.push('Death cross on weekly (50MA < 200MA) - long-term bearish');
+    verdict.recommendation = 'Unfavorable for long-term positions - wait for trend reversal';
+  } else if (rsi < 30 && trend === 'bullish') {
+    verdict.action = 'ACCUMULATE';
+    verdict.strength = 85;
+    verdict.reasons.push('Weekly oversold in bullish trend - accumulation zone');
+    verdict.recommendation = 'Excellent long-term accumulation opportunity';
+  } else if (rsi > 70 && trend === 'bearish') {
+    verdict.action = 'DISTRIBUTION';
+    verdict.strength = 25;
+    verdict.reasons.push('Weekly overbought in bearish trend - distribution phase');
+    verdict.recommendation = 'Reduce positions for long-term investors';
+  } else {
+    verdict.action = 'HOLD';
+    verdict.strength = 50;
+    verdict.reasons.push('Weekly trend neutral - maintain current investment stance');
+    verdict.recommendation = 'No change to long-term investment strategy';
+  }
+
+  return verdict;
 }
 
 // ===== LuxAlgo-style open-source equivalents (computed from candles) =====
@@ -2186,7 +2431,210 @@ function computeCompositeSignal(coin) {
   else if (score >= 35) label = 'Hold';
   else                  label = 'Consider Selling';
 
-  return { score, label, reasons, real, real1h, real4h, real1w };
+  // Generate comprehensive multi-timeframe analysis summary
+  const mtfAnalysis = generateMultiTimeframeAnalysis(coin);
+
+  return { score, label, reasons, real, real1h, real4h, real1w, mtfAnalysis };
+}
+
+// ===== Comprehensive Multi-Timeframe Analysis System =====
+
+function generateMultiTimeframeAnalysis(coin) {
+  const timeframes = coin?.timeframes;
+  if (!timeframes) {
+    return {
+      summary: 'Insufficient data for multi-timeframe analysis',
+      confluence: 'None',
+      overallVerdict: 'HOLD',
+      timeframeVerdicts: {},
+      recommendation: 'Wait for more data'
+    };
+  }
+
+  const verdicts = {
+    '1h': timeframes['1h']?.verdict || null,
+    '4h': timeframes['4h']?.verdict || null,
+    '1d': timeframes['1d']?.verdict || null,
+    '1w': timeframes['1w']?.verdict || null
+  };
+
+  // Analyze multi-timeframe confluence
+  const confluence = analyzeTimeframeConfluence(verdicts);
+
+  // Generate overall verdict based on confluence
+  const overallVerdict = generateOverallVerdict(verdicts, confluence);
+
+  // Generate specific recommendation
+  const recommendation = generateRecommendation(verdicts, confluence, overallVerdict);
+
+  return {
+    summary: confluence.summary,
+    confluence: confluence.type,
+    strength: confluence.strength,
+    overallVerdict: overallVerdict.action,
+    confidence: overallVerdict.confidence,
+    timeframeVerdicts: verdicts,
+    recommendation: recommendation,
+    keyPoints: confluence.keyPoints
+  };
+}
+
+function analyzeTimeframeConfluence(verdicts) {
+  const actions = Object.values(verdicts).filter(v => v && v.action).map(v => v.action);
+
+  let bullishCount = 0;
+  let bearishCount = 0;
+  let neutralCount = 0;
+
+  // Count different types of signals
+  Object.values(verdicts).forEach(verdict => {
+    if (!verdict) return;
+    const action = verdict.action.toUpperCase();
+    if (action.includes('BUY') || action.includes('ACCUMULATE') || action === 'BULLISH INVESTMENT') {
+      bullishCount++;
+    } else if (action.includes('SELL') || action.includes('DISTRIBUTION') || action === 'BEARISH INVESTMENT' || action === 'TAKE PROFIT' || action === 'REDUCE POSITION') {
+      bearishCount++;
+    } else {
+      neutralCount++;
+    }
+  });
+
+  // Determine confluence type
+  let confluenceType = 'Mixed';
+  let strength = 50;
+  let summary = 'Mixed signals across timeframes';
+  let keyPoints = [];
+
+  if (bullishCount >= 3) {
+    confluenceType = 'Strong Bullish';
+    strength = 85;
+    summary = 'Strong bullish confluence across multiple timeframes';
+    keyPoints.push(`${bullishCount} timeframes showing buy signals`);
+  } else if (bearishCount >= 3) {
+    confluenceType = 'Strong Bearish';
+    strength = 15;
+    summary = 'Strong bearish confluence across multiple timeframes';
+    keyPoints.push(`${bearishCount} timeframes showing sell signals`);
+  } else if (bullishCount === 2 && bearishCount === 0) {
+    confluenceType = 'Bullish';
+    strength = 70;
+    summary = 'Bullish bias across most timeframes';
+    keyPoints.push('Multiple timeframes aligned for buying');
+  } else if (bearishCount === 2 && bullishCount === 0) {
+    confluenceType = 'Bearish';
+    strength = 30;
+    summary = 'Bearish bias across most timeframes';
+    keyPoints.push('Multiple timeframes aligned for selling');
+  } else if (bullishCount === 1 && bearishCount === 1) {
+    confluenceType = 'Conflicted';
+    strength = 50;
+    summary = 'Conflicting signals between timeframes';
+    keyPoints.push('Mixed signals - wait for clearer direction');
+  } else {
+    confluenceType = 'Neutral';
+    strength = 50;
+    summary = 'Neutral stance - no clear directional bias';
+    keyPoints.push('No strong confluence - maintain current position');
+  }
+
+  // Check for timeframe alignment
+  const hasDailyBullish = verdicts['1d']?.action?.includes('BUY');
+  const hasWeeklyBullish = verdicts['1w']?.action?.includes('BULLISH') || verdicts['1w']?.action?.includes('ACCUMULATE');
+
+  if (hasDailyBullish && hasWeeklyBullish) {
+    strength = Math.min(100, strength + 10);
+    keyPoints.push('Daily and weekly both bullish - strong investment setup');
+  }
+
+  return {
+    type: confluenceType,
+    strength: strength,
+    summary: summary,
+    keyPoints: keyPoints,
+    bullishCount: bullishCount,
+    bearishCount: bearishCount,
+    neutralCount: neutralCount
+  };
+}
+
+function generateOverallVerdict(verdicts, confluence) {
+  // Prioritize daily and weekly timeframes for overall verdict
+  const dailyVerdict = verdicts['1d'];
+  const weeklyVerdict = verdicts['1w'];
+
+  let overallAction = 'HOLD';
+  let confidence = 'Medium';
+
+  if (confluence.type === 'Strong Bullish') {
+    overallAction = 'STRONG BUY';
+    confidence = 'Very High';
+  } else if (confluence.type === 'Strong Bearish') {
+    overallAction = 'STRONG SELL';
+    confidence = 'Very High';
+  } else if (confluence.type === 'Bullish') {
+    overallAction = 'BUY';
+    confidence = 'High';
+  } else if (confluence.type === 'Bearish') {
+    overallAction = 'SELL';
+    confidence = 'High';
+  } else if (dailyVerdict?.action === 'STRONG BUY' && weeklyVerdict?.action === 'BULLISH INVESTMENT') {
+    overallAction = 'STRONG BUY';
+    confidence = 'Very High';
+  } else if (dailyVerdict?.action === 'TAKE PROFIT' || dailyVerdict?.action === 'REDUCE POSITION') {
+    overallAction = 'TAKE PROFIT';
+    confidence = 'High';
+  } else if (dailyVerdict?.action === 'STRONG SELL') {
+    overallAction = 'SELL';
+    confidence = 'High';
+  } else {
+    overallAction = 'HOLD';
+    confidence = 'Medium';
+  }
+
+  return {
+    action: overallAction,
+    confidence: confidence
+  };
+}
+
+function generateRecommendation(verdicts, confluence, overallVerdict) {
+  const dailyVerdict = verdicts['1d'];
+  const weeklyVerdict = verdicts['1w'];
+  const fourHourVerdict = verdicts['4h'];
+  const oneHourVerdict = verdicts['1h'];
+
+  let recommendation = '';
+
+  // Generate specific trading recommendations based on confluence
+  if (overallVerdict.action === 'STRONG BUY') {
+    if (weeklyVerdict?.action === 'ACCUMULATE') {
+      recommendation = '🚀 EXCELLENT LONG-TERM INVESTMENT: Weekly accumulation zone with strong daily signals. This is a prime investment opportunity. Consider building position over time.';
+    } else if (dailyVerdict?.action === 'STRONG BUY' && fourHourVerdict?.action === 'STRONG BUY') {
+      recommendation = '⚡ STRONG SWING TRADE: Daily and 4H both showing strong buy signals. Good risk/reward swing trade setup with immediate upside potential.';
+    } else {
+      recommendation = '✅ STRONG BUY: Multiple timeframes aligned for buying. High conviction trade with good risk/reward.';
+    }
+  } else if (overallVerdict.action === 'BUY') {
+    if (oneHourVerdict?.action === 'BUY' && fourHourVerdict?.action === 'BUY') {
+      recommendation = '📈 GOOD ENTRY: Short-term timeframes showing buy signals. Good for day trading or swing entries.';
+    } else {
+      recommendation = '📊 BUY: Favorable conditions for buying. Use proper position sizing and risk management.';
+    }
+  } else if (overallVerdict.action === 'SELL') {
+    if (dailyVerdict?.action === 'TAKE PROFIT') {
+      recommendation = '💰 TAKE PROFITS: Strong signal to take profits. Daily momentum extended - secure gains and wait for better entry.';
+    } else {
+      recommendation = '📉 SELL: Bearish signals across timeframes. Consider reducing exposure or exiting positions.';
+    }
+  } else if (overallVerdict.action === 'STRONG SELL') {
+    recommendation = '⚠️ STRONG SELL: Multiple bearish signals. Reduce positions or wait for bottom to form before entering.';
+  } else if (overallVerdict.action === 'TAKE PROFIT') {
+    recommendation = '🎯 TAKE PARTIAL PROFITS: Price extended - consider taking partial profits and keeping core position if bullish long-term.';
+  } else {
+    recommendation = '⏸️ HOLD: No clear directional signal. Maintain current position and wait for better setup.';
+  }
+
+  return recommendation;
 }
 
 // Apply volume sentiment + price-action structural confirmation as a verdict modifier.
@@ -2711,10 +3159,10 @@ async function fetchCoinData(coin) {
   ]);
 
   const timeframes = {
-    '1h': h1.status === 'fulfilled' ? analyzeTimeframe(h1.value) : null,
-    '4h': h4.status === 'fulfilled' ? analyzeTimeframe(h4.value) : null,
-    '1d': d1.status === 'fulfilled' ? analyzeTimeframe(d1.value) : null,
-    '1w': w1.status === 'fulfilled' ? analyzeTimeframe(w1.value) : null
+    '1h': h1.status === 'fulfilled' ? analyzeTimeframe(h1.value, '1h') : null,
+    '4h': h4.status === 'fulfilled' ? analyzeTimeframe(h4.value, '4h') : null,
+    '1d': d1.status === 'fulfilled' ? analyzeTimeframe(d1.value, '1d') : null,
+    '1w': w1.status === 'fulfilled' ? analyzeTimeframe(w1.value, '1w') : null
   };
 
   // Composite ranked signal — overrides the simple VWAP-only entryQuality
@@ -2789,7 +3237,8 @@ async function refreshData() {
           ...data,
           score,
           tier,
-          narrative: generateNarrative(data, analysis)
+          narrative: generateNarrative(data, analysis),
+          mtfAnalysis: data.mtfAnalysis || null
         };
       });
 
@@ -3497,6 +3946,35 @@ function renderCoins() {
           <div class="metric-label">4H Trend</div>
           <div class="metric-value">${coin.timeframes['4h']?.trend || 'N/A'}</div>
         </div>
+      </div>
+
+      <!-- Multi-Timeframe Analysis Section -->
+      <div style="background: linear-gradient(135deg, rgba(240,185,11,0.05), rgba(55,138,221,0.05)); border-radius: 8px; padding: 12px; margin-top: 8px; border: 1px solid var(--border);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <div style="font-size: 12px; font-weight: 600; color: var(--text);">
+            🎯 Multi-Timeframe Verdict
+          </div>
+          <div style="font-size: 11px; padding: 2px 8px; border-radius: 4px; background: ${coin.mtfAnalysis?.confluence === 'Strong Bullish' ? 'var(--success)' : coin.mtfAnalysis?.confluence === 'Strong Bearish' ? 'var(--danger)' : 'var(--surface-2)'}; color: ${coin.mtfAnalysis?.confluence === 'Strong Bullish' || coin.mtfAnalysis?.confluence === 'Strong Bearish' ? 'white' : 'var(--text)'}; font-weight: 500;">
+            ${coin.mtfAnalysis?.confluence || 'Neutral'}
+          </div>
+        </div>
+        <div style="font-size: 11px; color: var(--text-2); margin-bottom: 6px; line-height: 1.4;">
+          ${coin.mtfAnalysis?.summary || 'Multi-timeframe analysis not available'}
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px;">
+          ${Object.entries(coin.mtfAnalysis?.timeframeVerdicts || {}).map(([tf, verdict]) => {
+            if (!verdict) return '';
+            const actionColor = verdict.action.includes('BUY') || verdict.action.includes('ACCUMULATE') || verdict.action.includes('BULLISH') ? 'var(--success)' : verdict.action.includes('SELL') || verdict.action.includes('DISTRIBUTION') || verdict.action.includes('BEARISH') ? 'var(--danger)' : 'var(--text-2)';
+            return `
+              <div style="text-align: center; padding: 4px; background: var(--surface); border-radius: 4px;">
+                <div style="font-size: 9px; color: var(--text-2);">${verdict.timeframe}</div>
+                <div style="font-size: 10px; font-weight: 600; color: ${actionColor}; margin-top: 2px;">${verdict.strength >= 70 ? '🟢' : verdict.strength >= 40 ? '🟡' : '🔴'}</div>
+                <div style="font-size: 9px; color: ${actionColor}; margin-top: 2px; line-height: 1.1;">${verdict.action.split(' ')[0]}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        ${coin.mtfAnalysis?.recommendation ? `<div style="font-size: 10px; color: var(--text); margin-top: 8px; padding: 6px; background: var(--surface); border-radius: 4px; border-left: 3px solid ${coin.mtfAnalysis?.confluence === 'Strong Bullish' ? 'var(--success)' : 'var(--border)'};">${coin.mtfAnalysis.recommendation}</div>` : ''}
       </div>
     </div>
   `).join('');
