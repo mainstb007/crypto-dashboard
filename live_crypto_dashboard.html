@@ -291,6 +291,12 @@
       </div>
     </div>
     <button class="refresh-btn" onclick="refreshData()">🔄 Refresh Now</button>
+    <div id="featureButtons" style="display: flex; gap: 8px; align-items: center; margin-left: auto;">
+      <button class="refresh-btn" onclick="openPortfolioPanel()" style="background: var(--success);">📊 Portfolio</button>
+      <button class="refresh-btn" onclick="openAlertsPanel()" style="background: var(--info-border);">🔔 Alerts</button>
+      <button class="refresh-btn" onclick="openScannerPanel()" style="background: #9333ea;">🔍 Scanner</button>
+      <button class="refresh-btn" onclick="openBacktestPanel()" style="background: #f59e0b;">🧪 Backtest</button>
+    </div>
   </div>
 </div>
 
