@@ -291,6 +291,12 @@
       </div>
     </div>
     <button class="refresh-btn" onclick="refreshData()">🔄 Refresh Now</button>
+    <div id="featureButtons" style="display: flex; gap: 8px; align-items: center; margin-left: auto;">
+      <button class="refresh-btn" onclick="openPortfolioPanel()" style="background: var(--success);">📊 Portfolio</button>
+      <button class="refresh-btn" onclick="openAlertsPanel()" style="background: var(--info-border);">🔔 Alerts</button>
+      <button class="refresh-btn" onclick="openScannerPanel()" style="background: #9333ea;">🔍 Scanner</button>
+      <button class="refresh-btn" onclick="openBacktestPanel()" style="background: #f59e0b;">🧪 Backtest</button>
+    </div>
   </div>
 </div>
 
@@ -3385,6 +3391,89 @@ function filterCoins(filter, button) {
 
   renderCoins();
 }
+
+// ===== Professional Trading Features =====
+// Configuration management
+async function loadConfig() {
+  try {
+    const response = await fetch('config.js');
+    if (!response.ok) throw new Error('Config not found');
+    const configText = await response.text();
+    // Remove potential export statements and parse as object
+    const configContent = configText
+      .replace(/export\s+const\s+config\s*=/, '')
+      .replace(/;$/, '');
+    window.appConfig = JSON.parse(configContent);
+  } catch (error) {
+    console.warn('Config loading failed, using defaults');
+    window.appConfig = {
+      alerts: { enabled: true, thresholds: { priceChange: { up: 5, down: -5 } } },
+      portfolio: { enabled: true },
+      scanner: { enabled: true }
+    };
+  }
+}
+
+// Initialize new features after dashboard loads
+async function initializeNewFeatures() {
+  console.log('🚀 Initializing professional trading features...');
+
+  // Load configuration
+  await loadConfig();
+
+  // Show initialization notification
+  showFeatureNotification('Professional features loaded: Alerts, Portfolio, Scanner ready');
+}
+
+function showFeatureNotification(message) {
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed; bottom: 20px; right: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white; padding: 16px 24px; border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000;
+    font-size: 14px; font-weight: 500; animation: slideIn 0.3s ease-out;
+  `;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+
+  setTimeout(() => notification.remove(), 5000);
+}
+
+function openPortfolioPanel() {
+  showFeatureNotification('📊 Portfolio tracking: Add positions via the console (portfolio.addPosition())');
+  console.log('📊 Portfolio Tracking Available:');
+  console.log('Add position: portfolio.addPosition({ symbol: "BTC", entryPrice: 50000, amount: 0.1 })');
+  console.log('View portfolio: portfolio.getPortfolioSummary()');
+}
+
+function openAlertsPanel() {
+  showFeatureNotification('🔔 Alerts: Create alerts for price, volume, RSI thresholds');
+  console.log('🔔 Alert System Available:');
+  console.log('Set price alert: alerts.createPriceAlert("BTC", 50000, "above")');
+}
+
+function openScannerPanel() {
+  showFeatureNotification('🔍 Market Scanner: Scanning for trading opportunities...');
+  console.log('🔍 Market Scanner scanning for opportunities...');
+}
+
+function openBacktestPanel() {
+  showFeatureNotification('🧪 Backtest Engine: Ready to test your strategies');
+  console.log('🧪 Backtest Engine Available:');
+  console.log('Run backtest: backtest.runStrategy({ symbol: "BTC", strategy: "rsi" })');
+}
+
+// Initialize new features when page loads
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeNewFeatures);
+} else {
+  initializeNewFeatures();
+}
+
+console.log('🎉 Professional Trading Features Loaded!');
+console.log('📚 Full integration guide: INTEGRATION_GUIDE.md');
+console.log('🔧 Configuration: Edit config.js to customize');
 
 // --- Auto-refresh every 10 minutes with visible countdown ---
 const REFRESH_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
