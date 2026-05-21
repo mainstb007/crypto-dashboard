@@ -3764,42 +3764,6 @@ function renderPortfolioPositions() {
     lastUpdateEl.textContent = `Last update: ${now.toLocaleTimeString()}`;
   }
 
-    // Calculate current value and P&L
-    const currentValue = position.amount * currentPrice;
-    const pnl = currentValue - position.value;
-    const pnlPercent = position.entryPrice > 0 ? ((pnl / position.value) * 100) : 0;
-
-    totalValue += currentValue;
-    totalPnL += pnl;
-
-    // Format P&L with color
-    const pnlColor = pnl >= 0 ? 'var(--success)' : 'var(--danger)';
-    const pnlSign = pnl >= 0 ? '+' : '';
-
-    return `
-      <div style="background: var(--surface); padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-        <div style="flex: 1;">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-            <strong style="font-size: 16px;">${position.symbol}</strong>
-            <span style="font-size: 11px; color: var(--text-2); background: var(--surface-2); padding: 2px 6px; border-radius: 4px;">${position.type.toUpperCase()}</span>
-          </div>
-          <div style="font-size: 12px; color: var(--text-2);">
-            ${position.amount} @ $${position.entryPrice.toLocaleString()} → Now: $${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-          </div>
-        </div>
-        <div style="text-align: right;">
-          <div style="font-size: 14px; font-weight: 600; color: ${pnlColor};">
-            ${pnlSign}$${pnl.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} (${pnlSign}${pnlPercent.toFixed(2)}%)
-          </div>
-          <div style="font-size: 12px; color: var(--text-2); margin-top: 2px;">
-            Value: $${currentValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-          </div>
-          <button onclick="removePosition('${position.id}')" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 12px; margin-top: 4px;">Remove</button>
-        </div>
-      </div>
-    `;
-  }).join('');
-
   positionsList.innerHTML = positionsHTML;
   totalValueEl.textContent = `$${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
