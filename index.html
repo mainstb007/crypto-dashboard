@@ -446,6 +446,38 @@
   </div>
 </div>
 
+<!-- Scanner Modal -->
+<div id="scannerModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+  <div style="background: var(--surface); border-radius: 12px; padding: 24px; max-width: 900px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="margin: 0; font-size: 24px;">🔍 Market Scanner</h2>
+      <button onclick="closeScannerModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-2);">✕</button>
+    </div>
+
+    <!-- Scanner Controls -->
+    <div style="background: var(--surface-2); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <button onclick="runScanner('oversold')" style="padding: 8px 16px; background: var(--success); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">🎯 Scan Oversold</button>
+        <button onclick="runScanner('breakout')" style="padding: 8px 16px; background: #9333ea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">🚀 Scan Breakouts</button>
+        <button onclick="runScanner('volume')" style="padding: 8px 16px; background: var(--info-border); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">📊 High Volume</button>
+        <button onclick="runScanner('rsi')" style="padding: 8px 16px; background: #f59e0b; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">📈 RSI Analysis</button>
+        <button onclick="runScanner('all')" style="padding: 8px 16px; background: var(--danger); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">⚡ Scan All</button>
+      </div>
+    </div>
+
+    <!-- Scanner Results -->
+    <div>
+      <h3 style="margin: 0 0 12px 0; font-size: 16px;">Scan Results</h3>
+      <div id="scannerResults" style="background: var(--surface-2); border-radius: 8px; padding: 12px; min-height: 200px;">
+        <div style="text-align: center; color: var(--text-2); padding: 40px 20px;">
+          <div style="font-size: 48px; margin-bottom: 12px;">🔍</div>
+          <div>Click a scan button above to find trading opportunities</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ===== Real LuxAlgo snapshot (baked from TradingView Desktop via tradingview-mcp) =====
 // Source: LuxAlgo Signals & Overlays, Price Action Concepts (Premium), Oscillator Matrix.
@@ -3509,7 +3541,32 @@ function openPortfolioPanel() {
   const modal = document.getElementById('portfolioModal');
   if (modal) {
     modal.style.display = 'flex';
-    renderPortfolioPositions();
+    // Render immediately when opened
+    setTimeout(() => renderPortfolioPositions(), 100);
+
+    // Set up auto-refresh every 30 seconds while modal is open
+    if (!window.portfolioRefreshInterval) {
+      window.portfolioRefreshInterval = setInterval(() => {
+        if (modal.style.display !== 'none') {
+          renderPortfolioPositions();
+        } else {
+          clearInterval(window.portfolioRefreshInterval);
+          window.portfolioRefreshInterval = null;
+        }
+      }, 30000); // Refresh every 30 seconds
+    }
+  }
+}
+
+function closePortfolioModal() {
+  const modal = document.getElementById('portfolioModal');
+  if (modal) {
+    modal.style.display = 'none';
+    // Clear auto-refresh interval
+    if (window.portfolioRefreshInterval) {
+      clearInterval(window.portfolioRefreshInterval);
+      window.portfolioRefreshInterval = null;
+    }
   }
 }
 
@@ -3575,6 +3632,12 @@ function removePosition(positionId) {
 
 // Render portfolio positions
 function renderPortfolioPositions() {
+  // Only update if portfolio modal is open
+  const portfolioModal = document.getElementById('portfolioModal');
+  if (!portfolioModal || portfolioModal.style.display === 'none') {
+    return;
+  }
+
   const portfolio = JSON.parse(localStorage.getItem('cryptoPortfolio') || '[]');
   const positionsList = document.getElementById('positionsList');
   const totalValueEl = document.getElementById('totalValue');
@@ -3650,8 +3713,144 @@ function openAlertsPanel() {
 }
 
 function openScannerPanel() {
-  showFeatureNotification('🔍 Market Scanner: Scanning for trading opportunities...');
-  console.log('🔍 Market Scanner scanning for opportunities...');
+  const modal = document.getElementById('scannerModal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+
+function closeScannerModal() {
+  const modal = document.getElementById('scannerModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+function runScanner(scanType) {
+  const resultsDiv = document.getElementById('scannerResults');
+  resultsDiv.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-2);"><div class="spinner"></div><div style="margin-top: 12px;">Scanning market...</div></div>';
+
+  setTimeout(() => {
+    let results = [];
+    const scanTypeLower = scanType.toLowerCase();
+
+    if (typeof coinData !== 'undefined' && coinData) {
+      switch(scanTypeLower) {
+        case 'oversold':
+          results = coinData.filter(coin => {
+            const rsi1d = coin.timeframes?.['1d']?.rsi;
+            return rsi1d && rsi1d < 30;
+          }).map(coin => ({
+            symbol: coin.symbol,
+            reason: `Deeply oversold (RSI: ${coin.timeframes['1d'].rsi.toFixed(1)})`,
+            action: 'Consider buying',
+            strength: 'Strong'
+          }));
+          break;
+
+        case 'breakout':
+          results = coinData.filter(coin => {
+            const change24h = coin.avgChange24h;
+            return change24h && change24h > 5;
+          }).map(coin => ({
+            symbol: coin.symbol,
+            reason: `Strong momentum (+${coin.avgChange24h.toFixed(1)}% in 24h)`,
+            action: 'Momentum play',
+            strength: coin.avgChange24h > 10 ? 'Very Strong' : 'Moderate'
+          }));
+          break;
+
+        case 'volume':
+          results = coinData.filter(coin => {
+            const volume = coin.avgVolume;
+            return volume && volume > 1000000000; // > $1B volume
+          }).sort((a, b) => b.avgVolume - a.avgVolume).slice(0, 10).map(coin => ({
+            symbol: coin.symbol,
+            reason: `High volume ($${(coin.avgVolume / 1000000000).toFixed(1)}B)`,
+            action: 'High liquidity',
+            strength: 'Strong'
+          }));
+          break;
+
+        case 'rsi':
+          results = coinData.filter(coin => {
+            const rsi4h = coin.timeframes?.['4h']?.rsi;
+            const rsi1d = coin.timeframes?.['1d']?.rsi;
+            return rsi4h && rsi1d;
+          }).map(coin => {
+            const rsi4h = coin.timeframes['4h'].rsi;
+            const rsi1d = coin.timeframes['1d'].rsi;
+            let action, strength;
+
+            if (rsi4h < 30 && rsi1d < 40) {
+              action = 'Strong buy';
+              strength = 'Very Strong';
+            } else if (rsi4h < 40 && rsi1d < 50) {
+              action = 'Buy';
+              strength = 'Moderate';
+            } else if (rsi4h > 70 && rsi1d > 70) {
+              action = 'Consider selling';
+              strength = 'Strong';
+            } else {
+              action = 'Hold';
+              strength = 'Neutral';
+            }
+
+            return {
+              symbol: coin.symbol,
+              reason: `RSI 4H: ${rsi4h.toFixed(1)}, Daily: ${rsi1d.toFixed(1)}`,
+              action: action,
+              strength: strength
+            };
+          });
+          break;
+
+        case 'all':
+          results = coinData.filter(coin => {
+            const buySituation = coin.buySituation;
+            return buySituation === 'Excellent' || buySituation === 'Good';
+          }).map(coin => ({
+            symbol: coin.symbol,
+            reason: `${coin.buySituation} buy opportunity - Score: ${coin.score.toFixed(0)}`,
+            action: coin.buySituation === 'Excellent' ? 'Strong buy' : 'Buy',
+            strength: coin.buySituation === 'Excellent' ? 'Very Strong' : 'Strong'
+          }));
+          break;
+      }
+    }
+
+    // Display results
+    if (results.length === 0) {
+      resultsDiv.innerHTML = '<div style="text-align: center; color: var(--text-2); padding: 40px 20px;"><div style="font-size: 48px; margin-bottom: 12px;">🤷</div><div>No opportunities found for this scan type</div></div>';
+    } else {
+      const resultsHTML = results.map(result => {
+        const strengthColor = result.strength === 'Very Strong' ? 'var(--success)' : result.strength === 'Strong' ? 'var(--success)' : result.strength === 'Neutral' ? 'var(--text-2)' : 'var(--info-border)';
+        return `
+          <div style="background: var(--surface); padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <strong style="font-size: 16px;">${result.symbol}</strong>
+                <span style="font-size: 11px; color: ${strengthColor}; background: var(--surface-2); padding: 2px 6px; border-radius: 4px;">${result.strength}</span>
+              </div>
+              <div style="font-size: 12px; color: var(--text-2);">${result.reason}</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 14px; font-weight: 600; color: var(--info-border);">${result.action}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      resultsDiv.innerHTML = `
+        <div style="margin-bottom: 12px; font-size: 12px; color: var(--text-2);">
+          Found ${results.length} ${results.length === 1 ? 'opportunity' : 'opportunities'}
+        </div>
+        ${resultsHTML}
+      `;
+    }
+
+    showFeatureNotification(`✅ Scan complete: Found ${results.length} opportunities`);
+  }, 1000); // Simulate scan time
 }
 
 function openBacktestPanel() {
