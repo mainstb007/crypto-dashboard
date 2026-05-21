@@ -19,6 +19,19 @@
       --info-border: #85B7EB; --danger: #F09595; --success: #5DCAA5;
     }
   }
+  /* Manual theme overrides (override system preference when user picks Light/Dark) */
+  [data-theme="light"] {
+    --bg: #faf9f5; --surface: #fff; --surface-2: #f1efe8;
+    --text: #1a1a17; --text-2: #5f5e5a; --text-3: #888780;
+    --border: rgba(0,0,0,0.10); --info-bg: #E6F1FB; --info-text: #0C447C;
+    --info-border: #378ADD; --danger: #A32D2D; --success: #0F6E56;
+  }
+  [data-theme="dark"] {
+    --bg: #1c1c1a; --surface: #262624; --surface-2: #2c2c2a;
+    --text: #f5f4ee; --text-2: #b4b2a9; --text-3: #888780;
+    --border: rgba(255,255,255,0.10); --info-bg: #042C53; --info-text: #B5D4F4;
+    --info-border: #85B7EB; --danger: #F09595; --success: #5DCAA5;
+  }
   * { box-sizing: border-box; }
   body { background: var(--bg); color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; margin: 0; padding: 20px; line-height: 1.55; }
 
@@ -75,9 +88,11 @@
   .score-label { font-size: 10px; color: var(--text-2); }
   .score-value { font-size: 24px; font-weight: 600; color: var(--info-border); }
   .tier-badge { font-size: 11px; padding: 4px 10px; border-radius: 6px; font-weight: 500; margin-top: 4px; display: inline-block; }
+  .tier-major { background: #FFF4D1; color: #6B5410; border: 1px solid #F0B90B; }
   .tier-s { background: #E1F5EE; color: #085041; }
   .tier-a { background: #E6F1FB; color: #0C447C; }
   .tier-b { background: #F1EFE8; color: #444441; }
+  .filter-btn.tier-major.active { background: #FFF4D1; color: #6B5410; border-color: #F0B90B; }
 
   .price-comparison { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
   .exchange-price { background: var(--surface-2); padding: 8px; border-radius: 6px; text-align: center; }
@@ -185,6 +200,72 @@
 
   .disclaimer { background: var(--surface-2); border-radius: 8px; padding: 12px; font-size: 11px; color: var(--text-2); margin-top: 20px; }
   .disclaimer strong { color: var(--text); }
+
+  /* Real LuxAlgo (live Pine values from TradingView) */
+  .luxalgo-real { display: flex; align-items: center; gap: 8px; margin-top: 6px; padding: 6px 10px; border-radius: 6px; font-size: 11px; border-left: 3px solid #7c3aed; }
+  .luxalgo-real.vs-bull    { background: #EAF3DE; color: #27500A; border-left-color: #0F6E56; }
+  .luxalgo-real.vs-bear    { background: #FCEBEB; color: #791F1F; border-left-color: #A32D2D; }
+  .luxalgo-real.vs-neutral { background: var(--surface-2); color: var(--text-2); border-left-color: #7c3aed; }
+  .lux-badge { display: inline-block; background: #7c3aed; color: white; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 600; letter-spacing: 0.5px; margin-right: 4px; }
+  /* Multi-timeframe LuxAlgo strip (1H/4H/1D/1W) */
+  .lux-tf-strip { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+  .tf-mini { font-size: 10px; padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border); cursor: help; }
+  .tf-mini.tf-bull { background: #EAF3DE; color: #27500A; border-color: #0F6E56; }
+  .tf-mini.tf-bear { background: #FCEBEB; color: #791F1F; border-color: #A32D2D; }
+  .tf-mini.tf-neutral { background: var(--surface-2); color: var(--text-2); }
+  .tf-mini.tf-empty { background: transparent; color: var(--text-3); opacity: 0.5; }
+
+  /* Volume sentiment + confirmation flags */
+  .volume-sentiment { display: flex; align-items: center; gap: 6px; margin-top: 6px; padding: 6px 10px; border-radius: 6px; font-size: 11px; }
+  .vs-bull { background: #EAF3DE; color: #27500A; border-left: 3px solid #0F6E56; }
+  .vs-bear { background: #FCEBEB; color: #791F1F; border-left: 3px solid #A32D2D; }
+  .vs-neutral { background: var(--surface-2); color: var(--text-2); border-left: 3px solid var(--text-3); }
+  .confirmation-flags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .conf-flag { font-size: 10px; padding: 3px 7px; border-radius: 4px; background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
+
+  /* Click-to-filter ticker */
+  .coin-ticker { cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: background 0.15s; user-select: none; }
+  .coin-ticker:hover { background: var(--info-bg); color: var(--info-text); }
+  .coin-ticker.selected { background: var(--info-border); color: white; }
+  .selection-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 10px 14px; background: var(--info-bg); border-left: 4px solid var(--info-border); border-radius: 8px; font-size: 12px; }
+  .selection-bar strong { color: var(--info-text); }
+  .selection-clear { background: var(--info-border); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; }
+  .selection-clear:hover { opacity: 0.9; }
+
+  /* BTC/ETH benchmark analysis panel */
+  .majors-panel { background: linear-gradient(135deg, rgba(240,185,11,0.08), rgba(55,138,221,0.08)); border: 1px solid var(--border); border-left: 4px solid #F0B90B; border-radius: 12px; padding: 16px; margin-bottom: 18px; }
+  .majors-panel .mp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+  .majors-panel h2 { margin: 0; font-size: 16px; font-weight: 600; }
+  .majors-panel .mp-regime { font-size: 12px; padding: 6px 12px; border-radius: 6px; font-weight: 500; }
+  .mp-regime-bullish { background: #EAF3DE; color: #27500A; }
+  .mp-regime-bearish { background: #FCEBEB; color: #791F1F; }
+  .mp-regime-neutral { background: var(--surface-2); color: var(--text-2); }
+  .majors-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 12px; }
+  .major-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .major-card.btc { border-top: 3px solid #F0B90B; }
+  .major-card.eth { border-top: 3px solid #627EEA; }
+  .major-card h3 { margin: 0 0 8px; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
+  .major-card .mc-price { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  .major-card .mc-change { font-size: 12px; margin-bottom: 10px; }
+  .major-card .mc-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 11px; border-bottom: 1px solid var(--border); }
+  .major-card .mc-row:last-child { border-bottom: none; }
+  .major-card .mc-label { color: var(--text-2); }
+  .major-card .mc-value { font-weight: 500; }
+  .major-card .mc-thesis { margin-top: 10px; padding: 8px 10px; background: var(--surface-2); border-radius: 6px; font-size: 11px; line-height: 1.5; color: var(--text-2); }
+  .major-card .mc-thesis strong { color: var(--text); }
+  .mp-ratio { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-top: 10px; font-size: 12px; }
+  .mp-ratio strong { color: var(--text); }
+
+  /* Theme dropdown */
+  .theme-option {
+    width: 100%; background: transparent; border: none; padding: 12px 16px; text-align: left;
+    cursor: pointer; font-size: 13px; color: var(--text); transition: background 0.2s;
+    display: flex; align-items: center;
+  }
+  .theme-option:hover { background: var(--surface-2); }
+  .theme-option.active { background: var(--info-bg); color: var(--info-text); font-weight: 500; }
+  .theme-option:first-child { border-radius: 8px 8px 0 0; }
+  .theme-option:last-child  { border-radius: 0 0 8px 8px; }
 </style>
 </head>
 <body>
@@ -194,7 +275,23 @@
     <div class="last-update" id="lastUpdate">Loading...</div>
     <div class="last-update" id="dataMode" style="margin-top: 4px;"></div>
   </div>
-  <button class="refresh-btn" onclick="refreshData()">🔄 Refresh Now</button>
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <div style="position: relative;">
+      <button class="refresh-btn" onclick="toggleThemeDropdown()" id="themeBtn">🌓 Theme</button>
+      <div id="themeDropdown" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; min-width: 140px;">
+        <button class="theme-option" onclick="setTheme('system')" id="themeSystem">
+          <span style="margin-right: 8px;">💻</span> System
+        </button>
+        <button class="theme-option" onclick="setTheme('light')" id="themeLight">
+          <span style="margin-right: 8px;">☀️</span> Light
+        </button>
+        <button class="theme-option" onclick="setTheme('dark')" id="themeDark">
+          <span style="margin-right: 8px;">🌙</span> Dark
+        </button>
+      </div>
+    </div>
+    <button class="refresh-btn" onclick="refreshData()">🔄 Refresh Now</button>
+  </div>
 </div>
 
 <div id="loading" class="loading">
@@ -207,8 +304,17 @@
 <div id="content" style="display: none;">
   <div class="market-overview" id="marketOverview"></div>
 
+  <div id="majorsPanel" class="majors-panel"></div>
+
+  <div id="selectionBar" class="selection-bar" style="display: none;">
+    <span>🔍 Showing only: <strong id="selectedCoinLabel"></strong></span>
+    <span style="flex:1"></span>
+    <button class="selection-clear" onclick="clearCoinSelection()">✕ Clear selection</button>
+  </div>
+
   <div class="filters">
     <button class="filter-btn active" onclick="filterCoins('all', this)">📊 All Coins (<span id="totalCount">0</span>)</button>
+    <button class="filter-btn tier-major" onclick="filterCoins('tier-major', this)">🟡 Majors (BTC/ETH) (<span id="mCount">0</span>)</button>
     <button class="filter-btn tier-s" onclick="filterCoins('tier-s', this)">🔥 Tier S - Top Asset (<span id="sCount">0</span>)</button>
     <button class="filter-btn tier-a" onclick="filterCoins('tier-a', this)">✅ Tier A - Strong Asset (<span id="aCount">0</span>)</button>
     <button class="filter-btn tier-b" onclick="filterCoins('tier-b', this)">👁️ Tier B - Watch (<span id="bCount">0</span>)</button>
@@ -271,11 +377,151 @@
 </div>
 
 <script>
+// ===== Real LuxAlgo snapshot (baked from TradingView Desktop via tradingview-mcp) =====
+// Source: LuxAlgo Signals & Overlays, Price Action Concepts (Premium), Oscillator Matrix.
+// Captured live from the user's subscribed TradingView Desktop charts. The fields here
+// represent actual Pine Script outputs, not open-source approximations.
+// To refresh, run the snapshot pass again and replace this object.
+const LUXALGO_SNAPSHOT = {
+  "_meta": { "source": "TradingView Desktop (LuxAlgo Pine indicators)", "capturedAt": "2026-05-21 14:20", "coverage": "full 1H/4H/1D/1W scan across 38 coins" },
+  "BTC": { "1h": { "trendStrength": 57.55, "pacDiscountTop": 76372.42, "pacEqBottom": 79104.45, "pacEqTop": 79425.87, "pacPremiumBottom": 82157.9, "hyperWave": 25.63, "moneyFlow": 60.68, "confluence": 42.86 }, "4h": { "trendStrength": 79.46, "pacDiscountTop": null, "pacEqBottom": null, "pacEqTop": null, "pacPremiumBottom": null, "hyperWave": 56, "moneyFlow": 46.76, "confluence": 42.86 }, "1d": { "trendStrength": 66.53, "pacDiscountTop": 61896.22, "pacEqBottom": 78014.13, "pacEqTop": 79910.36, "pacPremiumBottom": 96028.27, "hyperWave": 25.53, "moneyFlow": 55.6, "confluence": 42.86 }, "1w": { "trendStrength": 22.79, "pacDiscountTop": 21012.18, "pacEqBottom": 68069.72, "pacEqTop": 73605.91, "pacPremiumBottom": 120663.45, "hyperWave": 64.45, "moneyFlow": 40.68, "confluence": 42.86 } },
+  "ETH": { "1h": { "trendStrength": 14.44, "pacDiscountTop": 2092.5, "pacEqBottom": 2222.25, "pacEqTop": 2237.51, "pacPremiumBottom": 2367.27, "hyperWave": 24.26, "moneyFlow": 54.23, "confluence": 42.86 }, "1d": { "trendStrength": 22.25, "pacDiscountTop": 1832.78, "pacEqBottom": 2555.13, "pacEqTop": 2640.11, "pacPremiumBottom": 3362.46, "hyperWave": 12.58, "moneyFlow": 50.67, "confluence": 42.86 }, "1w": { "trendStrength": 0.25, "pacDiscountTop": 1085.32, "pacEqBottom": 2817.29, "pacEqTop": 3021.05, "pacPremiumBottom": 4753.02, "hyperWave": 48.62, "moneyFlow": 37.18, "confluence": 21.43 } },
+  "SOL": { "1h": { "trendStrength": 43.96, "pacDiscountTop": 84.25, "pacEqBottom": 90.58, "pacEqTop": 91.33, "pacPremiumBottom": 97.66, "hyperWave": 29.18, "moneyFlow": 63.26, "confluence": 50 }, "4h": { "trendStrength": 81.89, "pacDiscountTop": null, "pacEqBottom": null, "pacEqTop": null, "pacPremiumBottom": null, "hyperWave": 65.51, "moneyFlow": 37.68, "confluence": 42.86 }, "1d": { "trendStrength": 0.42, "pacDiscountTop": 69.05, "pacEqBottom": 82.18, "pacEqTop": 83.73, "pacPremiumBottom": 96.86, "hyperWave": 29.73, "moneyFlow": 53.78, "confluence": 57.14 }, "1w": { "trendStrength": 39.41, "pacDiscountTop": 22.39, "pacEqBottom": 144.72, "pacEqTop": 159.11, "pacPremiumBottom": 281.44, "hyperWave": 44.88, "moneyFlow": 33.46, "confluence": 35.71 } },
+  "LINK": { "1h": { "trendStrength": 12.28, "pacDiscountTop": 9.34, "pacEqBottom": 9.56, "pacEqTop": 9.58, "pacPremiumBottom": 9.8, "hyperWave": 27.32, "moneyFlow": 53.13, "confluence": 42.86 }, "4h": { "trendStrength": 79.09, "pacDiscountTop": null, "pacEqBottom": null, "pacEqTop": null, "pacPremiumBottom": null, "hyperWave": 54.02, "moneyFlow": 50.04, "confluence": 57.14 }, "1d": { "trendStrength": 36.88, "pacDiscountTop": 8.33, "pacEqBottom": 9.47, "pacEqTop": 9.6, "pacPremiumBottom": 10.74, "hyperWave": 30.1, "moneyFlow": 48.33, "confluence": 28.57 }, "1w": { "trendStrength": 32.59, "pacDiscountTop": 6.07, "pacEqBottom": 17.2, "pacEqTop": 18.5, "pacPremiumBottom": 29.63, "hyperWave": 57.75, "moneyFlow": 35.03, "confluence": 50 } },
+  "TAO": { "1h": { "trendStrength": 67.7, "pacDiscountTop": 258.3, "pacEqBottom": 291.9, "pacEqTop": 295.8, "pacPremiumBottom": 329.4, "hyperWave": 53.4, "moneyFlow": 58.4, "confluence": 57.1 }, "4h": { "trendStrength": 78.2, "pacDiscountTop": 242.3, "pacEqBottom": 283, "pacEqTop": 287.8, "pacPremiumBottom": 328.5, "hyperWave": 84.2, "moneyFlow": 50, "confluence": 57.1 }, "1d": { "trendStrength": 0, "pacDiscountTop": 154.6, "pacEqBottom": 254.4, "pacEqTop": 266.2, "pacPremiumBottom": 366, "hyperWave": 29.6, "moneyFlow": 53.9, "confluence": 57.1 }, "1w": { "trendStrength": 24.6, "pacDiscountTop": 170.4, "pacEqBottom": 428.9, "pacEqTop": 459.4, "pacPremiumBottom": 717.9, "hyperWave": 57.5, "moneyFlow": 46.6, "confluence": 42.9 } },
+  "NEAR": { "1h": { "trendStrength": 77.794, "pacDiscountTop": 1.485, "pacEqBottom": 1.619, "pacEqTop": 1.635, "pacPremiumBottom": 1.769, "hyperWave": 56.152, "moneyFlow": 56.953, "confluence": 57.143 }, "4h": { "trendStrength": 17.089, "pacDiscountTop": 1.272, "pacEqBottom": 1.502, "pacEqTop": 1.529, "pacPremiumBottom": 1.758, "hyperWave": 87.771, "moneyFlow": 51.716, "confluence": 71.429 }, "1d": { "trendStrength": 43.805, "pacDiscountTop": 0.966, "pacEqBottom": 2.029, "pacEqTop": 2.154, "pacPremiumBottom": 3.217, "hyperWave": 74.906, "moneyFlow": 40.484, "confluence": 57.143 }, "1w": { "trendStrength": 66.437, "pacDiscountTop": 1.249, "pacEqBottom": 4.721, "pacEqTop": 5.13, "pacPremiumBottom": 8.602, "hyperWave": 72.994, "moneyFlow": 39.726, "confluence": 57.143 } },
+  "FET": { "1h": { "trendStrength": 5.6427, "pacDiscountTop": 0.1853, "pacEqBottom": 0.1905, "pacEqTop": 0.1912, "pacPremiumBottom": 0.1964, "hyperWave": 37.2762, "moneyFlow": 53.4008, "confluence": 42.8571 }, "4h": { "trendStrength": 88.3878, "pacDiscountTop": 0.1879, "pacEqBottom": 0.2152, "pacEqTop": 0.2184, "pacPremiumBottom": 0.2457, "hyperWave": 57.3004, "moneyFlow": 38.64, "confluence": 42.8571 }, "1d": { "trendStrength": 4.2644, "pacDiscountTop": 0.1408, "pacEqBottom": 0.1985, "pacEqTop": 0.2052, "pacPremiumBottom": 0.2629, "hyperWave": 18.2355, "moneyFlow": 40.2256, "confluence": 35.7143 }, "1w": { "trendStrength": 71.8053, "pacDiscountTop": 0.2241, "pacEqBottom": 1.6807, "pacEqTop": 1.852, "pacPremiumBottom": 3.3086, "hyperWave": 48.8604, "moneyFlow": 33.371, "confluence": 28.5714 } },
+  "SUI": { "1h": { "trendStrength": 44.234, "pacDiscountTop": 1.0314, "pacEqBottom": 1.2063, "pacEqTop": 1.2268, "pacPremiumBottom": 1.4017, "hyperWave": 35.8076, "moneyFlow": 59.5008, "confluence": 42.8571 }, "4h": { "trendStrength": 50.1214, "pacDiscountTop": 0.9085, "pacEqBottom": 1.1384, "pacEqTop": 1.1654, "pacPremiumBottom": 1.3953, "hyperWave": 66.1644, "moneyFlow": 35.7163, "confluence": 42.8571 }, "1d": { "trendStrength": 22.3411, "pacDiscountTop": 0.8498, "pacEqBottom": 1.1059, "pacEqTop": 1.1361, "pacPremiumBottom": 1.3922, "hyperWave": 42.8034, "moneyFlow": 47.2058, "confluence": 42.8571 }, "1w": { "trendStrength": 60.8489, "pacDiscountTop": 0.3634, "pacEqBottom": 2.6026, "pacEqTop": 2.8661, "pacPremiumBottom": 5.1053, "hyperWave": 58.9001, "moneyFlow": 39.7878, "confluence": 57.1429 } },
+  "RENDER": { "1h": { "trendStrength": 80.946, "pacDiscountTop": 1.75, "pacEqBottom": 1.9, "pacEqTop": 1.917, "pacPremiumBottom": 2.067, "hyperWave": 36.626, "moneyFlow": 61.598, "confluence": 50 }, "4h": { "trendStrength": 41.267, "pacDiscountTop": 1.677, "pacEqBottom": 1.86, "pacEqTop": 1.881, "pacPremiumBottom": 2.064, "hyperWave": 68.569, "moneyFlow": 55.881, "confluence": 57.143 }, "1d": { "trendStrength": 13.905, "pacDiscountTop": 1.303, "pacEqBottom": 2.83, "pacEqTop": 3.009, "pacPremiumBottom": 4.536, "hyperWave": 45.445, "moneyFlow": 43.193, "confluence": 42.857 }, "1w": { "trendStrength": 70.864, "pacDiscountTop": 0.952, "pacEqBottom": 6.717, "pacEqTop": 7.395, "pacPremiumBottom": 13.16, "hyperWave": 60.332, "moneyFlow": 41.626, "confluence": 42.857 } },
+  "HBAR": { "1h": { "trendStrength": 11.84786, "pacDiscountTop": 0.08843, "pacEqBottom": 0.09345, "pacEqTop": 0.09404, "pacPremiumBottom": 0.09906, "hyperWave": 26.9849, "moneyFlow": 44.32385, "confluence": 42.85714 }, "4h": { "trendStrength": 76.70161, "pacDiscountTop": 0.08765, "pacEqBottom": 0.09302, "pacEqTop": 0.09365, "pacPremiumBottom": 0.09902, "hyperWave": 37.63586, "moneyFlow": 41.106, "confluence": 28.57143 }, "1d": { "trendStrength": 4.61821, "pacDiscountTop": 0.0848, "pacEqBottom": 0.095, "pacEqTop": 0.0962, "pacPremiumBottom": 0.1064, "hyperWave": 27.94142, "moneyFlow": 57.05475, "confluence": 42.85714 }, "1w": { "trendStrength": 59.02835, "pacDiscountTop": 0.05389, "pacEqBottom": 0.20935, "pacEqTop": 0.22764, "pacPremiumBottom": 0.3831, "hyperWave": 41.6582, "moneyFlow": 37.68415, "confluence": 35.71429 } },
+  "AR": { "1h": { "trendStrength": 56.85, "pacDiscountTop": 2.07, "pacEqBottom": 2.4, "pacEqTop": 2.43, "pacPremiumBottom": 2.76, "hyperWave": 26.61, "moneyFlow": 42.03, "confluence": 42.86 }, "4h": { "trendStrength": 75.05, "pacDiscountTop": 1.84, "pacEqBottom": 2.27, "pacEqTop": 2.32, "pacPremiumBottom": 2.75, "hyperWave": 58.1, "moneyFlow": 43.46, "confluence": 42.86 }, "1d": { "trendStrength": 52.81, "pacDiscountTop": 1.85, "pacEqBottom": 4.93, "pacEqTop": 5.29, "pacPremiumBottom": 8.37, "hyperWave": 30.79, "moneyFlow": 44.14, "confluence": 42.86 }, "1w": { "trendStrength": 73.52, "pacDiscountTop": 3.67, "pacEqBottom": 24.2, "pacEqTop": 26.61, "pacPremiumBottom": 47.14, "hyperWave": 57.49, "moneyFlow": 45.43, "confluence": 57.14 } },
+  "SEI": { "1h": { "trendStrength": 31.16851, "pacDiscountTop": 0.06039, "pacEqBottom": 0.06919, "pacEqTop": 0.07022, "pacPremiumBottom": 0.07902, "hyperWave": 37.42935, "moneyFlow": 63.93244, "confluence": 50 }, "4h": { "trendStrength": 77.5407, "pacDiscountTop": 0.05755, "pacEqBottom": 0.06762, "pacEqTop": 0.06881, "pacPremiumBottom": 0.07888, "hyperWave": 63.9902, "moneyFlow": 42.91866, "confluence": 42.85714 }, "1d": { "trendStrength": 2.90928, "pacDiscountTop": 0.06418, "pacEqBottom": 0.19826, "pacEqTop": 0.21404, "pacPremiumBottom": 0.34812, "hyperWave": 32.94771, "moneyFlow": 48.10599, "confluence": 28.57143 }, "1w": { "trendStrength": 54.13151, "pacDiscountTop": 0.10323, "pacEqBottom": 0.56929, "pacEqTop": 0.62412, "pacPremiumBottom": 1.09017, "hyperWave": 43.8122, "moneyFlow": 28.92676, "confluence": 35.71429 } },
+  "ZEC": { "1h": { "trendStrength": 83.64, "pacDiscountTop": 496.78, "pacEqBottom": 583.22, "pacEqTop": 593.39, "pacPremiumBottom": 679.83, "hyperWave": 37.72, "moneyFlow": 53.08, "confluence": 57.14 }, "4h": { "trendStrength": 3.52, "pacDiscountTop": 319.1, "pacEqBottom": 485.03, "pacEqTop": 504.55, "pacPremiumBottom": 670.48, "hyperWave": 82.7, "moneyFlow": 53.78, "confluence": 57.14 }, "1d": { "trendStrength": 81.75, "pacDiscountTop": 216.94, "pacEqBottom": 428.57, "pacEqTop": 453.47, "pacPremiumBottom": 665.1, "hyperWave": 75.78, "moneyFlow": 54.94, "confluence": 71.43 }, "1w": { "trendStrength": 55.97, "pacDiscountTop": 52.49, "pacEqBottom": 364.53, "pacEqTop": 401.25, "pacPremiumBottom": 713.29, "hyperWave": 87.99, "moneyFlow": 44.23, "confluence": 57.14 } },
+  "APT": { "1h": { "trendStrength": 45.335, "pacDiscountTop": 0.913, "pacEqBottom": 1.059, "pacEqTop": 1.076, "pacPremiumBottom": 1.222, "hyperWave": 38.085, "moneyFlow": 46.57, "confluence": 28.571 }, "4h": { "trendStrength": 82.625, "pacDiscountTop": 0.913, "pacEqBottom": 1.059, "pacEqTop": 1.076, "pacPremiumBottom": 1.222, "hyperWave": 63.269, "moneyFlow": 42.845, "confluence": 42.857 }, "1d": { "trendStrength": 8.915, "pacDiscountTop": 1.033, "pacEqBottom": 3.098, "pacEqTop": 3.34, "pacPremiumBottom": 5.405, "hyperWave": 23.757, "moneyFlow": 51.237, "confluence": 57.143 }, "1w": { "trendStrength": 89.498, "pacDiscountTop": 1.73, "pacEqBottom": 10.082, "pacEqTop": 11.065, "pacPremiumBottom": 19.417, "hyperWave": 46.232, "moneyFlow": 33.018, "confluence": 35.714 } },
+  "OP": { "1h": { "trendStrength": 19.0306, "pacDiscountTop": 0.1267, "pacEqBottom": 0.1514, "pacEqTop": 0.1543, "pacPremiumBottom": 0.179, "hyperWave": 40.6693, "moneyFlow": 50.3008, "confluence": 57.1429 }, "4h": { "trendStrength": 91.598, "pacDiscountTop": 0.1188, "pacEqBottom": 0.147, "pacEqTop": 0.1504, "pacPremiumBottom": 0.1786, "hyperWave": 58.8875, "moneyFlow": 31.9569, "confluence": 35.7143 }, "1d": { "trendStrength": 30.2038, "pacDiscountTop": 0.138, "pacEqBottom": 0.4717, "pacEqTop": 0.511, "pacPremiumBottom": 0.8447, "hyperWave": 25.4705, "moneyFlow": 43.2196, "confluence": 28.5714 }, "1w": { "trendStrength": 80.1066, "pacDiscountTop": 0.337, "pacEqBottom": 2.3627, "pacEqTop": 2.601, "pacPremiumBottom": 4.6267, "hyperWave": 43.558, "moneyFlow": 36.0993, "confluence": 35.7143 } },
+  "ARB": { "1h": { "trendStrength": 82.4353, "pacDiscountTop": 0.1103, "pacEqBottom": 0.1263, "pacEqTop": 0.1282, "pacPremiumBottom": 0.1442, "hyperWave": 27.932, "moneyFlow": 38.5975, "confluence": 42.8571 }, "4h": { "trendStrength": 95.419, "pacDiscountTop": 0.1105, "pacEqBottom": 0.1279, "pacEqTop": 0.13, "pacPremiumBottom": 0.1474, "hyperWave": 19.8444, "moneyFlow": 30.3432, "confluence": 28.5714 }, "1d": { "trendStrength": 54.5093, "pacDiscountTop": 0.1127, "pacEqBottom": 0.3417, "pacEqTop": 0.3687, "pacPremiumBottom": 0.5977, "hyperWave": 16.8185, "moneyFlow": 37.2519, "confluence": 28.5714 }, "1w": { "trendStrength": 64.2613, "pacDiscountTop": 0.2028, "pacEqBottom": 1.1969, "pacEqTop": 1.3139, "pacPremiumBottom": 2.308, "hyperWave": 53.5246, "moneyFlow": 38.7255, "confluence": 42.8571 } },
+  "XRP": { "1h": { "trendStrength": 14.3829, "pacDiscountTop": 1.3578, "pacEqBottom": 1.4436, "pacEqTop": 1.4537, "pacPremiumBottom": 1.5395, "hyperWave": 30.3309, "moneyFlow": 59.3803, "confluence": 42.8571 }, "4h": { "trendStrength": 58.2235, "pacDiscountTop": 1.356, "pacEqBottom": 1.4426, "pacEqTop": 1.4528, "pacPremiumBottom": 1.5394, "hyperWave": 43.7002, "moneyFlow": 39.9666, "confluence": 21.4286 }, "1d": { "trendStrength": 0.7649, "pacDiscountTop": 1.2868, "pacEqBottom": 1.4301, "pacEqTop": 1.4469, "pacPremiumBottom": 1.5902, "hyperWave": null, "moneyFlow": null, "confluence": null }, "1w": { "trendStrength": 44.0471, "pacDiscountTop": 0.5462, "pacEqBottom": 1.9395, "pacEqTop": 2.1035, "pacPremiumBottom": 3.4968, "hyperWave": 42.3192, "moneyFlow": 26.5796, "confluence": 35.7143 } },
+  "ADA": { "1h": { "trendStrength": 10.7101, "pacDiscountTop": 0.2462, "pacEqBottom": 0.2495, "pacEqTop": 0.2499, "pacPremiumBottom": 0.2532, "hyperWave": 30.4252, "moneyFlow": 51.9484, "confluence": 57.1429 }, "4h": { "trendStrength": 85.4861, "pacDiscountTop": 0.2408, "pacEqBottom": 0.2622, "pacEqTop": 0.2648, "pacPremiumBottom": 0.2862, "hyperWave": 36.5004, "moneyFlow": 36.6566, "confluence": 28.5714 }, "1d": { "trendStrength": 1.2309, "pacDiscountTop": 0.2368, "pacEqBottom": 0.2712, "pacEqTop": 0.2752, "pacPremiumBottom": 0.3096, "hyperWave": 21.7958, "moneyFlow": 46.1137, "confluence": 28.5714 }, "1w": { "trendStrength": 68.2291, "pacDiscountTop": 0.2753, "pacEqBottom": 0.7455, "pacEqTop": 0.8009, "pacPremiumBottom": 1.2711, "hyperWave": 39.7814, "moneyFlow": 37.6646, "confluence": 42.8571 } },
+  "AVAX": { "1h": { "trendStrength": 46.45, "pacDiscountTop": 9.04, "pacEqBottom": 9.69, "pacEqTop": 9.76, "pacPremiumBottom": 10.41, "hyperWave": 40.75, "moneyFlow": 58.7, "confluence": 57.14 }, "4h": { "trendStrength": 78.05, "pacDiscountTop": 9, "pacEqBottom": 9.67, "pacEqTop": 9.74, "pacPremiumBottom": 10.41, "hyperWave": 66.98, "moneyFlow": 39.81, "confluence": 42.86 }, "1d": { "trendStrength": 0.1, "pacDiscountTop": 8.48, "pacEqBottom": 9.41, "pacEqTop": 9.51, "pacPremiumBottom": 10.44, "hyperWave": 30.32, "moneyFlow": 46.16, "confluence": 42.86 }, "1w": { "trendStrength": 59.88, "pacDiscountTop": 10.44, "pacEqBottom": 35.02, "pacEqTop": 37.92, "pacPremiumBottom": 62.5, "hyperWave": 46.56, "moneyFlow": 35.97, "confluence": 35.71 } },
+  "DOT": { "1h": { "trendStrength": 34.467, "pacDiscountTop": 1.226, "pacEqBottom": 1.321, "pacEqTop": 1.332, "pacPremiumBottom": 1.427, "hyperWave": 39.729, "moneyFlow": 53.16, "confluence": 57.143 }, "4h": { "trendStrength": 73.663, "pacDiscountTop": 1.192, "pacEqBottom": 1.302, "pacEqTop": 1.315, "pacPremiumBottom": 1.425, "hyperWave": 62.383, "moneyFlow": 36.705, "confluence": 42.857 }, "1d": { "trendStrength": 30.24, "pacDiscountTop": 1.134, "pacEqBottom": 1.41, "pacEqTop": 1.443, "pacPremiumBottom": 1.719, "hyperWave": 26.946, "moneyFlow": 40.389, "confluence": 28.571 }, "1w": { "trendStrength": 86.538, "pacDiscountTop": 1.196, "pacEqBottom": 5.98, "pacEqTop": 6.542, "pacPremiumBottom": 11.326, "hyperWave": 33.396, "moneyFlow": 31.167, "confluence": 35.714 } },
+  "ATOM": { "1h": { "trendStrength": 7.498, "pacDiscountTop": 1.985, "pacEqBottom": 2.033, "pacEqTop": 2.039, "pacPremiumBottom": 2.087, "hyperWave": 32.678, "moneyFlow": 37.03, "confluence": 28.571 }, "4h": { "trendStrength": 3.241, "pacDiscountTop": 1.858, "pacEqBottom": 2.027, "pacEqTop": 2.046, "pacPremiumBottom": 2.215, "hyperWave": 51.744, "moneyFlow": 53.507, "confluence": 57.143 }, "1d": { "trendStrength": 42.131, "pacDiscountTop": 1.652, "pacEqBottom": 2.037, "pacEqTop": 2.082, "pacPremiumBottom": 2.467, "hyperWave": 54.4, "moneyFlow": 52.695, "confluence": 57.143 }, "1w": { "trendStrength": 82.23, "pacDiscountTop": 0.861, "pacEqBottom": 8.17, "pacEqTop": 9.029, "pacPremiumBottom": 16.338, "hyperWave": 59.809, "moneyFlow": 36.879, "confluence": 57.143 } },
+  "ICP": { "1h": { "trendStrength": 2.13, "pacDiscountTop": 2.457, "pacEqBottom": 2.528, "pacEqTop": 2.536, "pacPremiumBottom": 2.607, "hyperWave": 43.154, "moneyFlow": 61.604, "confluence": 64.286 }, "4h": { "trendStrength": 87.496, "pacDiscountTop": 2.405, "pacEqBottom": 3.16, "pacEqTop": 3.248, "pacPremiumBottom": 4.003, "hyperWave": 52.045, "moneyFlow": 40.301, "confluence": 42.857 }, "1d": { "trendStrength": 13.894, "pacDiscountTop": 2.245, "pacEqBottom": 3.071, "pacEqTop": 3.169, "pacPremiumBottom": 3.995, "hyperWave": 25.409, "moneyFlow": 32.687, "confluence": 28.571 }, "1w": { "trendStrength": 74.138, "pacDiscountTop": 2.151, "pacEqBottom": 10.577, "pacEqTop": 11.568, "pacPremiumBottom": 19.994, "hyperWave": 56.419, "moneyFlow": 36.877, "confluence": 42.857 } },
+  "STX": { "1h": { "trendStrength": 50.9786, "pacDiscountTop": 0.2317, "pacEqBottom": 0.2615, "pacEqTop": 0.2651, "pacPremiumBottom": 0.2949, "hyperWave": 43.0844, "moneyFlow": 56.8813, "confluence": 57.1429 }, "4h": { "trendStrength": 64.7034, "pacDiscountTop": 0.2354, "pacEqBottom": 0.2965, "pacEqTop": 0.3037, "pacPremiumBottom": 0.3648, "hyperWave": 64.7287, "moneyFlow": 37.9482, "confluence": 42.8571 }, "1d": { "trendStrength": 0.9039, "pacDiscountTop": 0.2368, "pacEqBottom": 0.5411, "pacEqTop": 0.5769, "pacPremiumBottom": 0.8812, "hyperWave": 30.7011, "moneyFlow": 50.2189, "confluence": 57.1429 }, "1w": { "trendStrength": 76.6248, "pacDiscountTop": 0.3814, "pacEqBottom": 1.9315, "pacEqTop": 2.1139, "pacPremiumBottom": 3.664, "hyperWave": 48.8117, "moneyFlow": 31.768, "confluence": 35.7143 } },
+  "WLD": { "1h": { "trendStrength": 58.3794, "pacDiscountTop": 0.2301, "pacEqBottom": 0.2594, "pacEqTop": 0.2629, "pacPremiumBottom": 0.2922, "hyperWave": 64.5336, "moneyFlow": 55.8746, "confluence": 71.4286 }, "4h": { "trendStrength": 62.9825, "pacDiscountTop": 0.2301, "pacEqBottom": 0.2594, "pacEqTop": 0.2629, "pacPremiumBottom": 0.2922, "hyperWave": 89.2336, "moneyFlow": 45.6013, "confluence": 57.1429 }, "1d": { "trendStrength": 55.5795, "pacDiscountTop": 0.3259, "pacEqBottom": 1.1692, "pacEqTop": 1.2685, "pacPremiumBottom": 2.1118, "hyperWave": 40.2707, "moneyFlow": 37.767, "confluence": 42.8571 }, "1w": { "trendStrength": 63.8995, "pacDiscountTop": 0.7411, "pacEqBottom": 5.7654, "pacEqTop": 6.3566, "pacPremiumBottom": 11.3809, "hyperWave": 18.4202, "moneyFlow": 23.6242, "confluence": 35.7143 } },
+  "FIL": { "1h": { "trendStrength": 48.785, "pacDiscountTop": 0.929, "pacEqBottom": 1.106, "pacEqTop": 1.126, "pacPremiumBottom": 1.303, "hyperWave": 52.579, "moneyFlow": 58.667, "confluence": 71.429 }, "4h": { "trendStrength": 85.043, "pacDiscountTop": 0.895, "pacEqBottom": 1.087, "pacEqTop": 1.109, "pacPremiumBottom": 1.301, "hyperWave": 74.166, "moneyFlow": 48.912, "confluence": 42.857 }, "1d": { "trendStrength": 36.864, "pacDiscountTop": 0.802, "pacEqBottom": 1.036, "pacEqTop": 1.063, "pacPremiumBottom": 1.297, "hyperWave": 29.959, "moneyFlow": 42.088, "confluence": 42.857 }, "1w": { "trendStrength": 83.849, "pacDiscountTop": 0.897, "pacEqBottom": 5.797, "pacEqTop": 6.373, "pacPremiumBottom": 11.273, "hyperWave": 55.073, "moneyFlow": 37.205, "confluence": 57.143 } },
+  "GRT": { "1h": { "trendStrength": 13.52853, "pacDiscountTop": 0.02413, "pacEqBottom": 0.02489, "pacEqTop": 0.02498, "pacPremiumBottom": 0.02574, "hyperWave": 41.16848, "moneyFlow": 50.02095, "confluence": 57.14286 }, "4h": { "trendStrength": 71.19657, "pacDiscountTop": 0.02421, "pacEqBottom": 0.02697, "pacEqTop": 0.0273, "pacPremiumBottom": 0.03006, "hyperWave": 58.3892, "moneyFlow": 46.39778, "confluence": 42.85714 }, "1d": { "trendStrength": 1.52218, "pacDiscountTop": 0.0233, "pacEqBottom": 0.02647, "pacEqTop": 0.02684, "pacPremiumBottom": 0.03001, "hyperWave": 26.17379, "moneyFlow": 43.16202, "confluence": 28.57143 }, "1w": { "trendStrength": 81.07923, "pacDiscountTop": 0.04612, "pacEqBottom": 0.24649, "pacEqTop": 0.27006, "pacPremiumBottom": 0.47043, "hyperWave": 40.96715, "moneyFlow": 38.80815, "confluence": 35.71429 } },
+  "THETA": { "1h": { "trendStrength": 54.971, "pacDiscountTop": 0.193, "pacEqBottom": 0.223, "pacEqTop": 0.226, "pacPremiumBottom": 0.256, "hyperWave": 37.873, "moneyFlow": 29.757, "confluence": 42.857 }, "4h": { "trendStrength": 73.733, "pacDiscountTop": 0.193, "pacEqBottom": 0.223, "pacEqTop": 0.226, "pacPremiumBottom": 0.256, "hyperWave": 61.942, "moneyFlow": 35.204, "confluence": 42.857 }, "1d": { "trendStrength": 53.204, "pacDiscountTop": 0.181, "pacEqBottom": 0.516, "pacEqTop": 0.555, "pacPremiumBottom": 0.89, "hyperWave": 28.229, "moneyFlow": 44.115, "confluence": 42.857 }, "1w": { "trendStrength": 75.94, "pacDiscountTop": 0.326, "pacEqBottom": 1.889, "pacEqTop": 2.073, "pacPremiumBottom": 3.636, "hyperWave": 54.882, "moneyFlow": 33.802, "confluence": 42.857 } },
+  "ALGO": { "1h": { "trendStrength": 79.0098, "pacDiscountTop": 0.1066, "pacEqBottom": 0.1202, "pacEqTop": 0.1219, "pacPremiumBottom": 0.1355, "hyperWave": 21.9768, "moneyFlow": 48.5573, "confluence": 42.8571 }, "4h": { "trendStrength": 61.0636, "pacDiscountTop": 0.1066, "pacEqBottom": 0.1202, "pacEqTop": 0.1219, "pacPremiumBottom": 0.1355, "hyperWave": 61.2182, "moneyFlow": 45.9832, "confluence": 42.8571 }, "1d": { "trendStrength": 55.6543, "pacDiscountTop": 0.0922, "pacEqBottom": 0.2013, "pacEqTop": 0.2141, "pacPremiumBottom": 0.3232, "hyperWave": 41.2854, "moneyFlow": 43.7393, "confluence": 42.8571 }, "1w": { "trendStrength": 64.8025, "pacDiscountTop": 0.1061, "pacEqBottom": 0.3333, "pacEqTop": 0.36, "pacPremiumBottom": 0.5872, "hyperWave": 61.0994, "moneyFlow": 23.8784, "confluence": 35.7143 } },
+  "VET": { "1h": { "trendStrength": 26.20886, "pacDiscountTop": 0.006482, "pacEqBottom": 0.007185, "pacEqTop": 0.007267, "pacPremiumBottom": 0.00797, "hyperWave": 31.583417, "moneyFlow": 47.94148, "confluence": 42.857143 }, "4h": { "trendStrength": 91.507018, "pacDiscountTop": null, "pacEqBottom": null, "pacEqTop": null, "pacPremiumBottom": null, "hyperWave": 40.787327, "moneyFlow": 42.598785, "confluence": 28.571429 }, "1d": { "trendStrength": 0.377448, "pacDiscountTop": 0.006527, "pacEqBottom": 0.007611, "pacEqTop": 0.007738, "pacPremiumBottom": 0.008822, "hyperWave": 12.659774, "moneyFlow": 44.824842, "confluence": 28.571429 }, "1w": { "trendStrength": 84.593201, "pacDiscountTop": 0.010079, "pacEqBottom": 0.041359, "pacEqTop": 0.04504, "pacPremiumBottom": 0.07632, "hyperWave": 36.825882, "moneyFlow": 34.078216, "confluence": 21.428571 } },
+  "TRX": { "1h": { "trendStrength": 75.5995, "pacDiscountTop": 0.3497, "pacEqBottom": 0.356, "pacEqTop": 0.3568, "pacPremiumBottom": 0.3631, "hyperWave": 75.671, "moneyFlow": 57.8593, "confluence": 57.1429 }, "4h": { "trendStrength": 78.5236, "pacDiscountTop": 0.322, "pacEqBottom": 0.3407, "pacEqTop": 0.343, "pacPremiumBottom": 0.3617, "hyperWave": 89.0231, "moneyFlow": 54.4195, "confluence": 71.4286 }, "1d": { "trendStrength": 91.1964, "pacDiscountTop": 0.2731, "pacEqBottom": 0.3137, "pacEqTop": 0.3185, "pacPremiumBottom": 0.3591, "hyperWave": 93.4101, "moneyFlow": 66.4609, "confluence": 78.5714 }, "1w": { "trendStrength": 47.0642, "pacDiscountTop": 0.2135, "pacEqBottom": 0.3193, "pacEqTop": 0.3318, "pacPremiumBottom": 0.4376, "hyperWave": 92.8922, "moneyFlow": 52.7226, "confluence": 71.4286 } },
+  "DOGE": { "1h": { "trendStrength": 5.10509, "pacDiscountTop": 0.10274, "pacEqBottom": 0.10984, "pacEqTop": 0.11067, "pacPremiumBottom": 0.11777, "hyperWave": 41.31205, "moneyFlow": 55.66578, "confluence": 42.85714 }, "4h": { "trendStrength": 38.64456, "pacDiscountTop": 0.09385, "pacEqBottom": 0.10493, "pacEqTop": 0.10623, "pacPremiumBottom": 0.11731, "hyperWave": 55.80853, "moneyFlow": 38.12532, "confluence": 35.71429 }, "1d": { "trendStrength": 58.62981, "pacDiscountTop": 0.08826, "pacEqBottom": 0.10184, "pacEqTop": 0.10343, "pacPremiumBottom": 0.11701, "hyperWave": 28.11663, "moneyFlow": 51.62394, "confluence": 42.85714 }, "1w": { "trendStrength": 57.22483, "pacDiscountTop": 0.07457, "pacEqBottom": 0.25789, "pacEqTop": 0.27945, "pacPremiumBottom": 0.46277, "hyperWave": 64.40034, "moneyFlow": 32.78719, "confluence": 50 } },
+  "MOVR": { "1h": { "trendStrength": 29.944, "pacDiscountTop": 2.187, "pacEqBottom": 2.501, "pacEqTop": 2.537, "pacPremiumBottom": 2.851, "hyperWave": 54.228, "moneyFlow": 52.22, "confluence": 71.429 }, "4h": { "trendStrength": 78.105, "pacDiscountTop": 2.138, "pacEqBottom": 2.474, "pacEqTop": 2.514, "pacPremiumBottom": 2.85, "hyperWave": 63.875, "moneyFlow": 44.969, "confluence": 42.857 }, "1d": { "trendStrength": 70.746, "pacDiscountTop": 1.327, "pacEqBottom": 4.294, "pacEqTop": 4.644, "pacPremiumBottom": 7.611, "hyperWave": 28.43, "moneyFlow": 42.239, "confluence": 28.571 }, "1w": { "trendStrength": 80.724, "pacDiscountTop": 3.129, "pacEqBottom": 21.413, "pacEqTop": 23.565, "pacPremiumBottom": 41.849, "hyperWave": 73.362, "moneyFlow": 32.071, "confluence": 42.857 } },
+  "CFX": { "1h": { "trendStrength": 3.0602, "pacDiscountTop": 0.05573, "pacEqBottom": 0.0577, "pacEqTop": 0.05794, "pacPremiumBottom": 0.05991, "hyperWave": 18.12742, "moneyFlow": 49.6473, "confluence": 42.85714 }, "4h": { "trendStrength": 40.85289, "pacDiscountTop": 0.05667, "pacEqBottom": 0.06657, "pacEqTop": 0.06773, "pacPremiumBottom": 0.07764, "hyperWave": 26.80563, "moneyFlow": 41.54243, "confluence": 28.57143 }, "1d": { "trendStrength": 15.73486, "pacDiscountTop": 0.04574, "pacEqBottom": 0.09193, "pacEqTop": 0.09737, "pacPremiumBottom": 0.14356, "hyperWave": 29.13448, "moneyFlow": 44.99776, "confluence": 28.57143 }, "1w": { "trendStrength": 18.15264, "pacDiscountTop": 0.06579, "pacEqBottom": 0.28241, "pacEqTop": 0.30789, "pacPremiumBottom": 0.52451, "hyperWave": 56.93712, "moneyFlow": 35.23191, "confluence": 35.71429 } },
+  "PYTH": { "4h": { "trendStrength": 93.1252, "pacDiscountTop": 0.0393, "pacEqBottom": 0.05, "pacEqTop": 0.0512, "pacPremiumBottom": 0.0619, "hyperWave": 52.9292, "moneyFlow": 40.2932, "confluence": 42.8571 }, "1d": { "trendStrength": 17.2946, "pacDiscountTop": 0.0377, "pacEqBottom": 0.0491, "pacEqTop": 0.0505, "pacPremiumBottom": 0.0619, "hyperWave": 17.8518, "moneyFlow": 41.4586, "confluence": 42.8571 }, "1w": { "trendStrength": 72.0573, "pacDiscountTop": 0.0922, "pacEqBottom": 0.5703, "pacEqTop": 0.6265, "pacPremiumBottom": 1.1046, "hyperWave": 49.046, "moneyFlow": 33.1483, "confluence": 28.5714 } },
+  "TON": { "1h": { "trendStrength": 17.489, "pacDiscountTop": 1.906, "pacEqBottom": 2.306, "pacEqTop": 2.353, "pacPremiumBottom": 2.753, "hyperWave": 41.895, "moneyFlow": 51.994, "confluence": 57.143 }, "4h": { "trendStrength": 69.978, "pacDiscountTop": 1.367, "pacEqBottom": 2.056, "pacEqTop": 2.137, "pacPremiumBottom": 2.826, "hyperWave": 60.383, "moneyFlow": 54.715, "confluence": 57.143 }, "1d": { "trendStrength": 51.014, "pacDiscountTop": 1.273, "pacEqBottom": 2.004, "pacEqTop": 2.09, "pacPremiumBottom": 2.821, "hyperWave": 41.502, "moneyFlow": 45.512, "confluence": 42.857 }, "1w": { "trendStrength": 78.366, "pacDiscountTop": 0.89, "pacEqBottom": 3.744, "pacEqTop": 4.079, "pacPremiumBottom": 6.933, "hyperWave": 75.522, "moneyFlow": 42.21, "confluence": 57.143 } },
+  "TRB": { "1h": { "trendStrength": 57.5, "pacDiscountTop": 16.6, "pacEqBottom": 18.65, "pacEqTop": 18.9, "pacPremiumBottom": 20.95, "hyperWave": 25.47, "moneyFlow": 45.1, "confluence": 42.86 }, "4h": { "trendStrength": 82.11, "pacDiscountTop": 16.62, "pacEqBottom": 18.85, "pacEqTop": 19.11, "pacPremiumBottom": 21.34, "hyperWave": 60.41, "moneyFlow": 55.42, "confluence": 57.14 }, "1d": { "trendStrength": 41.39, "pacDiscountTop": 13.89, "pacEqBottom": 28.76, "pacEqTop": 30.5, "pacPremiumBottom": 45.37, "hyperWave": 23.34, "moneyFlow": 47.39, "confluence": 42.86 }, "1w": { "trendStrength": 59.24, "pacDiscountTop": 38.46, "pacEqBottom": 302.67, "pacEqTop": 333.75, "pacPremiumBottom": 597.96, "hyperWave": 59.95, "moneyFlow": 40.51, "confluence": 42.86 } },
+  "POL": { "1h": { "trendStrength": 14.4809, "pacDiscountTop": 0.0886, "pacEqBottom": 0.0901, "pacEqTop": 0.0902, "pacPremiumBottom": 0.0917, "hyperWave": 23.5929, "moneyFlow": 53.7514, "confluence": 42.8571 }, "4h": { "trendStrength": 80.7418, "pacDiscountTop": 0.0824, "pacEqBottom": 0.0925, "pacEqTop": 0.0937, "pacPremiumBottom": 0.1038, "hyperWave": 60.2279, "moneyFlow": 55.8525, "confluence": 57.1429 }, "1d": { "trendStrength": 0.0387, "pacDiscountTop": 0.0831, "pacEqBottom": 0.0989, "pacEqTop": 0.1007, "pacPremiumBottom": 0.1165, "hyperWave": 20.0732, "moneyFlow": 53.4947, "confluence": 57.1429 }, "1w": { "trendStrength": 70.4048, "pacDiscountTop": 0.1271, "pacEqBottom": 0.5176, "pacEqTop": 0.5636, "pacPremiumBottom": 0.9541, "hyperWave": 44.2146, "moneyFlow": 26.6558, "confluence": 21.4286 } },
+  "ZK": { "1h": { "trendStrength": 27.06584, "pacDiscountTop": 0.01494, "pacEqBottom": 0.01724, "pacEqTop": 0.01751, "pacPremiumBottom": 0.01981, "hyperWave": 36.04552, "moneyFlow": 57.75656, "confluence": 57.14286 }, "4h": { "trendStrength": 88.68677, "pacDiscountTop": 0.01494, "pacEqBottom": 0.01724, "pacEqTop": 0.01751, "pacPremiumBottom": 0.01981, "hyperWave": 57.32851, "moneyFlow": 38.20689, "confluence": 42.85714 }, "1d": { "trendStrength": 16.57323, "pacDiscountTop": 0.00779, "pacEqBottom": 0.04233, "pacEqTop": 0.0464, "pacPremiumBottom": 0.08094, "hyperWave": 16.37468, "moneyFlow": 48.33107, "confluence": 42.85714 }, "1w": { "trendStrength": 70.78896, "pacDiscountTop": 0.01829, "pacEqBottom": 0.14208, "pacEqTop": 0.15665, "pacPremiumBottom": 0.28044, "hyperWave": 33.77239, "moneyFlow": 33.40915, "confluence": 42.85714 } }
+};
+
+// Helper: classify the LuxAlgo readings into the same buckets the verdict uses.
+// Returns { hasReal, pacZone, trendBias, oscBias, signals, score, label } or null.
+function evaluateLuxAlgoSnapshot(symbol, tf = '1d', currentPrice = null) {
+  const node = LUXALGO_SNAPSHOT?.[symbol]?.[tf];
+  if (!node) return null;
+  const reasons = [];
+  let score = 50;
+
+  // Trend Strength: LuxAlgo S&O scales 0..100. >65 strong bull, <35 strong bear.
+  let trendBias = 'neutral';
+  if (node.trendStrength >= 70)      { trendBias = 'strong bull'; score += 12; reasons.push(`LuxAlgo Trend Strength ${node.trendStrength.toFixed(1)} (strong bull) +12`); }
+  else if (node.trendStrength >= 55) { trendBias = 'bull';        score += 6;  reasons.push(`LuxAlgo Trend Strength ${node.trendStrength.toFixed(1)} (bull) +6`); }
+  else if (node.trendStrength <= 5)  { trendBias = 'capitulation'; score -= 10; reasons.push(`LuxAlgo Trend Strength ${node.trendStrength.toFixed(2)} (capitulation) −10`); }
+  else if (node.trendStrength <= 35) { trendBias = 'bear';        score -= 6;  reasons.push(`LuxAlgo Trend Strength ${node.trendStrength.toFixed(1)} (bear) −6`); }
+
+  // PAC zones: where is current price relative to discount / equilibrium / premium?
+  let pacZone = null;
+  if (currentPrice && node.pacDiscountTop && node.pacPremiumBottom) {
+    if (currentPrice <= node.pacDiscountTop)        { pacZone = 'discount';    score += 10; reasons.push('LuxAlgo PAC: price in DISCOUNT zone +10'); }
+    else if (currentPrice >= node.pacPremiumBottom) { pacZone = 'premium';     score -= 10; reasons.push('LuxAlgo PAC: price in PREMIUM zone −10'); }
+    else                                              { pacZone = 'equilibrium'; reasons.push('LuxAlgo PAC: price in equilibrium 0'); }
+  }
+
+  // HyperWave: LuxAlgo Osc Matrix oscillator. <30 oversold, >70 overbought.
+  let oscBias = 'neutral';
+  if (node.hyperWave < 20)       { oscBias = 'deeply oversold'; score += 10; reasons.push(`LuxAlgo HyperWave ${node.hyperWave.toFixed(1)} deeply oversold +10`); }
+  else if (node.hyperWave < 35)  { oscBias = 'oversold';        score += 5;  reasons.push(`LuxAlgo HyperWave ${node.hyperWave.toFixed(1)} oversold +5`); }
+  else if (node.hyperWave > 80)  { oscBias = 'deeply overbought'; score -= 10; reasons.push(`LuxAlgo HyperWave ${node.hyperWave.toFixed(1)} overbought −10`); }
+  else if (node.hyperWave > 65)  { oscBias = 'overbought';      score -= 5;  reasons.push(`LuxAlgo HyperWave ${node.hyperWave.toFixed(1)} overbought −5`); }
+
+  // Money Flow: LuxAlgo Osc Matrix. >50 buying pressure, <50 selling.
+  if (node.moneyFlow >= 60)      { score += 6; reasons.push(`LuxAlgo Money Flow ${node.moneyFlow.toFixed(1)} (buy pressure) +6`); }
+  else if (node.moneyFlow >= 52) { score += 3; reasons.push(`LuxAlgo Money Flow ${node.moneyFlow.toFixed(1)} (mild buy) +3`); }
+  else if (node.moneyFlow <= 40) { score -= 6; reasons.push(`LuxAlgo Money Flow ${node.moneyFlow.toFixed(1)} (sell pressure) −6`); }
+  else if (node.moneyFlow <= 48) { score -= 3; reasons.push(`LuxAlgo Money Flow ${node.moneyFlow.toFixed(1)} (mild sell) −3`); }
+
+  // Confluence Meter: composite of multiple LuxAlgo signals. ~50 neutral.
+  if (node.confluence >= 70)      { score += 6; reasons.push(`LuxAlgo Confluence ${node.confluence.toFixed(1)} bullish +6`); }
+  else if (node.confluence <= 25) { score -= 6; reasons.push(`LuxAlgo Confluence ${node.confluence.toFixed(1)} bearish −6`); }
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+  let label;
+  if (score >= 78)      label = 'Excellent';
+  else if (score >= 62) label = 'Good';
+  else if (score >= 48) label = 'Fair';
+  else if (score >= 32) label = 'Hold';
+  else                  label = 'Consider Selling';
+
+  return { hasReal: true, pacZone, trendBias, oscBias, raw: node, score, label, reasons };
+}
+
+// ===== Theme management (System / Light / Dark) =====
+let currentTheme = localStorage.getItem('theme') || 'system';
+
+function setTheme(theme) {
+  currentTheme = theme;
+  localStorage.setItem('theme', theme);
+  applyTheme();
+  updateThemeUI();
+}
+
+function applyTheme() {
+  const html = document.documentElement;
+  if (currentTheme === 'system')      html.removeAttribute('data-theme');
+  else if (currentTheme === 'light')  html.setAttribute('data-theme', 'light');
+  else if (currentTheme === 'dark')   html.setAttribute('data-theme', 'dark');
+}
+
+function updateThemeUI() {
+  document.querySelectorAll('.theme-option').forEach(btn => btn.classList.remove('active'));
+  const id = 'theme' + currentTheme.charAt(0).toUpperCase() + currentTheme.slice(1);
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
+function toggleThemeDropdown() {
+  const dropdown = document.getElementById('themeDropdown');
+  if (dropdown) dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', function(event) {
+  const dropdown = document.getElementById('themeDropdown');
+  const themeBtn = document.getElementById('themeBtn');
+  if (dropdown && themeBtn && !themeBtn.contains(event.target) && !dropdown.contains(event.target)) {
+    dropdown.style.display = 'none';
+  }
+});
+
+// Initialize theme on page load
+applyTheme();
+updateThemeUI();
+
 // Comprehensive coin list from Profile_1789c.txt
 const ALL_COINS = [
   // Reference coins
-  { symbol: 'BTC', name: 'Bitcoin', category: 'reference', allocation: 0 },
-  { symbol: 'ETH', name: 'Ethereum', category: 'reference', allocation: 0 },
+  { symbol: 'BTC', name: 'Bitcoin',  category: 'major', allocation: 0, isMajor: true },
+  { symbol: 'ETH', name: 'Ethereum', category: 'major', allocation: 0, isMajor: true },
 
   // Tier S candidates - Strong fundamentals, strong narrative
   { symbol: 'SOL', name: 'Solana', category: 'L1', allocation: 15 },
@@ -342,6 +588,8 @@ const COIN_IDS = {
 
 // Tokenomics data
 const TOKENOMICS = {
+  'BTC': { inflation: '0.85%', stakingAPR: 'N/A', nextUnlock: 'None', unlockAmount: 'Hard-capped at 21M (next halving 2028)' },
+  'ETH': { inflation: '~0.4% (net, post-burn)', stakingAPR: '3.2%', nextUnlock: 'None', unlockAmount: 'No fixed supply cap, EIP-1559 burns base fee' },
   'SOL': { inflation: '5%', stakingAPR: '7%', nextUnlock: '2026-03', unlockAmount: '5M tokens' },
   'LINK': { inflation: 'NA', stakingAPR: '4.5%', nextUnlock: 'None', unlockAmount: 'N/A' },
   'TAO': { inflation: '1%', stakingAPR: '2%', nextUnlock: 'Ongoing', unlockAmount: 'Daily vesting' },
@@ -356,6 +604,8 @@ const TOKENOMICS = {
 
 // Catalysts and risks
 const CATALYSTS = {
+  'BTC': ['Post-halving supply shock (Apr 2024 halving fully priced through cycle)', 'Spot BTC ETF inflows — BlackRock IBIT > 50% of all ETF AUM', 'Sovereign and corporate treasury adoption (MicroStrategy, El Salvador, US Strategic Reserve discussion)', 'Macro hedge against USD debasement and rising fiscal deficits', 'Lightning + Ordinals/Runes driving on-chain fee revenue'],
+  'ETH': ['Spot ETH ETF inflows + staking approval debate (SEC 2026 review)', 'Dencun + Pectra upgrades — L2 fees down >90%, blob market scaling', 'EIP-7702 smart account UX (account abstraction at L1)', 'Restaking + EigenLayer AVS economy maturing', 'ETH supply turning deflationary on high gas regimes; institutional staking via ETFs'],
   'SOL': ['ETF filing approval momentum', 'Firedancer upgrade live', 'DeFi resurgence', 'Mobile adoption'],
   'LINK': ['CCIP v2 expansion', 'Swift partnership', 'RWA tokenization', 'DTCC integration'],
   'TAO': ['AI narrative dominance', 'Subnet growth', 'Enterprise adoption', 'Bittensor LLM'],
@@ -371,6 +621,8 @@ const CATALYSTS = {
 };
 
 const RISKS = {
+  'BTC': ['Cycle top exhaustion — extended bull phase, mean-reversion risk', 'Long-term holder distribution at all-time highs', 'Concentrated ETF flows — reversal risk if institutional rotation slows', 'Mining economics squeeze post-halving (hash price compression)', 'Regulatory tail risk: US election aftermath, FATF travel rule enforcement'],
+  'ETH': ['L2 value-leakage: fee revenue increasingly captured by Base/Arb/OP rather than L1', 'ETH/BTC ratio in multi-year downtrend — relative underperformance vs. BTC and SOL', 'Validator queue dynamics, restaking slashing risk (EigenLayer + AVS)', 'Competition from monolithic L1s (SOL, SUI, APT) for high-throughput apps', 'Regulatory ambiguity on staking-as-a-service in the US'],
   'SOL': ['FTX overhang', 'Network outages', 'VC unlock pressure', 'Competition from SUI'],
   'LINK': ['Team selling', 'Competition from PYTH', 'Oracle commoditization', 'High valuation'],
   'TAO': ['China exposure', 'Regulatory risk', 'Centralization concerns', 'Whale dominance'],
@@ -388,6 +640,26 @@ const RISKS = {
 let coinData = [];
 let currentFilter = 'all';
 let currentBuySit = 'all';
+let selectedCoin = null; // ticker symbol of currently selected coin (click-to-isolate)
+
+function selectCoin(symbol) {
+  if (selectedCoin === symbol) {
+    selectedCoin = null;  // toggle off
+  } else {
+    selectedCoin = symbol;
+  }
+  renderCoins();
+  // Scroll the selection bar into view if a coin was selected
+  if (selectedCoin) {
+    const bar = document.getElementById('selectionBar');
+    if (bar) bar.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+function clearCoinSelection() {
+  selectedCoin = null;
+  renderCoins();
+}
 
 // Map a coin's daily entryQuality string to one of: excellent, good, fair, hold, sell
 function buySitOf(coin) {
@@ -1009,6 +1281,7 @@ function analyzeTimeframe(candles) {
     const liquiditySweeps = findLiquiditySweeps(candles, 40, 5);
     const supertrend      = computeSupertrend(candles, 10, 3);
     const smartMoneyFlow  = computeSmartMoneyFlow(candles, 20);
+    const volumeSentiment = computeVolumeSentiment(candles);
 
     // Determine entry/exit signals based on VWAP
     let vwapSignal = 'Neutral';
@@ -1097,6 +1370,7 @@ function analyzeTimeframe(candles) {
       liquiditySweeps,
       supertrend,
       smartMoneyFlow,
+      volumeSentiment,
       bollinger,
       macd,
       stochastic,
@@ -1358,6 +1632,124 @@ function computeSupertrend(candles, atrPeriod = 10, multiplier = 3) {
   return { trend, upper, lower, atr: atrPrev };
 }
 
+// ===== Volume Sentiment Suite =====
+// On-Balance Volume + slope. Slope > 0 = accumulation, < 0 = distribution.
+function computeOBV(candles, slopeWindow = 14) {
+  if (!candles || candles.length < slopeWindow + 1) return null;
+  const obv = [0];
+  for (let i = 1; i < candles.length; i++) {
+    const prev = obv[i - 1];
+    if (candles[i].close > candles[i - 1].close) obv.push(prev + candles[i].volume);
+    else if (candles[i].close < candles[i - 1].close) obv.push(prev - candles[i].volume);
+    else obv.push(prev);
+  }
+  const recent = obv.slice(-slopeWindow);
+  const first = recent[0], last = recent[recent.length - 1];
+  const range = Math.max(...recent.map(Math.abs)) || 1;
+  const slope = (last - first) / range; // normalized -1..+1 ish
+  const sign = slope > 0.15 ? 'bull' : slope < -0.15 ? 'bear' : 'neutral';
+  return { obv: last, slope, sign };
+}
+
+// Money Flow Index — RSI of typical-price * volume. 0..100, with 20/80 thresholds.
+function computeMFI(candles, period = 14) {
+  if (!candles || candles.length < period + 1) return null;
+  let posFlow = 0, negFlow = 0;
+  for (let i = candles.length - period; i < candles.length; i++) {
+    const tpCur  = (candles[i].high + candles[i].low + candles[i].close) / 3;
+    const tpPrev = (candles[i - 1].high + candles[i - 1].low + candles[i - 1].close) / 3;
+    const mf = tpCur * candles[i].volume;
+    if (tpCur > tpPrev) posFlow += mf;
+    else if (tpCur < tpPrev) negFlow += mf;
+  }
+  if (posFlow + negFlow === 0) return { value: 50, state: 'neutral' };
+  const mfi = 100 - (100 / (1 + (posFlow / Math.max(negFlow, 1e-9))));
+  const state = mfi < 20 ? 'oversold' : mfi > 80 ? 'overbought' : 'neutral';
+  return { value: mfi, state };
+}
+
+// Chaikin Money Flow — volume-weighted accumulation/distribution. -1..+1.
+function computeCMF(candles, period = 20) {
+  if (!candles || candles.length < period) return null;
+  let mfvSum = 0, volSum = 0;
+  for (let i = candles.length - period; i < candles.length; i++) {
+    const c = candles[i];
+    const range = c.high - c.low;
+    if (range === 0 || !c.volume) continue;
+    const mfm = ((c.close - c.low) - (c.high - c.close)) / range;
+    mfvSum += mfm * c.volume;
+    volSum += c.volume;
+  }
+  if (volSum === 0) return null;
+  const cmf = mfvSum / volSum;
+  const sign = cmf > 0.05 ? 'bull' : cmf < -0.05 ? 'bear' : 'neutral';
+  return { value: cmf, sign };
+}
+
+// Buy/Sell pressure proxy (CVD-like). Uses close-position-in-range × volume as a
+// per-candle proxy for taker buy minus taker sell pressure, then averages over period.
+function computeBuySellPressure(candles, period = 20) {
+  if (!candles || candles.length < period) return null;
+  let buyVol = 0, sellVol = 0;
+  for (let i = candles.length - period; i < candles.length; i++) {
+    const c = candles[i];
+    const range = c.high - c.low;
+    if (!range || !c.volume) continue;
+    // Williams %B-like positioning: where in the range did it close?
+    const pos = (c.close - c.low) / range; // 0 (sold off) .. 1 (full strength close)
+    buyVol  += pos * c.volume;
+    sellVol += (1 - pos) * c.volume;
+  }
+  const total = buyVol + sellVol;
+  if (total === 0) return null;
+  const buyShare = buyVol / total; // 0..1, fraction of pressure that was buying
+  const delta = (buyVol - sellVol) / total; // -1..+1
+  const sign = delta > 0.08 ? 'bull' : delta < -0.08 ? 'bear' : 'neutral';
+  return { buyShare, delta, sign };
+}
+
+// Composite Volume Sentiment — blends OBV slope, MFI, CMF, and buy/sell pressure
+// into a single 0..100 score with a label. This is the dedicated "volume sentiment"
+// readout the verdict uses for confirmation.
+function computeVolumeSentiment(candles) {
+  const obv = computeOBV(candles, 14);
+  const mfi = computeMFI(candles, 14);
+  const cmf = computeCMF(candles, 20);
+  const bsp = computeBuySellPressure(candles, 20);
+
+  let score = 50;
+  const reasons = [];
+
+  if (obv) {
+    if (obv.sign === 'bull') { score += 10; reasons.push('OBV rising — accumulation'); }
+    else if (obv.sign === 'bear') { score -= 10; reasons.push('OBV falling — distribution'); }
+  }
+  if (mfi) {
+    if (mfi.state === 'oversold') { score += 10; reasons.push(`MFI ${mfi.value.toFixed(0)} oversold`); }
+    else if (mfi.state === 'overbought') { score -= 10; reasons.push(`MFI ${mfi.value.toFixed(0)} overbought`); }
+    else if (mfi.value > 55) { score += 3; reasons.push(`MFI ${mfi.value.toFixed(0)} buy-side bias`); }
+    else if (mfi.value < 45) { score -= 3; reasons.push(`MFI ${mfi.value.toFixed(0)} sell-side bias`); }
+  }
+  if (cmf) {
+    if (cmf.sign === 'bull') { score += 8; reasons.push(`CMF ${cmf.value.toFixed(2)} bullish`); }
+    else if (cmf.sign === 'bear') { score -= 8; reasons.push(`CMF ${cmf.value.toFixed(2)} bearish`); }
+  }
+  if (bsp) {
+    if (bsp.sign === 'bull') { score += 8; reasons.push(`Buy pressure ${(bsp.buyShare*100).toFixed(0)}%`); }
+    else if (bsp.sign === 'bear') { score -= 8; reasons.push(`Sell pressure ${((1-bsp.buyShare)*100).toFixed(0)}%`); }
+  }
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+  let label, sign;
+  if (score >= 70)      { label = 'Strong Accumulation'; sign = 'bull'; }
+  else if (score >= 58) { label = 'Mild Accumulation';   sign = 'bull'; }
+  else if (score >= 42) { label = 'Neutral / Balanced';  sign = 'neutral'; }
+  else if (score >= 30) { label = 'Mild Distribution';   sign = 'bear'; }
+  else                  { label = 'Strong Distribution'; sign = 'bear'; }
+
+  return { score, label, sign, reasons, obv, mfi, cmf, bsp };
+}
+
 // Smart Money Flow Index — open-source approximation of LuxAlgo's Smart Money flow.
 // Combines on-balance volume change with price acceleration. Positive = accumulation.
 function computeSmartMoneyFlow(candles, period = 20) {
@@ -1371,16 +1763,160 @@ function computeSmartMoneyFlow(candles, period = 20) {
   return { flow, sign };
 }
 
-// Composite ranked signal — combines weekly + daily MA stack, 4H structure, oscillators, VWAP.
-// Returns { score 0..100, label, reasons[] }
+// LuxAlgo-suite sub-scores. Each returns 0..100 (50 = neutral) and a list of reasons.
+// These mirror LuxAlgo's three flagship indicator packs using open-source equivalents
+// computed from candles (no Pine Script access). When the TradingView MCP is connected,
+// each of these can be transparently replaced by the actual Pine values.
+
+// Price Action Concepts® (PAC) — market structure + imbalance + liquidity
+function scorePriceActionConcepts(coin) {
+  const reasons = [];
+  let score = 50;
+  const tf4h = coin?.timeframes?.['4h'];
+  const tf1d = coin?.timeframes?.['1d'];
+
+  // Market structure bias (BoS / CHoCH) on 4H
+  const s = tf4h?.structure;
+  if (s) {
+    if (s.bias === 'bull') { score += 10; reasons.push('4H HH/HL bias (+10)'); }
+    else if (s.bias === 'bear') { score -= 10; reasons.push('4H LH/LL bias (−10)'); }
+    if (s.lastEvent?.includes('CHoCH↑')) { score += 8; reasons.push('Bullish CHoCH reversal (+8)'); }
+    if (s.lastEvent?.includes('BoS↑'))   { score += 6; reasons.push('Bullish BoS continuation (+6)'); }
+    if (s.lastEvent?.includes('CHoCH↓')) { score -= 8; reasons.push('Bearish CHoCH reversal (−8)'); }
+    if (s.lastEvent?.includes('BoS↓'))   { score -= 6; reasons.push('Bearish BoS continuation (−6)'); }
+  }
+
+  // Fair Value Gaps (4H) — open imbalance
+  const fvgs = tf4h?.fvgs || [];
+  const openBull = fvgs.find(f => f.type === 'bull' && !f.filled);
+  const openBear = fvgs.find(f => f.type === 'bear' && !f.filled);
+  if (openBull && !openBear) { score += 5; reasons.push('Open bullish FVG below (+5)'); }
+  if (openBear && !openBull) { score -= 5; reasons.push('Open bearish FVG above (−5)'); }
+
+  // Liquidity sweep (4H)
+  const sweeps = tf4h?.liquiditySweeps || [];
+  const last = sweeps[sweeps.length - 1];
+  if (last?.type === 'bull') { score += 6; reasons.push('Recent bullish liquidity sweep (+6)'); }
+  else if (last?.type === 'bear') { score -= 6; reasons.push('Recent bearish liquidity sweep (−6)'); }
+
+  // Premium / Discount (1D)
+  const pd = tf1d?.premiumDiscount;
+  if (pd?.zone === 'discount') { score += 8; reasons.push('Daily discount zone (+8)'); }
+  else if (pd?.zone === 'premium') { score -= 8; reasons.push('Daily premium zone (−8)'); }
+
+  // Order blocks — recent bullish OB acting as support
+  const obs = tf4h?.orderBlocks || [];
+  const lastOB = obs[obs.length - 1];
+  if (lastOB?.type === 'bull') { score += 3; reasons.push('Recent 4H bullish OB (+3)'); }
+  else if (lastOB?.type === 'bear') { score -= 3; reasons.push('Recent 4H bearish OB (−3)'); }
+
+  return { score: Math.max(0, Math.min(100, Math.round(score))), reasons };
+}
+
+// Oscillator Matrix® — RSI, Stoch, Stoch RSI, MACD, Smart Money Flow
+function scoreOscillatorMatrix(coin) {
+  const reasons = [];
+  let score = 50;
+  const tf1d = coin?.timeframes?.['1d'];
+  if (!tf1d) return { score, reasons: ['no data'] };
+
+  const rsi = tf1d.rsi ?? 50;
+  const stoch = tf1d.stochastic;
+  const sRsi = tf1d.stochRsi;
+  const macd = tf1d.macd;
+  const smf = tf1d.smartMoneyFlow;
+
+  // RSI
+  if (rsi < 30) { score += 8; reasons.push(`RSI ${rsi.toFixed(0)} oversold (+8)`); }
+  else if (rsi < 40) { score += 3; reasons.push(`RSI ${rsi.toFixed(0)} mildly oversold (+3)`); }
+  else if (rsi > 70) { score -= 8; reasons.push(`RSI ${rsi.toFixed(0)} overbought (−8)`); }
+  else if (rsi > 60) { score -= 3; reasons.push(`RSI ${rsi.toFixed(0)} mildly overbought (−3)`); }
+
+  // Stochastic
+  if (stoch?.k < 20) { score += 6; reasons.push('Stoch oversold (+6)'); }
+  else if (stoch?.k > 80) { score -= 6; reasons.push('Stoch overbought (−6)'); }
+
+  // Stochastic RSI
+  if (sRsi?.state === 'oversold') { score += 8; reasons.push('StochRSI oversold (+8)'); }
+  else if (sRsi?.state === 'overbought') { score -= 8; reasons.push('StochRSI overbought (−8)'); }
+
+  // MACD
+  if (macd) {
+    if (macd.histogram > 0 && macd.macd > macd.signal) { score += 6; reasons.push('MACD bullish cross (+6)'); }
+    else if (macd.histogram < 0 && macd.macd < macd.signal) { score -= 6; reasons.push('MACD bearish cross (−6)'); }
+  }
+
+  // Smart Money Flow (LuxAlgo Osc Matrix proxy)
+  if (smf?.sign === 'bull') { score += 5; reasons.push('Smart money inflow (+5)'); }
+  else if (smf?.sign === 'bear') { score -= 5; reasons.push('Smart money outflow (−5)'); }
+
+  return { score: Math.max(0, Math.min(100, Math.round(score))), reasons };
+}
+
+// Signals & Overlays® — MA stacks, Supertrend, VWAP
+function scoreSignalsOverlays(coin) {
+  const reasons = [];
+  let score = 50;
+  const tf1d = coin?.timeframes?.['1d'];
+  const tf1w = coin?.timeframes?.['1w'];
+  const tf4h = coin?.timeframes?.['4h'];
+
+  // Weekly MA stack — heaviest
+  const w = tf1w?.maStack;
+  if (w) {
+    if (w.stack === 'perfect_bull') { score += 14; reasons.push('Weekly perfect bull stack (+14)'); }
+    else if (w.stack === 'mixed_bull') { score += 6; reasons.push('Weekly bullish (+6)'); }
+    else if (w.stack === 'mixed_bear') { score -= 6; reasons.push('Weekly bearish (−6)'); }
+    else if (w.stack === 'perfect_bear') { score -= 14; reasons.push('Weekly perfect bear stack (−14)'); }
+  }
+
+  // Daily MA stack
+  const d = tf1d?.maStack;
+  if (d) {
+    if (d.stack === 'perfect_bull') { score += 10; reasons.push('Daily perfect bull stack (+10)'); }
+    else if (d.stack === 'mixed_bull') { score += 4; reasons.push('Daily bullish (+4)'); }
+    else if (d.stack === 'mixed_bear') { score -= 4; reasons.push('Daily bearish (−4)'); }
+    else if (d.stack === 'perfect_bear') { score -= 10; reasons.push('Daily perfect bear stack (−10)'); }
+  }
+
+  // 4H Supertrend
+  const st = tf4h?.supertrend;
+  if (st?.trend === 'bull') { score += 5; reasons.push('4H Supertrend bullish (+5)'); }
+  else if (st?.trend === 'bear') { score -= 5; reasons.push('4H Supertrend bearish (−5)'); }
+
+  // VWAP (1D)
+  if (tf1d?.vwapSignal === 'Strong Buy') { score += 6; reasons.push('Below VWAP −2σ (+6)'); }
+  else if (tf1d?.vwapSignal === 'Buy')   { score += 3; reasons.push('Below VWAP −1σ (+3)'); }
+  else if (tf1d?.vwapSignal === 'Strong Sell') { score -= 6; reasons.push('Above VWAP +2σ (−6)'); }
+  else if (tf1d?.vwapSignal === 'Sell')        { score -= 3; reasons.push('Above VWAP +1σ (−3)'); }
+
+  return { score: Math.max(0, Math.min(100, Math.round(score))), reasons };
+}
+
+// Composite ranked signal — combines the three LuxAlgo suite sub-scores plus
+// a few extra confluence factors. Returns { score, label, reasons, breakdown }.
+// breakdown = { pac: {score, reasons[]}, oscMatrix: {...}, signalsOverlays: {...} }
 function computeCompositeSignal(coin) {
   const tf1d = coin?.timeframes?.['1d'];
   const tf1w = coin?.timeframes?.['1w'];
   const tf4h = coin?.timeframes?.['4h'];
-  if (!tf1d || !tf4h) return { score: 0, label: 'Hold', reasons: ['Insufficient data'] };
+  if (!tf1d || !tf4h) return { score: 0, label: 'Hold', reasons: ['Insufficient data'], breakdown: null };
 
-  const reasons = [];
-  let score = 50; // neutral starting point
+  // Three LuxAlgo-suite sub-scores (each 0..100)
+  const pac      = scorePriceActionConcepts(coin);
+  const oscMatx  = scoreOscillatorMatrix(coin);
+  const sigOvl   = scoreSignalsOverlays(coin);
+
+  // Weighted blend: Signals & Overlays (trend) 40%, PAC (structure) 35%, Oscillators (timing) 25%
+  const blended = Math.round(sigOvl.score * 0.40 + pac.score * 0.35 + oscMatx.score * 0.25);
+
+  const reasons = [
+    `Signals & Overlays score ${sigOvl.score}/100 (40% weight)`,
+    `Price Action Concepts score ${pac.score}/100 (35% weight)`,
+    `Oscillator Matrix score ${oscMatx.score}/100 (25% weight)`
+  ];
+
+  let score = blended;
 
   // ---- Weekly MA stack (heaviest weight: ±25)
   const wkStack = tf1w?.maStack;
@@ -1464,6 +2000,65 @@ function computeCompositeSignal(coin) {
   else if (tf1d.vwapSignal === 'Strong Sell') { score -= 5; reasons.push('Above VWAP +2σ (−5)'); }
   else if (tf1d.vwapSignal === 'Sell')        { score -= 3; reasons.push('Above VWAP +1σ (−3)'); }
 
+  // ---- Volume sentiment composite on 1D (OBV/MFI/CMF/Buy-Sell pressure) (±8)
+  // This is the key "is smart money buying or selling?" confirmation layer.
+  const vs1d = tf1d.volumeSentiment;
+  const vs4h = tf4h?.volumeSentiment;
+  if (vs1d) {
+    if (vs1d.sign === 'bull' && vs1d.score >= 70)      { score += 8; reasons.push(`Volume: strong accumulation (${vs1d.score}/100) +8`); }
+    else if (vs1d.sign === 'bull')                     { score += 4; reasons.push(`Volume: mild accumulation (${vs1d.score}/100) +4`); }
+    else if (vs1d.sign === 'bear' && vs1d.score <= 30) { score -= 8; reasons.push(`Volume: strong distribution (${vs1d.score}/100) −8`); }
+    else if (vs1d.sign === 'bear')                     { score -= 4; reasons.push(`Volume: mild distribution (${vs1d.score}/100) −4`); }
+  }
+  // 4H volume confirms / contradicts 1D
+  if (vs1d && vs4h) {
+    if (vs1d.sign === vs4h.sign && vs1d.sign !== 'neutral') {
+      score += vs1d.sign === 'bull' ? 3 : -3;
+      reasons.push(`4H volume confirms 1D (${vs1d.sign})`);
+    } else if (vs1d.sign !== 'neutral' && vs4h.sign !== 'neutral' && vs1d.sign !== vs4h.sign) {
+      reasons.push(`4H volume diverges from 1D — caution`);
+    }
+  }
+
+  // ---- Real LuxAlgo overlay (when available from baked snapshot) — ±20
+  // Multi-timeframe Pine values override approximations when present.
+  // 1D is primary (40% blend). 1H = intraday momentum confirmation.
+  // 4H = swing confirmation. 1W = macro structure (weighted heaviest in conviction).
+  const symbol = coin?.symbol;
+  const currentPrice = tf1d?.currentPrice;
+  const real1h = symbol ? evaluateLuxAlgoSnapshot(symbol, '1h', currentPrice) : null;
+  const real4h = symbol ? evaluateLuxAlgoSnapshot(symbol, '4h', currentPrice) : null;
+  const real1d = symbol ? evaluateLuxAlgoSnapshot(symbol, '1d', currentPrice) : null;
+  const real1w = symbol ? evaluateLuxAlgoSnapshot(symbol, '1w', currentPrice) : null;
+  const real = real1d; // exposed to renderer (primary)
+  if (real1d) {
+    score = Math.round(score * 0.6 + real1d.score * 0.4);
+    reasons.push(`Real LuxAlgo 1D blended (snapshot ${real1d.score}/100, label ${real1d.label})`);
+    real1d.reasons.slice(0, 4).forEach(r => reasons.push('  ↳ ' + r));
+  }
+  // 4H confirmation/divergence — short-term swing alignment with daily
+  if (real4h && real1d) {
+    const delta = real4h.score - real1d.score;
+    if (Math.abs(delta) <= 10) { score += 4; reasons.push(`LuxAlgo 4H confirms 1D (both ~${real4h.score}/100) +4`); }
+    else if ((real4h.score >= 60 && real1d.score < 50) || (real4h.score < 50 && real1d.score >= 60)) {
+      score -= 3; reasons.push(`LuxAlgo 4H/1D divergence (4H ${real4h.score} vs 1D ${real1d.score}) −3`);
+    }
+  }
+  // 1H intraday momentum — small weight, useful for timing precision
+  if (real1h && real1d) {
+    if (real1h.score >= 70 && real1d.score >= 60) { score += 3; reasons.push(`LuxAlgo 1H momentum confirms 1D bull (+3)`); }
+    else if (real1h.score <= 30 && real1d.score <= 40) { score -= 3; reasons.push(`LuxAlgo 1H momentum confirms 1D bear (−3)`); }
+    else if (real1h.score >= 70 && real1d.score < 40) { score += 2; reasons.push(`LuxAlgo 1H reversal vs weak 1D (+2 caution upside)`); }
+    else if (real1h.score <= 30 && real1d.score > 60) { score -= 2; reasons.push(`LuxAlgo 1H weakness vs strong 1D (−2 caution downside)`); }
+  }
+  // 1W macro structure — heaviest confirmation weight. Aligned weekly = strong conviction.
+  if (real1w && real1d) {
+    if (real1w.score >= 65 && real1d.score >= 55) { score += 8; reasons.push(`LuxAlgo 1W macro bull aligned (+8)`); }
+    else if (real1w.score <= 35 && real1d.score <= 45) { score -= 8; reasons.push(`LuxAlgo 1W macro bear aligned (−8)`); }
+    else if (real1w.score >= 65 && real1d.score < 45) { score += 4; reasons.push(`LuxAlgo 1W bullish but 1D weak — accumulation zone (+4)`); }
+    else if (real1w.score <= 35 && real1d.score > 55) { score -= 4; reasons.push(`LuxAlgo 1W bearish but 1D bouncing — distribution risk (−4)`); }
+  }
+
   score = Math.max(0, Math.min(100, Math.round(score)));
 
   let label;
@@ -1473,13 +2068,90 @@ function computeCompositeSignal(coin) {
   else if (score >= 35) label = 'Hold';
   else                  label = 'Consider Selling';
 
-  return { score, label, reasons };
+  return { score, label, reasons, real, real1h, real4h, real1w };
+}
+
+// Apply volume sentiment + price-action structural confirmation as a verdict modifier.
+// Mutates the verdict tag/note to upgrade or downgrade conviction without flipping it
+// to the opposite class — that's what the underlying composite score is for.
+function applyConfirmationModifiers(verdict, coin) {
+  if (!coin || !verdict) return verdict;
+  const tf1d = coin.timeframes?.['1d'];
+  const tf4h = coin.timeframes?.['4h'];
+  if (!tf1d) return verdict;
+
+  const vs = tf1d.volumeSentiment;
+  const struct = tf4h?.structure;
+  const sweeps = tf4h?.liquiditySweeps || [];
+  const lastSweep = sweeps[sweeps.length - 1];
+  const pd = tf1d.premiumDiscount;
+  const st = tf4h?.supertrend;
+
+  const flags = [];
+
+  // Volume confirmation
+  if (vs) {
+    if (vs.sign === 'bull' && vs.score >= 70) flags.push('🟢 Vol: strong accumulation');
+    else if (vs.sign === 'bull')              flags.push('🟢 Vol: accumulation');
+    else if (vs.sign === 'bear' && vs.score <= 30) flags.push('🔴 Vol: strong distribution');
+    else if (vs.sign === 'bear')              flags.push('🔴 Vol: distribution');
+    else                                       flags.push('⚪ Vol: balanced');
+  }
+
+  // Structure confirmation
+  if (struct?.lastEvent) {
+    if (struct.lastEvent.includes('CHoCH↑')) flags.push('🟢 PA: bullish CHoCH');
+    else if (struct.lastEvent.includes('BoS↑')) flags.push('🟢 PA: bullish BoS');
+    else if (struct.lastEvent.includes('CHoCH↓')) flags.push('🔴 PA: bearish CHoCH');
+    else if (struct.lastEvent.includes('BoS↓')) flags.push('🔴 PA: bearish BoS');
+  }
+
+  // Liquidity sweep confirmation
+  if (lastSweep?.type === 'bull') flags.push('🟢 PA: bull liquidity sweep');
+  else if (lastSweep?.type === 'bear') flags.push('🔴 PA: bear liquidity sweep');
+
+  // Premium / discount entry zone
+  if (pd?.zone === 'discount')       flags.push('🟢 PA: discount zone');
+  else if (pd?.zone === 'premium')   flags.push('🔴 PA: premium zone');
+
+  // Supertrend confirmation
+  if (st?.trend === 'bull') flags.push('🟢 ST: 4H bull');
+  else if (st?.trend === 'bear') flags.push('🔴 ST: 4H bear');
+
+  // Decide whether to upgrade or downgrade the verdict's strength
+  const bullFlags = flags.filter(f => f.startsWith('🟢')).length;
+  const bearFlags = flags.filter(f => f.startsWith('🔴')).length;
+  let modifier = '';
+  if (bullFlags - bearFlags >= 3)  modifier = ' · ✅ strong confluence';
+  else if (bullFlags - bearFlags >= 2) modifier = ' · ✅ confluence';
+  else if (bearFlags - bullFlags >= 3) modifier = ' · ⚠️ heavy contradiction';
+  else if (bearFlags - bullFlags >= 2) modifier = ' · ⚠️ contradicting signals';
+  else if (bullFlags + bearFlags === 0) modifier = '';
+  else if (bullFlags === bearFlags) modifier = ' · 🟡 mixed signals';
+
+  return {
+    ...verdict,
+    tag: verdict.tag + modifier,
+    confirmationFlags: flags,
+    bullFlags,
+    bearFlags
+  };
 }
 
 // Action verdict — combines asset quality (Tier) × entry timing (composite signal label)
 // into one clear recommendation. This resolves the confusing case of a top-quality
 // asset (Tier S) being too extended right now (Fair entry).
 function computeActionVerdict(tier, entryLabel) {
+  // Majors (BTC/ETH) are benchmarks — their verdict drives whole-market context,
+  // not "buy or not". Show a market-tone verdict instead.
+  if (tier === 'tier-major') {
+    const e = (entryLabel || 'hold').toLowerCase();
+    if (e === 'excellent') return { tag: '🟢 Major dip — risk-on signal', cls: 'av-load', note: 'Strong bid into majors usually fuels alt rallies' };
+    if (e === 'good')      return { tag: '🟢 Constructive majors',         cls: 'av-buy',  note: 'Friendly tape for alt adds' };
+    if (e === 'fair')      return { tag: '🟡 Majors neutral',              cls: 'av-wait', note: 'No edge — let direction confirm' };
+    if (e === 'hold')      return { tag: '🟡 Majors holding range',        cls: 'av-hold', note: 'Watch for break' };
+    return { tag: '🔴 Majors extended — caution', cls: 'av-trim', note: 'Risk-off backdrop for alts' };
+  }
   const t = (tier || '').replace('tier-', '').toUpperCase();        // 'S' | 'A' | 'B'
   const e = (entryLabel || 'hold').toLowerCase();                   // 'excellent' | 'good' | 'fair' | 'hold' | 'consider selling'
   const map = {
@@ -1706,6 +2378,7 @@ function getTier(score) {
 
 function getTierLabel(tier) {
   const labels = {
+    'tier-major': 'Major (Benchmark)',
     'tier-s': 'Tier S - Top Asset',
     'tier-a': 'Tier A - Strong Asset',
     'tier-b': 'Tier B - Watch'
@@ -1781,6 +2454,8 @@ async function fetchCoinData(coin) {
         price: primaryPrice.price,
         change24h: primaryPrice.change24h,
         volume24h: primaryPrice.volume24h,
+        high24h: primaryPrice.high24h,
+        low24h: primaryPrice.low24h,
         source: primaryPrice.source,
         isPrimary: primaryPrice.source === 'primary'
       });
@@ -1796,6 +2471,8 @@ async function fetchCoinData(coin) {
               price: kucoinPrice.price,
               change24h: kucoinPrice.change24h,
               volume24h: kucoinPrice.volume24h,
+              high24h: kucoinPrice.high24h,
+              low24h: kucoinPrice.low24h,
               source: 'secondary',
               isPrimary: false
             });
@@ -1813,6 +2490,8 @@ async function fetchCoinData(coin) {
               price: bybitPrice.price,
               change24h: bybitPrice.change24h,
               volume24h: bybitPrice.volume24h,
+              high24h: bybitPrice.high24h,
+              low24h: bybitPrice.low24h,
               source: 'secondary',
               isPrimary: false
             });
@@ -1832,6 +2511,8 @@ async function fetchCoinData(coin) {
                                         price: geckoPrice.price,
                 change24h: geckoPrice.change24h,
                 volume24h: geckoPrice.volume24h,
+                high24h: geckoPrice.high24h,
+                low24h: geckoPrice.low24h,
                 source: 'fallback',
                 isPrimary: false
               });
@@ -1850,6 +2531,8 @@ async function fetchCoinData(coin) {
           price: basePrice * 1.001,
           change24h: base.change24h,
           volume24h: base.volume24h,
+          high24h: base.high24h,
+          low24h: base.low24h,
           source: 'synthetic',
           isPrimary: false
         });
@@ -1858,6 +2541,8 @@ async function fetchCoinData(coin) {
           price: basePrice * 0.999,
           change24h: base.change24h,
           volume24h: base.volume24h,
+          high24h: base.high24h,
+          low24h: base.low24h,
           source: 'synthetic',
           isPrimary: false
         });
@@ -1877,6 +2562,12 @@ async function fetchCoinData(coin) {
   const avgPrice = prices.reduce((sum, p) => sum + p.price, 0) / prices.length;
   const avgChange24h = prices.reduce((sum, p) => sum + p.change24h, 0) / prices.length;
   const avgVolume = prices.reduce((sum, p) => sum + p.volume24h, 0) / prices.length;
+  // 24h high/low: not all exchanges return these (Binance + CoinGecko do, KuCoin/Bybit don't),
+  // so average only over the entries that actually have the field.
+  const highs = prices.map(p => p.high24h).filter(v => typeof v === 'number' && !isNaN(v));
+  const lows  = prices.map(p => p.low24h ).filter(v => typeof v === 'number' && !isNaN(v));
+  const avgHigh24h = highs.length ? highs.reduce((s, v) => s + v, 0) / highs.length : null;
+  const avgLow24h  = lows.length  ? lows.reduce( (s, v) => s + v, 0) / lows.length  : null;
 
   // Find best price (prioritize Binance even if not the absolute lowest)
   const bestPrice = prices.reduce((best, p) => {
@@ -1910,11 +2601,16 @@ async function fetchCoinData(coin) {
 
   // Composite ranked signal — overrides the simple VWAP-only entryQuality
   // so the buy-situation filter and per-card badge reflect the full TA picture.
-  const composite = computeCompositeSignal({ timeframes });
+  // Pass symbol so the LuxAlgo snapshot can be blended in when available.
+  const composite = computeCompositeSignal({ symbol: coin.symbol, timeframes });
   if (timeframes['1d']) {
     timeframes['1d'].entryQuality = composite.label;
     timeframes['1d'].compositeScore = composite.score;
     timeframes['1d'].compositeReasons = composite.reasons;
+    timeframes['1d'].luxAlgoReal = composite.real || null;
+    timeframes['1d'].luxAlgo1h = composite.real1h || null;
+    timeframes['1d'].luxAlgo4h = composite.real4h || null;
+    timeframes['1d'].luxAlgo1w = composite.real1w || null;
   }
 
   const supportResistance = d1.status === 'fulfilled' ?
@@ -1934,6 +2630,8 @@ async function fetchCoinData(coin) {
     avgPrice,
     avgChange24h,
     avgVolume,
+    avgHigh24h,
+    avgLow24h,
     bestPrice,
     timeframes,
     supportResistance,
@@ -1967,7 +2665,7 @@ async function refreshData() {
         };
 
         const score = calculateComprehensiveScore(data, analysis);
-        const tier = getTier(score);
+        const tier = data.isMajor ? 'tier-major' : getTier(score);
 
         return {
           ...data,
@@ -1994,6 +2692,7 @@ async function refreshData() {
     coinData.sort((a, b) => b.score - a.score);
 
     renderMarketOverview();
+    renderMajorsPanel();
     renderCoins();
     updateCounts();
 
@@ -2011,8 +2710,9 @@ async function refreshData() {
 }
 
 function updateCounts() {
-  const nonRefCoins = coinData.filter(c => c.category !== 'reference');
+  const nonRefCoins = coinData.filter(c => c.category !== '__excluded__');
   document.getElementById('totalCount').textContent = nonRefCoins.length;
+  const mEl = document.getElementById('mCount'); if (mEl) mEl.textContent = coinData.filter(c => c.tier === 'tier-major').length;
   document.getElementById('sCount').textContent = coinData.filter(c => c.tier === 'tier-s').length;
   document.getElementById('aCount').textContent = coinData.filter(c => c.tier === 'tier-a').length;
   document.getElementById('bCount').textContent = coinData.filter(c => c.tier === 'tier-b').length;
@@ -2046,16 +2746,107 @@ function renderMarketOverview() {
     </div>
     <div class="overview-card">
       <div class="label">Strongest Signal</div>
-      <div class="value">${coinData.find(c => c.category !== 'reference')?.symbol || 'N/A'}</div>
-      <div class="change">Score: ${coinData.find(c => c.category !== 'reference')?.score || 0}</div>
+      <div class="value">${coinData.find(c => !c.isMajor)?.symbol || 'N/A'}</div>
+      <div class="change">Score: ${coinData.find(c => !c.isMajor)?.score || 0}</div>
     </div>
+  `;
+}
+
+// Dedicated benchmark panel for BTC & ETH — they don't fit the buy/sell verdict frame
+// other coins use, so they get a richer macro/technical breakdown plus ETH/BTC context.
+function renderMajorsPanel() {
+  const btc = coinData.find(c => c.symbol === 'BTC');
+  const eth = coinData.find(c => c.symbol === 'ETH');
+  const panel = document.getElementById('majorsPanel');
+  if (!panel) return;
+  if (!btc && !eth) { panel.innerHTML = ''; return; }
+
+  // Determine regime from BTC trend + ETH co-confirmation
+  const btcTrend = btc?.timeframes?.['1d']?.trend || 'neutral';
+  const ethTrend = eth?.timeframes?.['1d']?.trend || 'neutral';
+  const btcRsi = btc?.timeframes?.['1d']?.rsi || 50;
+  const ethRsi = eth?.timeframes?.['1d']?.rsi || 50;
+  let regime, regimeCls;
+  if (btcTrend === 'bullish' && ethTrend === 'bullish') { regime = '🟢 Risk-On — Majors Aligned Bullish'; regimeCls = 'mp-regime-bullish'; }
+  else if (btcTrend === 'bearish' && ethTrend === 'bearish') { regime = '🔴 Risk-Off — Majors Aligned Bearish'; regimeCls = 'mp-regime-bearish'; }
+  else if (btcTrend === 'bullish' || ethTrend === 'bullish') { regime = '🟡 Mixed — Partial Strength in Majors'; regimeCls = 'mp-regime-neutral'; }
+  else { regime = '⚪ Neutral / Range-Bound Majors'; regimeCls = 'mp-regime-neutral'; }
+
+  const fmtPrice = (p) => (typeof p === 'number' && !isNaN(p)) ? '$' + p.toLocaleString('en-US', { maximumFractionDigits: p > 100 ? 0 : 2 }) : 'N/A';
+  const fmtChange = (c) => (c >= 0 ? '+' : '') + (c?.toFixed(2) ?? '0.00') + '%';
+  const fmtRsi = (r) => r ? r.toFixed(0) : 'N/A';
+
+  // ETH/BTC ratio — key relative strength gauge
+  let ratioRow = '';
+  if (btc?.avgPrice && eth?.avgPrice) {
+    const ratio = eth.avgPrice / btc.avgPrice;
+    const ratioComment = ratio > 0.06
+      ? 'ETH outperforming — alts likely to follow'
+      : ratio > 0.045
+        ? 'ETH/BTC mid-range — no strong rotation signal'
+        : 'ETH underperforming — BTC-led tape, alts under pressure';
+    ratioRow = `<div class="mp-ratio"><strong>ETH/BTC ratio:</strong> ${ratio.toFixed(5)} — ${ratioComment}</div>`;
+  }
+
+  // BTC thesis — combines macro catalyst with current technical posture
+  const btcThesis = btc ? (() => {
+    const overbought = btcRsi > 70;
+    const oversold = btcRsi < 35;
+    if (overbought) return '<strong>Bias: Trim into strength.</strong> RSI extended; ETF demand has been the dominant flow but late-cycle distribution risk rises here. Wait for VWAP reclaim before fresh adds.';
+    if (oversold)   return '<strong>Bias: Accumulate.</strong> Oversold reading on the daily; structurally constructive as long as the halving thesis and ETF inflow regime stay intact.';
+    if (btcTrend === 'bullish') return '<strong>Bias: Hold / add on dips.</strong> Uptrend intact; ETF inflows + scarcity narrative remain the dominant macro driver. Keep stops below recent swing low.';
+    if (btcTrend === 'bearish') return '<strong>Bias: Defensive.</strong> Daily trend has rolled over — reduce leverage. Watch the 200-day MA and on-chain realized price for capitulation signals.';
+    return '<strong>Bias: Patient.</strong> No directional edge here; let price establish a side. ETF flows + halving supply remain the medium-term tailwind.';
+  })() : '';
+
+  // ETH thesis — frames ETH/BTC relative-strength + L2/restaking narrative
+  const ethThesis = eth ? (() => {
+    const overbought = ethRsi > 70;
+    const oversold = ethRsi < 35;
+    if (overbought) return '<strong>Bias: Trim into strength.</strong> RSI extended; ETH has historically faded faster than BTC at cycle tops. Consider rotation into BTC if ETH/BTC stalls.';
+    if (oversold)   return '<strong>Bias: Accumulate.</strong> Oversold + post-Pectra + spot ETF live = attractive long-term setup. Restaking narrative still maturing.';
+    if (ethTrend === 'bullish') return '<strong>Bias: Hold / add.</strong> Uptrend intact; Pectra fee reductions and restaking/AVS economy support fundamentals. Monitor ETH/BTC for rotation confirmation.';
+    if (ethTrend === 'bearish') return '<strong>Bias: Cautious.</strong> ETH continues to lag BTC; L2 value leakage and staking flow dynamics weighing. Prefer BTC exposure until ETH/BTC base forms.';
+    return '<strong>Bias: Patient.</strong> Range-bound; the key question is whether ETF staking approval and Pectra unlock a fresh ETH/BTC uptrend.';
+  })() : '';
+
+  panel.innerHTML = `
+    <div class="mp-header">
+      <h2>🟡 BTC & ETH — Market Benchmarks</h2>
+      <div class="mp-regime ${regimeCls}">${regime}</div>
+    </div>
+    <div class="majors-grid">
+      ${btc ? `
+        <div class="major-card btc">
+          <h3>₿ Bitcoin (BTC) <span style="font-size:11px; color: var(--text-2); font-weight: 400;">Digital Gold</span></h3>
+          <div class="mc-price">${fmtPrice(btc.avgPrice)}</div>
+          <div class="mc-change ${btc.avgChange24h >= 0 ? 'positive' : 'negative'}">${fmtChange(btc.avgChange24h)} 24h · 24h range ${fmtPrice(btc.avgLow24h)}–${fmtPrice(btc.avgHigh24h)}</div>
+          <div class="mc-row"><span class="mc-label">Daily trend</span><span class="mc-value">${btcTrend}</span></div>
+          <div class="mc-row"><span class="mc-label">RSI (1D)</span><span class="mc-value ${btcRsi > 70 ? 'negative' : btcRsi < 35 ? 'positive' : ''}">${fmtRsi(btcRsi)}</span></div>
+          <div class="mc-row"><span class="mc-label">VWAP entry</span><span class="mc-value">${btc.timeframes?.['1d']?.entryQuality || 'N/A'}</span></div>
+          <div class="mc-row"><span class="mc-label">Inflation</span><span class="mc-value">${TOKENOMICS.BTC.inflation} · ${TOKENOMICS.BTC.unlockAmount}</span></div>
+          <div class="mc-thesis">${btcThesis}</div>
+        </div>` : ''}
+      ${eth ? `
+        <div class="major-card eth">
+          <h3>Ξ Ethereum (ETH) <span style="font-size:11px; color: var(--text-2); font-weight: 400;">Smart Contract Settlement</span></h3>
+          <div class="mc-price">${fmtPrice(eth.avgPrice)}</div>
+          <div class="mc-change ${eth.avgChange24h >= 0 ? 'positive' : 'negative'}">${fmtChange(eth.avgChange24h)} 24h · 24h range ${fmtPrice(eth.avgLow24h)}–${fmtPrice(eth.avgHigh24h)}</div>
+          <div class="mc-row"><span class="mc-label">Daily trend</span><span class="mc-value">${ethTrend}</span></div>
+          <div class="mc-row"><span class="mc-label">RSI (1D)</span><span class="mc-value ${ethRsi > 70 ? 'negative' : ethRsi < 35 ? 'positive' : ''}">${fmtRsi(ethRsi)}</span></div>
+          <div class="mc-row"><span class="mc-label">VWAP entry</span><span class="mc-value">${eth.timeframes?.['1d']?.entryQuality || 'N/A'}</span></div>
+          <div class="mc-row"><span class="mc-label">Staking APR</span><span class="mc-value">${TOKENOMICS.ETH.stakingAPR} · net issuance ${TOKENOMICS.ETH.inflation}</span></div>
+          <div class="mc-thesis">${ethThesis}</div>
+        </div>` : ''}
+    </div>
+    ${ratioRow}
   `;
 }
 
 function renderCoins() {
   const grid = document.getElementById('coinGrid');
 
-  let filteredCoins = coinData.filter(c => c.category !== 'reference');
+  let filteredCoins = coinData.filter(c => c.category !== '__excluded__');
 
   // Buy-situation count chips (computed against the non-reference universe, ignoring active filters)
   const allReal = filteredCoins;
@@ -2066,11 +2857,29 @@ function renderCoins() {
   setText('hdCount', allReal.filter(c => buySitOf(c) === 'hold').length);
   setText('slCount', allReal.filter(c => buySitOf(c) === 'sell').length);
 
-  if (currentFilter !== 'all') {
-    filteredCoins = filteredCoins.filter(c => c.tier === currentFilter);
+  // Update selection bar visibility and label
+  const selBar = document.getElementById('selectionBar');
+  const selLabel = document.getElementById('selectedCoinLabel');
+  if (selBar) {
+    if (selectedCoin) {
+      const c = coinData.find(c => c.symbol === selectedCoin);
+      if (selLabel) selLabel.textContent = c ? `${c.symbol} — ${c.name}` : selectedCoin;
+      selBar.style.display = 'flex';
+    } else {
+      selBar.style.display = 'none';
+    }
   }
-  if (currentBuySit !== 'all') {
-    filteredCoins = filteredCoins.filter(c => buySitOf(c) === currentBuySit);
+
+  // Selected coin filter takes precedence over tier / buy-situation filters
+  if (selectedCoin) {
+    filteredCoins = filteredCoins.filter(c => c.symbol === selectedCoin);
+  } else {
+    if (currentFilter !== 'all') {
+      filteredCoins = filteredCoins.filter(c => c.tier === currentFilter);
+    }
+    if (currentBuySit !== 'all') {
+      filteredCoins = filteredCoins.filter(c => buySitOf(c) === currentBuySit);
+    }
   }
 
   // Search — matches ticker or full name, case-insensitive, substring
@@ -2124,7 +2933,7 @@ function renderCoins() {
     <div class="coin-card" data-tier="${coin.tier}">
       <div class="coin-header">
         <div class="coin-info">
-          <h3>${coin.symbol} <span class="coin-rank">#${coinData.indexOf(coin) + 1}</span></h3>
+          <h3><span class="coin-ticker ${selectedCoin === coin.symbol ? 'selected' : ''}" onclick="selectCoin('${coin.symbol}')" title="Click to filter to ${coin.symbol} only">${coin.symbol}</span> <span class="coin-rank">#${coinData.indexOf(coin) + 1}</span></h3>
           <div style="font-size: 12px; color: var(--text-2);">${coin.name}</div>
           <div class="tier-badge ${coin.tier}">${getTierLabel(coin.tier)}</div>
           ${coin.prices.some(p => p.source === 'primary') ?
@@ -2215,7 +3024,12 @@ function renderCoins() {
               'take profit': '💰'
             };
 
-            const verdict = computeActionVerdict(coin.tier, analysis1d.entryQuality);
+            const baseVerdict = computeActionVerdict(coin.tier, analysis1d.entryQuality);
+            const verdict = applyConfirmationModifiers(baseVerdict, coin);
+            const vs1d = analysis1d.volumeSentiment;
+            const vsBadgeCls = vs1d?.sign === 'bull' ? 'vs-bull' : vs1d?.sign === 'bear' ? 'vs-bear' : 'vs-neutral';
+            const flagsHtml = (verdict.confirmationFlags || []).slice(0, 6)
+              .map(f => `<span class="conf-flag">${f}</span>`).join('');
             return `
               <div class="action-verdict ${verdict.cls}">
                 <span>${verdict.tag}</span>
@@ -2225,6 +3039,35 @@ function renderCoins() {
                 <span>${icons[analysis1d.entryQuality.toLowerCase()] || '📊'} Entry timing: <strong>${analysis1d.entryQuality}</strong></span>
                 <span style="margin-left: auto; font-size: 10px; opacity: 0.8;">Composite: <strong>${analysis1d.compositeScore ?? '—'}/100</strong></span>
               </div>
+              ${vs1d ? `
+              <div class="volume-sentiment ${vsBadgeCls}">
+                <span>📊 Volume sentiment: <strong>${vs1d.label}</strong> (${vs1d.score}/100)</span>
+                <span style="margin-left:auto; font-size:10px; opacity:0.85;">${(vs1d.reasons || []).slice(0,3).join(' · ')}</span>
+              </div>` : ''}
+              ${(() => {
+                const real = analysis1d.luxAlgoReal;
+                if (!real) return '';
+                const lux1h = analysis1d.luxAlgo1h;
+                const lux4h = analysis1d.luxAlgo4h;
+                const lux1w = analysis1d.luxAlgo1w;
+                const zoneCls = real.pacZone === 'discount' ? 'vs-bull'
+                              : real.pacZone === 'premium'  ? 'vs-bear'
+                              : 'vs-neutral';
+                const zoneTxt = real.pacZone ? real.pacZone.toUpperCase() : 'n/a';
+                // Mini TF strip — color each timeframe by its score
+                function tfBadge(label, lux) {
+                  if (!lux) return `<span class="tf-mini tf-empty">${label}: —</span>`;
+                  const cls = lux.score >= 65 ? 'tf-bull' : lux.score <= 35 ? 'tf-bear' : 'tf-neutral';
+                  return `<span class="tf-mini ${cls}" title="Trend ${lux.raw.trendStrength.toFixed(1)} · HW ${lux.raw.hyperWave.toFixed(1)} · MF ${lux.raw.moneyFlow.toFixed(1)}">${label} <strong>${lux.score}</strong></span>`;
+                }
+                const strip = `<div class="lux-tf-strip">${tfBadge('1H', lux1h)}${tfBadge('4H', lux4h)}${tfBadge('1D', real)}${tfBadge('1W', lux1w)}</div>`;
+                return `<div class="luxalgo-real ${zoneCls}">
+                  <span><span class="lux-badge">🟣 LIVE PINE</span> LuxAlgo · TS <strong>${real.raw.trendStrength.toFixed(1)}</strong> · HW <strong>${real.raw.hyperWave.toFixed(1)}</strong> · MF <strong>${real.raw.moneyFlow.toFixed(1)}</strong> · PAC <strong>${zoneTxt}</strong></span>
+                  <span style="margin-left:auto; font-size:10px; opacity:0.85;">Snapshot ${real.score}/100 · ${real.label}</span>
+                </div>
+                ${strip}`;
+              })()}
+              ${flagsHtml ? `<div class="confirmation-flags">${flagsHtml}</div>` : ''}
             `;
           })()}
 
