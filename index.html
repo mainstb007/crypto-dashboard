@@ -382,6 +382,70 @@
   <strong>💰 Price Sources:</strong> Prices are prioritized from Binance (when available), then KuCoin, Bybit, and CoinGecko as fallbacks. If all exchanges fail for a given coin in a refresh cycle, that coin is dropped from this view rather than shown with fake data — the next 10-minute refresh will retry. Always verify prices on actual exchanges before trading.
 </div>
 
+<!-- Portfolio Modal -->
+<div id="portfolioModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+  <div style="background: var(--surface); border-radius: 12px; padding: 24px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="margin: 0; font-size: 24px;">📊 My Portfolio</h2>
+      <button onclick="closePortfolioModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-2);">✕</button>
+    </div>
+
+    <!-- Add Position Form -->
+    <div style="background: var(--surface-2); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+      <h3 style="margin: 0 0 16px 0; font-size: 16px;">Add New Position</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
+        <div>
+          <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--text-2);">Coin Symbol</label>
+          <input type="text" id="portfolioSymbol" placeholder="BTC" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: var(--surface); color: var(--text);">
+        </div>
+        <div>
+          <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--text-2);">Entry Price ($)</label>
+          <input type="number" id="portfolioEntryPrice" placeholder="50000" step="0.01" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: var(--surface); color: var(--text);">
+        </div>
+        <div>
+          <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--text-2);">Amount</label>
+          <input type="number" id="portfolioAmount" placeholder="0.1" step="0.0001" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: var(--surface); color: var(--text);">
+        </div>
+        <div>
+          <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--text-2);">Type</label>
+          <select id="portfolioType" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: var(--surface); color: var(--text);">
+            <option value="spot">Spot</option>
+            <option value="margin">Margin</option>
+            <option value="futures">Futures</option>
+          </select>
+        </div>
+        <div style="display: flex; align-items: end;">
+          <button onclick="addPortfolioPosition()" style="width: 100%; padding: 8px 16px; background: var(--success); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">+ Add Position</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Portfolio Stats -->
+    <div id="portfolioStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px;">
+      <div style="background: var(--surface-2); padding: 12px; border-radius: 8px;">
+        <div style="font-size: 11px; color: var(--text-2); margin-bottom: 4px;">Total Value</div>
+        <div id="totalValue" style="font-size: 18px; font-weight: 600; color: var(--text);">$0.00</div>
+      </div>
+      <div style="background: var(--surface-2); padding: 12px; border-radius: 8px;">
+        <div style="font-size: 11px; color: var(--text-2); margin-bottom: 4px;">Total P&L</div>
+        <div id="totalPnL" style="font-size: 18px; font-weight: 600; color: var(--success);">$0.00</div>
+      </div>
+      <div style="background: var(--surface-2); padding: 12px; border-radius: 8px;">
+        <div style="font-size: 11px; color: var(--text-2); margin-bottom: 4px;">Positions</div>
+        <div id="positionCount" style="font-size: 18px; font-weight: 600; color: var(--text);">0</div>
+      </div>
+    </div>
+
+    <!-- Positions List -->
+    <div>
+      <h3 style="margin: 0 0 12px 0; font-size: 16px;">Current Positions</h3>
+      <div id="positionsList" style="background: var(--surface-2); border-radius: 8px; padding: 12px; min-height: 100px;">
+        <div style="text-align: center; color: var(--text-2); padding: 20px;">No positions yet. Add your first position above!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ===== Real LuxAlgo snapshot (baked from TradingView Desktop via tradingview-mcp) =====
 // Source: LuxAlgo Signals & Overlays, Price Action Concepts (Premium), Oscillator Matrix.
@@ -3441,10 +3505,123 @@ function showFeatureNotification(message) {
 }
 
 function openPortfolioPanel() {
-  showFeatureNotification('📊 Portfolio tracking: Add positions via the console (portfolio.addPosition())');
-  console.log('📊 Portfolio Tracking Available:');
-  console.log('Add position: portfolio.addPosition({ symbol: "BTC", entryPrice: 50000, amount: 0.1 })');
-  console.log('View portfolio: portfolio.getPortfolioSummary()');
+  const modal = document.getElementById('portfolioModal');
+  if (modal) {
+    modal.style.display = 'flex';
+    renderPortfolioPositions();
+  }
+}
+
+function closePortfolioModal() {
+  const modal = document.getElementById('portfolioModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+// Initialize portfolio from localStorage
+function initializePortfolio() {
+  if (!localStorage.getItem('cryptoPortfolio')) {
+    localStorage.setItem('cryptoPortfolio', JSON.stringify([]));
+  }
+}
+
+// Add position to portfolio
+function addPortfolioPosition() {
+  const symbol = document.getElementById('portfolioSymbol').value.toUpperCase();
+  const entryPrice = parseFloat(document.getElementById('portfolioEntryPrice').value);
+  const amount = parseFloat(document.getElementById('portfolioAmount').value);
+  const type = document.getElementById('portfolioType').value;
+
+  if (!symbol || !entryPrice || !amount) {
+    showFeatureNotification('❌ Please fill in all fields');
+    return;
+  }
+
+  const position = {
+    id: Date.now().toString(),
+    symbol: symbol,
+    entryPrice: entryPrice,
+    amount: amount,
+    type: type,
+    value: entryPrice * amount,
+    timestamp: new Date().toISOString()
+  };
+
+  // Get current portfolio
+  const portfolio = JSON.parse(localStorage.getItem('cryptoPortfolio') || '[]');
+  portfolio.push(position);
+  localStorage.setItem('cryptoPortfolio', JSON.stringify(portfolio));
+
+  // Clear form
+  document.getElementById('portfolioSymbol').value = '';
+  document.getElementById('portfolioEntryPrice').value = '';
+  document.getElementById('portfolioAmount').value = '';
+
+  // Refresh display
+  renderPortfolioPositions();
+  showFeatureNotification(`✅ Added ${symbol} position!`);
+}
+
+// Remove position from portfolio
+function removePosition(positionId) {
+  const portfolio = JSON.parse(localStorage.getItem('cryptoPortfolio') || '[]');
+  const updatedPortfolio = portfolio.filter(p => p.id !== positionId);
+  localStorage.setItem('cryptoPortfolio', JSON.stringify(updatedPortfolio));
+  renderPortfolioPositions();
+  showFeatureNotification('🗑️ Position removed');
+}
+
+// Render portfolio positions
+function renderPortfolioPositions() {
+  const portfolio = JSON.parse(localStorage.getItem('cryptoPortfolio') || '[]');
+  const positionsList = document.getElementById('positionsList');
+  const totalValueEl = document.getElementById('totalValue');
+  const totalPnLEl = document.getElementById('totalPnL');
+  const positionCountEl = document.getElementById('positionCount');
+
+  if (portfolio.length === 0) {
+    positionsList.innerHTML = '<div style="text-align: center; color: var(--text-2); padding: 20px;">No positions yet. Add your first position above!</div>';
+    totalValueEl.textContent = '$0.00';
+    totalPnLEl.textContent = '$0.00';
+    positionCountEl.textContent = '0';
+    return;
+  }
+
+  let totalValue = 0;
+  let totalPnL = 0;
+
+  const positionsHTML = portfolio.map(position => {
+    const currentValue = position.amount * position.entryPrice; // Simplified - use entry price as current
+    const pnl = 0; // Will calculate with real-time prices later
+    const pnlPercent = 0;
+
+    totalValue += position.value;
+    totalPnL += pnl;
+
+    return `
+      <div style="background: var(--surface); padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="flex: 1;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <strong style="font-size: 16px;">${position.symbol}</strong>
+            <span style="font-size: 11px; color: var(--text-2); background: var(--surface-2); padding: 2px 6px; border-radius: 4px;">${position.type.toUpperCase()}</span>
+          </div>
+          <div style="font-size: 12px; color: var(--text-2);">
+            ${position.amount} @ $${position.entryPrice.toLocaleString()} = $${position.value.toLocaleString()}
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 14px; font-weight: 600; color: var(--success);">$${currentValue.toLocaleString()}</div>
+          <button onclick="removePosition('${position.id}')" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 12px; margin-top: 4px;">Remove</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  positionsList.innerHTML = positionsHTML;
+  totalValueEl.textContent = `$${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+  totalPnLEl.textContent = `$${totalPnL.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+  positionCountEl.textContent = portfolio.length;
 }
 
 function openAlertsPanel() {
@@ -3466,8 +3643,12 @@ function openBacktestPanel() {
 
 // Initialize new features when page loads
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeNewFeatures);
+  document.addEventListener('DOMContentLoaded', () => {
+    initializePortfolio(); // Initialize portfolio
+    initializeNewFeatures();
+  });
 } else {
+  initializePortfolio(); // Initialize portfolio
   initializeNewFeatures();
 }
 
