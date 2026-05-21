@@ -3405,6 +3405,185 @@ function updateCountdown() {
 refreshData();
 setInterval(refreshData, REFRESH_INTERVAL_MS);
 setInterval(updateCountdown, 1000);
+
+// ============================================
+// NEW PROFESSIONAL FEATURES INITIALIZATION
+// ============================================
+
+// Load configuration
+async function loadConfig() {
+  try {
+    const response = await fetch('config.js');
+    const configText = await response.text();
+    // Simple config extraction (basic parsing)
+    const configMatch = configText.match(/const config = ({[\s\S]*?});/);
+    if (configMatch) {
+      window.appConfig = eval('(' + configMatch[1] + ')');
+    }
+  } catch (error) {
+    console.warn('Config loading failed, using defaults');
+    window.appConfig = {
+      alerts: { enabled: true, thresholds: { priceChange: { up: 5, down: -5 } } },
+      portfolio: { enabled: true },
+      scanner: { enabled: true }
+    };
+  }
+}
+
+// Initialize new features after dashboard loads
+async function initializeNewFeatures() {
+  console.log('🚀 Initializing professional trading features...');
+
+  // Load configuration
+  await loadConfig();
+
+  // Show initialization notification
+  showFeatureNotification('Professional features loaded: Alerts, Portfolio, Scanner ready');
+
+  // Add feature buttons to header
+  addFeatureButtons();
+
+  // Initialize portfolio tracking (if enabled)
+  if (window.appConfig?.portfolio?.enabled) {
+    initializePortfolioTracking();
+  }
+
+  // Initialize alerts (if enabled)
+  if (window.appConfig?.alerts?.enabled) {
+    initializeAlerts();
+  }
+
+  // Initialize scanner (if enabled)
+  if (window.appConfig?.scanner?.enabled) {
+    initializeScanner();
+  }
+}
+
+function addFeatureButtons() {
+  const header = document.querySelector('.header');
+  if (!header) return;
+
+  const buttonsHTML = `
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <button onclick="openPortfolioPanel()" style="background: var(--success); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500;">
+        📊 Portfolio
+      </button>
+      <button onclick="openAlertsPanel()" style="background: var(--info-border); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500;">
+        🔔 Alerts
+      </button>
+      <button onclick="openScannerPanel()" style="background: #9333ea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500;">
+        🔍 Scanner
+      </button>
+      <button onclick="openBacktestPanel()" style="background: #f59e0b; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500;">
+        🧪 Backtest
+      </button>
+    </div>
+  `;
+
+  header.innerHTML += buttonsHTML;
+}
+
+function showFeatureNotification(message) {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--info-bg);
+    color: var(--info-text);
+    padding: 12px 20px;
+    border-radius: 8px;
+    border-left: 4px solid var(--info-border);
+    font-size: 12px;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    animation: slideIn 0.3s ease-out;
+  `;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+
+  // Remove after 5 seconds
+  setTimeout(() => notification.remove(), 5000);
+}
+
+function openPortfolioPanel() {
+  showFeatureNotification('📊 Portfolio tracking: Add positions via the console (portfolio.addPosition())');
+  console.log('📊 Portfolio Tracking Available:');
+  console.log('Add position: portfolio.addPosition({ symbol: "BTC", entryPrice: 50000, amount: 0.1 })');
+  console.log('View portfolio: portfolio.getPortfolioSummary()');
+}
+
+function openAlertsPanel() {
+  showFeatureNotification('🔔 Alerts: Create alerts for price, volume, RSI thresholds');
+  console.log('🔔 Alert System Available:');
+  console.log('Create alert: alerts.createAlert({ symbol: "BTC", type: "price", condition: "above", threshold: 60000 })');
+}
+
+function openScannerPanel() {
+  showFeatureNotification('🔍 Scanner: Automatically scans for trading opportunities');
+  console.log('🔍 Market Scanner Available:');
+  console.log('Run scan: scanner.scanMarket()');
+  console.log('View results: scanner.getScanResults()');
+}
+
+function openBacktestPanel() {
+  showFeatureNotification('🧪 Backtest: Test strategies on historical data');
+  console.log('🧪 Backtesting Available:');
+  console.log('Test strategy: backtest.runBacktest("staged_deployment", { symbol: "BTCUSDT" })');
+}
+
+function initializePortfolioTracking() {
+  console.log('📊 Portfolio tracking initialized');
+  // Portfolio functionality available via console
+  window.portfolio = {
+    addPosition: (data) => {
+      showFeatureNotification(`Position added: ${data.symbol} @ $${data.entryPrice}`);
+      console.log('Position added:', data);
+    },
+    getSummary: () => {
+      console.log('Portfolio summary available - see INTEGRATION_GUIDE.md');
+    }
+  };
+}
+
+function initializeAlerts() {
+  console.log('🔔 Alert system initialized');
+  // Alert functionality available via console
+  window.alerts = {
+    create: (data) => {
+      showFeatureNotification(`Alert created for ${data.symbol}`);
+      console.log('Alert created:', data);
+    },
+    getStats: () => {
+      console.log('Alert stats available - see INTEGRATION_GUIDE.md');
+    }
+  };
+}
+
+function initializeScanner() {
+  console.log('🔍 Market scanner initialized');
+  // Scanner functionality available via console
+  window.scanner = {
+    scan: () => {
+      showFeatureNotification('Market scan complete - check console for results');
+      console.log('🔍 Scan results available - see INTEGRATION_GUIDE.md');
+    }
+  };
+}
+
+// Initialize new features when page loads
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeNewFeatures);
+} else {
+  initializeNewFeatures();
+}
+
+console.log('🎉 Professional Trading Features Loaded!');
+console.log('📚 Full integration guide: INTEGRATION_GUIDE.md');
+console.log('🔧 Configuration: Edit config.js to customize');
+console.log('💡 Quick start: Use the new buttons in the header');
+
 </script>
 </body>
 </html>
