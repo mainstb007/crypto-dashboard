@@ -465,12 +465,19 @@
 
     <!-- Scanner Controls -->
     <div style="background: var(--surface-2); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
-      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;">
         <button onclick="runScanner('oversold')" style="padding: 8px 16px; background: var(--success); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">🎯 Scan Oversold</button>
         <button onclick="runScanner('breakout')" style="padding: 8px 16px; background: #9333ea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">🚀 Scan Breakouts</button>
         <button onclick="runScanner('volume')" style="padding: 8px 16px; background: var(--info-border); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">📊 High Volume</button>
         <button onclick="runScanner('rsi')" style="padding: 8px 16px; background: #f59e0b; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">📈 RSI Analysis</button>
         <button onclick="runScanner('all')" style="padding: 8px 16px; background: var(--danger); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">⚡ Scan All</button>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <span style="font-size: 12px; color: var(--text-2);">Filter results:</span>
+        <button onclick="filterScannerResults('all')" style="padding: 6px 12px; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 12px;">All</button>
+        <button onclick="filterScannerResults('buy')" style="padding: 6px 12px; background: var(--surface); color: var(--success); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 12px;">Buy Signals</button>
+        <button onclick="filterScannerResults('hold')" style="padding: 6px 12px; background: var(--surface); color: var(--text-2); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 12px;">Hold</button>
+        <button onclick="filterScannerResults('sell')" style="padding: 6px 12px; background: var(--surface); color: var(--danger); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 12px;">Sell Signals</button>
       </div>
     </div>
 
@@ -3681,6 +3688,13 @@ function renderPortfolioPositions() {
   const totalPnLEl = document.getElementById('totalPnL');
   const positionCountEl = document.getElementById('positionCount');
 
+  if (!positionsList || !totalValueEl || !totalPnLEl || !positionCountEl) {
+    console.log('Portfolio modal elements not found');
+    return;
+  }
+
+  const lastUpdateEl = document.getElementById('portfolioLastUpdate');
+
   if (portfolio.length === 0) {
     positionsList.innerHTML = '<div style="text-align: center; color: var(--text-2); padding: 20px;">No positions yet. Add your first position above!</div>';
     totalValueEl.textContent = '$0.00';
@@ -3756,13 +3770,20 @@ function renderPortfolioPositions() {
   console.log('Portfolio total P&L: $' + totalPnL.toFixed(2));
 
   positionsList.innerHTML = positionsHTML;
+  totalValueEl.textContent = `$${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+  // Update total P&L color
+  const totalPnLColor = totalPnL >= 0 ? 'var(--success)' : 'var(--danger)';
+  totalPnLEl.style.color = totalPnLColor;
+  totalPnLEl.textContent = `${totalPnL >= 0 ? '+' : ''}$${totalPnL.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+  positionCountEl.textContent = portfolio.length;
 
   // Update last update time
-  const lastUpdateEl = document.getElementById('portfolioLastUpdate');
   if (lastUpdateEl) {
     const now = new Date();
     lastUpdateEl.textContent = `Last update: ${now.toLocaleTimeString()}`;
   }
+}
 
   positionsList.innerHTML = positionsHTML;
   totalValueEl.textContent = `$${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
@@ -3794,6 +3815,9 @@ function closeScannerModal() {
   }
 }
 
+// Global variable to store scan results
+window.currentScanResults = [];
+
 function runScanner(scanType) {
   const resultsDiv = document.getElementById('scannerResults');
   resultsDiv.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-2);"><div class="spinner"></div><div style="margin-top: 12px;">Scanning market...</div></div>';
@@ -3812,7 +3836,9 @@ function runScanner(scanType) {
             symbol: coin.symbol,
             reason: `Deeply oversold (RSI: ${coin.timeframes['1d'].rsi.toFixed(1)})`,
             action: 'Consider buying',
-            strength: 'Strong'
+            strength: 'Strong',
+            category: 'buy',
+            score: coin.score || 0
           }));
           break;
 
@@ -3824,7 +3850,9 @@ function runScanner(scanType) {
             symbol: coin.symbol,
             reason: `Strong momentum (+${coin.avgChange24h.toFixed(1)}% in 24h)`,
             action: 'Momentum play',
-            strength: coin.avgChange24h > 10 ? 'Very Strong' : 'Moderate'
+            strength: coin.avgChange24h > 10 ? 'Very Strong' : 'Moderate',
+            category: 'buy',
+            score: coin.score || 0
           }));
           break;
 
@@ -3836,7 +3864,9 @@ function runScanner(scanType) {
             symbol: coin.symbol,
             reason: `High volume ($${(coin.avgVolume / 1000000000).toFixed(1)}B)`,
             action: 'High liquidity',
-            strength: 'Strong'
+            strength: 'Strong',
+            category: 'neutral',
+            score: coin.score || 0
           }));
           break;
 
@@ -3848,77 +3878,146 @@ function runScanner(scanType) {
           }).map(coin => {
             const rsi4h = coin.timeframes['4h'].rsi;
             const rsi1d = coin.timeframes['1d'].rsi;
-            let action, strength;
+            let action, strength, category;
 
             if (rsi4h < 30 && rsi1d < 40) {
               action = 'Strong buy';
               strength = 'Very Strong';
+              category = 'buy';
             } else if (rsi4h < 40 && rsi1d < 50) {
               action = 'Buy';
               strength = 'Moderate';
+              category = 'buy';
             } else if (rsi4h > 70 && rsi1d > 70) {
               action = 'Consider selling';
               strength = 'Strong';
+              category = 'sell';
             } else {
               action = 'Hold';
               strength = 'Neutral';
+              category = 'hold';
             }
 
             return {
               symbol: coin.symbol,
               reason: `RSI 4H: ${rsi4h.toFixed(1)}, Daily: ${rsi1d.toFixed(1)}`,
               action: action,
-              strength: strength
+              strength: strength,
+              category: category,
+              score: coin.score || 0
             };
           });
           break;
 
         case 'all':
-          results = coinData.filter(coin => {
-            const buySituation = coin.buySituation;
-            return buySituation === 'Excellent' || buySituation === 'Good';
-          }).map(coin => ({
-            symbol: coin.symbol,
-            reason: `${coin.buySituation} buy opportunity - Score: ${coin.score.toFixed(0)}`,
-            action: coin.buySituation === 'Excellent' ? 'Strong buy' : 'Buy',
-            strength: coin.buySituation === 'Excellent' ? 'Very Strong' : 'Strong'
-          }));
+          // Use the actual buySituation from your dashboard data
+          results = coinData.map(coin => {
+            const buySituation = coin.buySituation || 'Hold';
+            let action, strength, category;
+
+            // Map buySituation to action categories
+            if (buySituation === 'Excellent' || buySituation === 'Good') {
+              action = `${buySituation} buy opportunity`;
+              strength = buySituation === 'Excellent' ? 'Very Strong' : 'Strong';
+              category = 'buy';
+            } else if (buySituation === 'Fair') {
+              action = 'Fair entry';
+              strength = 'Moderate';
+              category = 'hold';
+            } else if (buySituation === 'Consider selling' || buySituation === 'Sell') {
+              action = buySituation;
+              strength = 'Strong';
+              category = 'sell';
+            } else {
+              action = 'Hold';
+              strength = 'Neutral';
+              category = 'hold';
+            }
+
+            return {
+              symbol: coin.symbol,
+              reason: `${buySituation} - Score: ${coin.score.toFixed(0)}`,
+              action: action,
+              strength: strength,
+              category: category,
+              score: coin.score || 0
+            };
+          }).sort((a, b) => b.score - a.score); // Sort by score
           break;
       }
     }
 
+    // Store results globally for filtering
+    window.currentScanResults = results;
+
     // Display results
-    if (results.length === 0) {
-      resultsDiv.innerHTML = '<div style="text-align: center; color: var(--text-2); padding: 40px 20px;"><div style="font-size: 48px; margin-bottom: 12px;">🤷</div><div>No opportunities found for this scan type</div></div>';
-    } else {
-      const resultsHTML = results.map(result => {
-        const strengthColor = result.strength === 'Very Strong' ? 'var(--success)' : result.strength === 'Strong' ? 'var(--success)' : result.strength === 'Neutral' ? 'var(--text-2)' : 'var(--info-border)';
-        return `
-          <div style="background: var(--surface); padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-            <div style="flex: 1;">
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                <strong style="font-size: 16px;">${result.symbol}</strong>
-                <span style="font-size: 11px; color: ${strengthColor}; background: var(--surface-2); padding: 2px 6px; border-radius: 4px;">${result.strength}</span>
-              </div>
-              <div style="font-size: 12px; color: var(--text-2);">${result.reason}</div>
-            </div>
-            <div style="text-align: right;">
-              <div style="font-size: 14px; font-weight: 600; color: var(--info-border);">${result.action}</div>
-            </div>
-          </div>
-        `;
-      }).join('');
+    displayScannerResults(results);
 
-      resultsDiv.innerHTML = `
-        <div style="margin-bottom: 12px; font-size: 12px; color: var(--text-2);">
-          Found ${results.length} ${results.length === 1 ? 'opportunity' : 'opportunities'}
-        </div>
-        ${resultsHTML}
-      `;
-    }
-
-    showFeatureNotification(`✅ Scan complete: Found ${results.length} opportunities`);
+    showFeatureNotification(`✅ Scan complete: Found ${results.length} results`);
   }, 1000); // Simulate scan time
+}
+
+function displayScannerResults(results) {
+  const resultsDiv = document.getElementById('scannerResults');
+
+  if (results.length === 0) {
+    resultsDiv.innerHTML = '<div style="text-align: center; color: var(--text-2); padding: 40px 20px;"><div style="font-size: 48px; margin-bottom: 12px;">🤷</div><div>No results found for this scan</div></div>';
+  } else {
+    const resultsHTML = results.map(result => {
+      const strengthColor = result.strength === 'Very Strong' ? 'var(--success)' : result.strength === 'Strong' ? 'var(--success)' : result.strength === 'Neutral' ? 'var(--text-2)' : 'var(--info-border)';
+      const categoryColor = result.category === 'buy' ? 'var(--success)' : result.category === 'sell' ? 'var(--danger)' : 'var(--text-2)';
+      return `
+        <div style="background: var(--surface); padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+          <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+              <strong style="font-size: 16px;">${result.symbol}</strong>
+              <span style="font-size: 11px; color: ${strengthColor}; background: var(--surface-2); padding: 2px 6px; border-radius: 4px;">${result.strength}</span>
+              <span style="font-size: 11px; color: ${categoryColor}; background: var(--surface-2); padding: 2px 6px; border-radius: 4px;">${result.category.toUpperCase()}</span>
+            </div>
+            <div style="font-size: 12px; color: var(--text-2);">${result.reason}</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 14px; font-weight: 600; color: ${categoryColor};">${result.action}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    resultsDiv.innerHTML = `
+      <div style="margin-bottom: 12px; font-size: 12px; color: var(--text-2);">
+        Found ${results.length} ${results.length === 1 ? 'result' : 'results'}
+      </div>
+      ${resultsHTML}
+    `;
+  }
+}
+
+function filterScannerResults(filterType) {
+  if (!window.currentScanResults.length) {
+    showFeatureNotification('⚠️ Run a scan first');
+    return;
+  }
+
+  let filteredResults = window.currentScanResults;
+
+  switch(filterType.toLowerCase()) {
+    case 'buy':
+      filteredResults = window.currentScanResults.filter(r => r.category === 'buy');
+      break;
+    case 'hold':
+      filteredResults = window.currentScanResults.filter(r => r.category === 'hold');
+      break;
+    case 'sell':
+      filteredResults = window.currentScanResults.filter(r => r.category === 'sell');
+      break;
+    case 'all':
+    default:
+      // Show all results
+      break;
+  }
+
+  displayScannerResults(filteredResults);
+  showFeatureNotification(`🔍 Filtered: ${filteredResults.length} results`);
 }
 
 function openBacktestPanel() {
