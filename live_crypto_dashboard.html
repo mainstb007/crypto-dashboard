@@ -4049,11 +4049,51 @@ function runScannerOnce(coins, filters) {
 }
 
 // ===== Backtest =====
+// Backtest form state — persisted across re-renders + page sessions
+const BT_DEFAULTS = { sym: '', strat: 'rsi', interval: '1d', bars: '180' };
+function btLoadConfig() {
+  try {
+    const raw = localStorage.getItem('cd_backtest_cfg');
+    return raw ? { ...BT_DEFAULTS, ...JSON.parse(raw) } : { ...BT_DEFAULTS };
+  } catch { return { ...BT_DEFAULTS }; }
+}
+function btSaveConfig(cfg) {
+  try { localStorage.setItem('cd_backtest_cfg', JSON.stringify(cfg)); } catch {}
+}
+function btCaptureConfig() {
+  const sym = document.getElementById('btSym');
+  const strat = document.getElementById('btStrat');
+  const interval = document.getElementById('btInterval');
+  const bars = document.getElementById('btBars');
+  if (sym) {
+    const cfg = {
+      sym: sym.value,
+      strat: strat ? strat.value : BT_DEFAULTS.strat,
+      interval: interval ? interval.value : BT_DEFAULTS.interval,
+      bars: bars ? bars.value : BT_DEFAULTS.bars,
+    };
+    btSaveConfig(cfg);
+    return cfg;
+  }
+  return null;
+}
+
 function openBacktestPanel() { renderBacktest(); }
-function renderBacktest(result) {
+
+function renderBacktest(result, lastConfig) {
   // Alphabetize so native <select> first-letter type-to-select works
   const symbols = loadedSymbols().slice().sort((a, b) => a.localeCompare(b));
-  const symbolOptions = symbols.map(s => `<option value="${s}">${s}</option>`).join('');
+  // Use lastConfig if provided (just ran), else load saved cfg
+  const cfg = lastConfig || btLoadConfig();
+  // Default sym to first available if nothing saved
+  if (!cfg.sym && symbols.length) cfg.sym = symbols[0];
+  const symbolOptions = symbols.map(s =>
+    `<option value="${s}"${s === cfg.sym ? ' selected' : ''}>${s}</option>`
+  ).join('');
+
+  // Helper to mark current selection as selected
+  const sel = (v, want) => v === want ? ' selected' : '';
+
   const resultsHtml = !result ? '<div class="modal-empty">Pick a symbol and strategy, then run.</div>' : `
     <div class="summary-grid">
       <div class="summary-card"><div class="lbl">Trades</div><div class="val">${result.trades}</div></div>
@@ -4086,28 +4126,33 @@ function renderBacktest(result) {
         <label>Symbol<select id="btSym">${symbolOptions || '<option value="">— load coins first —</option>'}</select></label>
         <label>Strategy
           <select id="btStrat">
-            <option value="rsi">RSI mean reversion (buy ≤30, sell ≥70)</option>
-            <option value="ma">SMA crossover (20/50)</option>
-            <option value="bh">Buy & hold (baseline)</option>
+            <option value="rsi"${sel(cfg.strat,'rsi')}>RSI mean reversion (buy ≤30, sell ≥70)</option>
+            <option value="ma"${sel(cfg.strat,'ma')}>SMA crossover (20/50)</option>
+            <option value="bh"${sel(cfg.strat,'bh')}>Buy & hold (baseline)</option>
           </select>
         </label>
         <label>Interval
           <select id="btInterval">
-            <option value="1d" selected>1d</option>
-            <option value="4h">4h</option>
-            <option value="1h">1h</option>
+            <option value="1d"${sel(cfg.interval,'1d')}>1d</option>
+            <option value="4h"${sel(cfg.interval,'4h')}>4h</option>
+            <option value="1h"${sel(cfg.interval,'1h')}>1h</option>
           </select>
         </label>
         <label>Bars
           <select id="btBars">
-            <option value="90">90</option>
-            <option value="180" selected>180</option>
-            <option value="365">365</option>
+            <option value="90"${sel(cfg.bars,'90')}>90</option>
+            <option value="180"${sel(cfg.bars,'180')}>180</option>
+            <option value="365"${sel(cfg.bars,'365')}>365</option>
           </select>
         </label>
-        <label>&nbsp;<button class="modal-btn" onclick="runBacktestUI()">🧪 Run</button></label>
+        <label>&nbsp;
+          <div style="display:flex; gap:6px;">
+            <button class="modal-btn" onclick="runBacktestUI()">🧪 Run</button>
+            <button class="modal-btn secondary" onclick="btResetConfig()" title="Restore default values">↺ Reset</button>
+          </div>
+        </label>
       </div>
-      <div style="font-size:11px;color:var(--text-2)" id="btStatus">Pulls historical OHLCV from Binance (with proxy fallback).</div>
+      <div style="font-size:11px;color:var(--text-2)" id="btStatus">Pulls historical OHLCV from Binance (with proxy fallback). Your settings are remembered between runs.</div>
     </div>
     <div class="modal-section">
       <h4>Results</h4>
@@ -4116,22 +4161,28 @@ function renderBacktest(result) {
   `;
   openFeatureModal('🧪 Backtest', html);
 }
+
+function btResetConfig() {
+  // Capture current values just in case user wants to undo, then clear
+  localStorage.removeItem('cd_backtest_cfg');
+  renderBacktest(null, { ...BT_DEFAULTS });
+}
+
 async function runBacktestUI() {
-  const sym = document.getElementById('btSym').value;
-  const strat = document.getElementById('btStrat').value;
-  const interval = document.getElementById('btInterval').value;
-  const bars = parseInt(document.getElementById('btBars').value, 10);
+  // Capture and save the current selections BEFORE we re-render with results
+  const cfg = btCaptureConfig();
+  if (!cfg || !cfg.sym) { alert('Pick a symbol'); return; }
   const status = document.getElementById('btStatus');
-  if (!sym) { alert('Pick a symbol'); return; }
-  status.textContent = `Fetching ${bars} ${interval} bars for ${sym}…`;
-  const candles = await fetchBinanceKlines(sym, interval, bars);
+  status.textContent = `Fetching ${cfg.bars} ${cfg.interval} bars for ${cfg.sym}…`;
+  const candles = await fetchBinanceKlines(cfg.sym, cfg.interval, parseInt(cfg.bars, 10));
   if (!candles || candles.length < 30) {
     status.textContent = 'Could not fetch enough historical data — try a different symbol or interval.';
     return;
   }
-  status.textContent = `Loaded ${candles.length} bars. Running ${strat}…`;
-  const result = runStrategy(strat, candles);
-  renderBacktest(result);
+  status.textContent = `Loaded ${candles.length} bars. Running ${cfg.strat}…`;
+  const result = runStrategy(cfg.strat, candles);
+  // Pass cfg back so the dropdowns repopulate with the same values
+  renderBacktest(result, cfg);
 }
 function runStrategy(strat, candles) {
   // Buy & hold baseline
