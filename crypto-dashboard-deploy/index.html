@@ -832,7 +832,67 @@ async function fetchFromBybit(symbol) {
   }
 }
 
+// CoinGecko batch fetch — one request gets all 40 coins.
+// Avoids the 40-parallel-call rate-limit trap on the free tier.
+let _coingeckoBatchCache = null;
+let _coingeckoBatchAt = 0;
+let _coingeckoBatchInflight = null;
+async function fetchCoingeckoBatch() {
+  // Reuse cache for 90 seconds (refresh interval is 10 min anyway)
+  if (_coingeckoBatchCache && Date.now() - _coingeckoBatchAt < 90_000) {
+    return _coingeckoBatchCache;
+  }
+  // Coalesce concurrent callers into one in-flight request
+  if (_coingeckoBatchInflight) return _coingeckoBatchInflight;
+  _coingeckoBatchInflight = (async () => {
+    try {
+      const ids = ALL_COINS.map(c => COIN_IDS[c.symbol]).filter(Boolean).join(',');
+      const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}&per_page=250&price_change_percentage=24h&sparkline=false`;
+      const r = await fetch(url);
+      if (!r.ok) {
+        console.warn('CoinGecko batch failed:', r.status);
+        return null;
+      }
+      const arr = await r.json();
+      const map = {};
+      for (const item of arr) {
+        const coin = ALL_COINS.find(c => COIN_IDS[c.symbol] === item.id);
+        if (!coin || item.current_price == null) continue;
+        map[coin.symbol] = {
+          exchange: 'CoinGecko',
+          price: item.current_price,
+          change24h: item.price_change_percentage_24h,
+          volume24h: item.total_volume,
+          marketCap: item.market_cap,
+          high24h: item.high_24h,
+          low24h: item.low_24h,
+          circulatingSupply: item.circulating_supply,
+          totalSupply: item.total_supply,
+          maxSupply: item.max_supply
+        };
+      }
+      _coingeckoBatchCache = map;
+      _coingeckoBatchAt = Date.now();
+      console.log(`CoinGecko batch: ${Object.keys(map).length}/${ALL_COINS.length} coins`);
+      return map;
+    } catch (e) {
+      console.warn('CoinGecko batch error:', e.message);
+      return null;
+    } finally {
+      _coingeckoBatchInflight = null;
+    }
+  })();
+  return _coingeckoBatchInflight;
+}
+
 async function fetchFromCoinGecko(symbol) {
+  // Try the batch endpoint first — it serves all coins in one call
+  try {
+    const batch = await fetchCoingeckoBatch();
+    if (batch && batch[symbol]) return batch[symbol];
+  } catch (e) { /* fall through to per-coin */ }
+
+  // Per-coin fallback (rarely needed)
   try {
     const coinId = COIN_IDS[symbol];
     if (!coinId) return null;
