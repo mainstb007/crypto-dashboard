@@ -847,13 +847,28 @@ async function fetchCoingeckoBatch() {
   _coingeckoBatchInflight = (async () => {
     try {
       const ids = ALL_COINS.map(c => COIN_IDS[c.symbol]).filter(Boolean).join(',');
-      const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}&per_page=250&price_change_percentage=24h&sparkline=false`;
-      const r = await fetch(url);
-      if (!r.ok) {
-        console.warn('CoinGecko batch failed:', r.status);
-        return null;
+
+      // Try the Vercel serverless proxy first (same-origin → no rate-limit
+      // hits on the *.vercel.app domain). Falls back to direct CoinGecko if
+      // /api/prices isn't deployed (e.g. running locally).
+      let arr = null;
+      try {
+        const proxyR = await fetch(`/api/prices?ids=${ids}`);
+        if (proxyR.ok) {
+          arr = await proxyR.json();
+          console.log('CoinGecko via /api/prices: server-side proxy hit');
+        }
+      } catch (e) { /* proxy not available — fall through */ }
+
+      if (!arr) {
+        const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}&per_page=250&price_change_percentage=24h&sparkline=false`;
+        const r = await fetch(url);
+        if (!r.ok) {
+          console.warn('CoinGecko batch failed:', r.status);
+          return null;
+        }
+        arr = await r.json();
       }
-      const arr = await r.json();
       const map = {};
       for (const item of arr) {
         const coin = ALL_COINS.find(c => COIN_IDS[c.symbol] === item.id);
