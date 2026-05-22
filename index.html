@@ -2876,6 +2876,7 @@ async function refreshData() {
     document.getElementById('content').style.display = 'block';
     document.getElementById('lastUpdate').textContent = `Last updated: ${new Date().toLocaleString()}`;
     LAST_REFRESH_TS = Date.now();
+    window.LAST_REFRESH_TS = LAST_REFRESH_TS;
 
     // Run alert checks against fresh data
     if (typeof alCheck === 'function') {
@@ -3650,15 +3651,84 @@ function loadedSymbols() {
 }
 
 // ===== Portfolio =====
+// Saved in localStorage (per-origin). For backup, use Export/Import below.
+const PF_KEY = 'cd_portfolio';
+
 function pfLoad() {
-  try { return JSON.parse(localStorage.getItem('cd_portfolio') || '[]'); }
-  catch { return []; }
+  try {
+    const raw = localStorage.getItem(PF_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (raw) console.log(`📊 Portfolio loaded: ${parsed.length} position(s) from localStorage`);
+    return parsed;
+  } catch (e) {
+    console.warn('📊 Portfolio load failed:', e);
+    return [];
+  }
 }
-function pfSave(p) { localStorage.setItem('cd_portfolio', JSON.stringify(p)); }
+function pfSave(p) {
+  try {
+    localStorage.setItem(PF_KEY, JSON.stringify(p));
+    console.log(`📊 Portfolio saved: ${p.length} position(s) to localStorage`);
+  } catch (e) {
+    console.error('📊 Portfolio save FAILED — localStorage may be disabled:', e);
+    alert('Could not save portfolio — localStorage may be disabled or full. Try a non-private browser window.');
+  }
+}
+
+function pfExport() {
+  const positions = pfLoad();
+  const blob = new Blob([JSON.stringify({ positions, exportedAt: new Date().toISOString() }, null, 2)],
+    { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `crypto-portfolio-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function pfImport() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json,.json';
+  input.onchange = async () => {
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const positions = Array.isArray(parsed) ? parsed : parsed.positions;
+      if (!Array.isArray(positions)) throw new Error('No positions array found');
+      const existing = pfLoad();
+      if (existing.length && !confirm(`Replace ${existing.length} existing position(s) with ${positions.length} from file? Click Cancel to merge instead.`)) {
+        pfSave([...existing, ...positions]);
+      } else {
+        pfSave(positions);
+      }
+      renderPortfolio();
+    } catch (e) {
+      alert('Import failed: ' + e.message);
+    }
+  };
+  input.click();
+}
 
 function openPortfolioPanel() {
   renderPortfolio();
 }
+
+async function pfRefreshPrices() {
+  const btn = document.getElementById('pfRefreshBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Fetching…'; }
+  try {
+    await refreshData();
+  } catch (e) {
+    console.warn('Refresh failed:', e);
+  }
+  renderPortfolio();
+}
+
 function renderPortfolio() {
   const positions = pfLoad();
   const symbols = loadedSymbols();
@@ -3686,7 +3756,17 @@ function renderPortfolio() {
   const totalPl = totValue - totCost;
   const totalPlPct = totCost > 0 ? (totalPl / totCost) * 100 : 0;
   const symbolOptions = symbols.map(s => `<option value="${s}">${s}</option>`).join('');
+  // Show last-refresh timestamp so user knows how stale prices are
+  const lastRefresh = window.LAST_REFRESH_TS ? new Date(window.LAST_REFRESH_TS).toLocaleTimeString() : 'never';
   const html = `
+    <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:12px;">
+      <button class="modal-btn" id="pfRefreshBtn" onclick="pfRefreshPrices()">🔄 Refresh P/L</button>
+      <button class="modal-btn secondary" onclick="pfExport()" title="Download portfolio as JSON backup">⬇ Export</button>
+      <button class="modal-btn secondary" onclick="pfImport()" title="Restore portfolio from a JSON file">⬆ Import</button>
+    </div>
+    <div style="font-size:11px;color:var(--text-2); margin-bottom:8px;">
+      Prices last updated: ${lastRefresh}. <strong>Storage:</strong> this browser only — export a backup if you switch devices.
+    </div>
     <div class="summary-grid">
       <div class="summary-card"><div class="lbl">Positions</div><div class="val">${positions.length}</div></div>
       <div class="summary-card"><div class="lbl">Cost basis</div><div class="val">${fmtUsd(totCost)}</div></div>
@@ -3843,31 +3923,35 @@ function alCheck() {
 }
 
 // ===== Scanner =====
+// Scanner filter state — persisted across re-renders so unchecking sticks
+let _scannerFilters = { oversold: true, overbought: true, volSpike: true, strongTrend: true };
+
 function openScannerPanel() { renderScanner(); }
 function renderScanner(results) {
   const coins = window.coinData || [];
-  if (!results) results = runScannerOnce(coins);
+  if (!results) results = runScannerOnce(coins, _scannerFilters);
   const rows = results.length === 0 ?
-    '<tr><td colspan="5" class="modal-empty">No setups found in current data. Try refreshing.</td></tr>' :
+    '<tr><td colspan="5" class="modal-empty">No setups found in current data. Try toggling filters or refreshing.</td></tr>' :
     results.map(r => `
       <tr>
         <td><strong>${r.symbol}</strong></td>
         <td>${r.signals.map(s => `<span class="pill ${s.cls}">${s.label}</span>`).join(' ')}</td>
         <td>${fmtUsd(r.price, 4)}</td>
         <td>${r.rsi != null ? r.rsi.toFixed(1) : '—'}</td>
-        <td><strong>${r.score}</strong></td>
+        <td><strong>${r.score.toFixed ? r.score.toFixed(1) : r.score}</strong></td>
       </tr>`).join('');
+  const c = key => _scannerFilters[key] ? 'checked' : '';
   const html = `
     <div class="modal-section">
       <h4>Filters</h4>
       <div class="modal-form">
-        <label><input type="checkbox" id="scOversold" checked> RSI ≤ 30 (oversold)</label>
-        <label><input type="checkbox" id="scOverbought" checked> RSI ≥ 70 (overbought)</label>
-        <label><input type="checkbox" id="scVolSpike" checked> Volume sentiment ≥ 65</label>
-        <label><input type="checkbox" id="scStrongTrend" checked> LuxAlgo TS ≥ 70 or ≤ 30</label>
+        <label><input type="checkbox" id="scOversold" ${c('oversold')} onchange="rerunScanner()"> RSI ≤ 30 (oversold)</label>
+        <label><input type="checkbox" id="scOverbought" ${c('overbought')} onchange="rerunScanner()"> RSI ≥ 70 (overbought)</label>
+        <label><input type="checkbox" id="scVolSpike" ${c('volSpike')} onchange="rerunScanner()"> Volume sentiment ≥ 65</label>
+        <label><input type="checkbox" id="scStrongTrend" ${c('strongTrend')} onchange="rerunScanner()"> LuxAlgo TS ≥ 70 or ≤ 30</label>
         <label>&nbsp;<button class="modal-btn" onclick="rerunScanner()">🔍 Re-scan</button></label>
       </div>
-      <div style="font-size:11px;color:var(--text-2)">Scans the ${coins.length} loaded coins. No extra fetches.</div>
+      <div style="font-size:11px;color:var(--text-2)">Scans the ${coins.length} loaded coins. Toggling a filter re-scans instantly.</div>
     </div>
     <div class="modal-section">
       <h4>Setups found (${results.length})</h4>
@@ -3880,13 +3964,18 @@ function renderScanner(results) {
   openFeatureModal('🔍 Scanner', html);
 }
 function rerunScanner() {
-  const filters = {
-    oversold: document.getElementById('scOversold').checked,
-    overbought: document.getElementById('scOverbought').checked,
-    volSpike: document.getElementById('scVolSpike').checked,
-    strongTrend: document.getElementById('scStrongTrend').checked,
+  // Capture checkbox state BEFORE re-rendering so unchecked filters persist
+  const get = id => {
+    const el = document.getElementById(id);
+    return el ? el.checked : _scannerFilters[id.replace('sc','').toLowerCase()];
   };
-  const results = runScannerOnce(window.coinData || [], filters);
+  _scannerFilters = {
+    oversold: get('scOversold'),
+    overbought: get('scOverbought'),
+    volSpike: get('scVolSpike'),
+    strongTrend: get('scStrongTrend'),
+  };
+  const results = runScannerOnce(window.coinData || [], _scannerFilters);
   renderScanner(results);
 }
 function runScannerOnce(coins, filters) {

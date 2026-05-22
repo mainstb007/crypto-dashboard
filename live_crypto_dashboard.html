@@ -266,9 +266,82 @@
   .theme-option.active { background: var(--info-bg); color: var(--info-text); font-weight: 500; }
   .theme-option:first-child { border-radius: 8px 8px 0 0; }
   .theme-option:last-child  { border-radius: 0 0 8px 8px; }
+
+  /* ===== Modal panels (Portfolio / Alerts / Scanner / Backtest) ===== */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    display: none; align-items: flex-start; justify-content: center;
+    z-index: 9000; padding: 40px 20px; overflow-y: auto;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--surface); color: var(--text); border-radius: 14px;
+    border: 1px solid var(--border); width: 100%; max-width: 900px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25); overflow: hidden;
+  }
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 24px; border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+  }
+  .modal-title { font-size: 18px; font-weight: 600; margin: 0; }
+  .modal-close {
+    background: transparent; border: none; color: var(--text-2);
+    font-size: 24px; line-height: 1; cursor: pointer; padding: 4px 8px;
+    border-radius: 6px;
+  }
+  .modal-close:hover { background: var(--border); color: var(--text); }
+  .modal-body { padding: 20px 24px; max-height: 70vh; overflow-y: auto; }
+  .modal-section { margin-bottom: 20px; }
+  .modal-section h4 {
+    margin: 0 0 10px; font-size: 13px; text-transform: uppercase;
+    letter-spacing: 0.4px; color: var(--text-2);
+  }
+  .modal-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .modal-form label { display: flex; flex-direction: column; font-size: 11px; color: var(--text-2); gap: 4px; }
+  .modal-form input, .modal-form select {
+    background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 10px; font-size: 13px;
+  }
+  .modal-btn {
+    background: var(--info-border); color: white; border: none;
+    padding: 9px 16px; border-radius: 6px; cursor: pointer;
+    font-size: 13px; font-weight: 500;
+  }
+  .modal-btn:hover { opacity: 0.9; }
+  .modal-btn.secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+  .modal-btn.danger { background: var(--danger); }
+  .modal-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .modal-table th, .modal-table td {
+    padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border);
+  }
+  .modal-table th { font-size: 11px; text-transform: uppercase; color: var(--text-2); letter-spacing: 0.4px; }
+  .modal-table tr:last-child td { border-bottom: none; }
+  .modal-empty { text-align: center; padding: 30px 10px; color: var(--text-2); font-size: 13px; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; }
+  .pill-success { background: rgba(15,110,86,0.15); color: var(--success); }
+  .pill-danger { background: rgba(163,45,45,0.15); color: var(--danger); }
+  .pill-warning { background: rgba(245,158,11,0.18); color: #b45309; }
+  .pill-info { background: var(--info-bg); color: var(--info-text); }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .summary-card { background: var(--surface-2); border-radius: 8px; padding: 10px 14px; }
+  .summary-card .lbl { font-size: 10px; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.4px; }
+  .summary-card .val { font-size: 18px; font-weight: 600; margin-top: 2px; }
 </style>
 </head>
 <body>
+
+<!-- Shared modal container for Portfolio / Alerts / Scanner / Backtest -->
+<div class="modal-backdrop" id="featureModal" onclick="if(event.target===this)closeFeatureModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="featureModalTitle">Panel</h3>
+      <button class="modal-close" onclick="closeFeatureModal()" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body" id="featureModalBody"></div>
+  </div>
+</div>
+
 <div class="header">
   <div>
     <h1>🚀 Complete Crypto Analysis Dashboard</h1>
@@ -687,11 +760,28 @@ function filterBuySit(buysit, btn) {
   renderCoins();
 }
 
-// Try Binance first, then fallback to other exchanges
+// CORS proxy helper — tries direct first, falls back to public proxies.
+// Used for Binance which is geo-blocked in many regions (including Vercel edges).
+async function fetchWithCorsProxy(url) {
+  const proxies = [
+    url, // direct
+    `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+  ];
+  for (const u of proxies) {
+    try {
+      const r = await fetch(u, { cache: 'no-store' });
+      if (r.ok) return r;
+    } catch (e) { /* try next */ }
+  }
+  return null;
+}
+
+// Try Binance via direct + CORS proxy fallback
 async function fetchFromBinance(symbol) {
   try {
-    const response = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}USDT`);
-    if (!response.ok) return null;
+    const response = await fetchWithCorsProxy(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}USDT`);
+    if (!response || !response.ok) return null;
     const data = await response.json();
     return {
       exchange: 'Binance',
@@ -742,7 +832,82 @@ async function fetchFromBybit(symbol) {
   }
 }
 
+// CoinGecko batch fetch — one request gets all 40 coins.
+// Avoids the 40-parallel-call rate-limit trap on the free tier.
+let _coingeckoBatchCache = null;
+let _coingeckoBatchAt = 0;
+let _coingeckoBatchInflight = null;
+async function fetchCoingeckoBatch() {
+  // Reuse cache for 90 seconds (refresh interval is 10 min anyway)
+  if (_coingeckoBatchCache && Date.now() - _coingeckoBatchAt < 90_000) {
+    return _coingeckoBatchCache;
+  }
+  // Coalesce concurrent callers into one in-flight request
+  if (_coingeckoBatchInflight) return _coingeckoBatchInflight;
+  _coingeckoBatchInflight = (async () => {
+    try {
+      const ids = ALL_COINS.map(c => COIN_IDS[c.symbol]).filter(Boolean).join(',');
+
+      // Try the Vercel serverless proxy first (same-origin → no rate-limit
+      // hits on the *.vercel.app domain). Falls back to direct CoinGecko if
+      // /api/prices isn't deployed (e.g. running locally).
+      let arr = null;
+      try {
+        const proxyR = await fetch(`/api/prices?ids=${ids}`);
+        if (proxyR.ok) {
+          arr = await proxyR.json();
+          console.log('CoinGecko via /api/prices: server-side proxy hit');
+        }
+      } catch (e) { /* proxy not available — fall through */ }
+
+      if (!arr) {
+        const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}&per_page=250&price_change_percentage=24h&sparkline=false`;
+        const r = await fetch(url);
+        if (!r.ok) {
+          console.warn('CoinGecko batch failed:', r.status);
+          return null;
+        }
+        arr = await r.json();
+      }
+      const map = {};
+      for (const item of arr) {
+        const coin = ALL_COINS.find(c => COIN_IDS[c.symbol] === item.id);
+        if (!coin || item.current_price == null) continue;
+        map[coin.symbol] = {
+          exchange: 'CoinGecko',
+          price: item.current_price,
+          change24h: item.price_change_percentage_24h,
+          volume24h: item.total_volume,
+          marketCap: item.market_cap,
+          high24h: item.high_24h,
+          low24h: item.low_24h,
+          circulatingSupply: item.circulating_supply,
+          totalSupply: item.total_supply,
+          maxSupply: item.max_supply
+        };
+      }
+      _coingeckoBatchCache = map;
+      _coingeckoBatchAt = Date.now();
+      console.log(`CoinGecko batch: ${Object.keys(map).length}/${ALL_COINS.length} coins`);
+      return map;
+    } catch (e) {
+      console.warn('CoinGecko batch error:', e.message);
+      return null;
+    } finally {
+      _coingeckoBatchInflight = null;
+    }
+  })();
+  return _coingeckoBatchInflight;
+}
+
 async function fetchFromCoinGecko(symbol) {
+  // Try the batch endpoint first — it serves all coins in one call
+  try {
+    const batch = await fetchCoingeckoBatch();
+    if (batch && batch[symbol]) return batch[symbol];
+  } catch (e) { /* fall through to per-coin */ }
+
+  // Per-coin fallback (rarely needed)
   try {
     const coinId = COIN_IDS[symbol];
     if (!coinId) return null;
@@ -770,14 +935,25 @@ async function fetchFromCoinGecko(symbol) {
   }
 }
 
-// Priority: Binance -> KuCoin -> Bybit -> CoinGecko -> Demo
+// Priority: CoinGecko -> Bybit -> KuCoin -> Binance (with CORS proxy)
+// CoinGecko first because it has CORS enabled globally and isn't geo-blocked.
+// Binance is last because api.binance.com is blocked from many regions (incl. Vercel US edges).
 async function fetchPriceFromExchanges(symbol) {
-  // Try Binance first
-  let binanceData = await fetchFromBinance(symbol);
-  if (binanceData) {
+  // Try CoinGecko first (CORS-friendly, no geo restrictions)
+  let geckoData = await fetchFromCoinGecko(symbol);
+  if (geckoData) {
     return {
-      ...binanceData,
-      source: 'primary' // Mark Binance as primary source
+      ...geckoData,
+      source: 'primary'
+    };
+  }
+
+  // Try Bybit (CORS-friendly)
+  let bybitData = await fetchFromBybit(symbol);
+  if (bybitData) {
+    return {
+      ...bybitData,
+      source: 'secondary'
     };
   }
 
@@ -790,20 +966,11 @@ async function fetchPriceFromExchanges(symbol) {
     };
   }
 
-  // Try Bybit
-  let bybitData = await fetchFromBybit(symbol);
-  if (bybitData) {
+  // Try Binance last (via CORS proxy if direct fails)
+  let binanceData = await fetchFromBinance(symbol);
+  if (binanceData) {
     return {
-      ...bybitData,
-      source: 'secondary'
-    };
-  }
-
-  // Try CoinGecko as last resort
-  let geckoData = await fetchFromCoinGecko(symbol);
-  if (geckoData) {
-    return {
-      ...geckoData,
+      ...binanceData,
       source: 'fallback'
     };
   }
@@ -817,11 +984,11 @@ async function fetchPriceFromExchanges(symbol) {
 // Binance returns: [openTime, open, high, low, close, volume, closeTime, ...]
 // KuCoin returns: [time(s), open, close, high, low, volume, ...] — note column order differs.
 async function fetchBinanceKlines(symbol, interval = '1h', limit = 100) {
-  // Try Binance first
+  // Try Binance (direct + CORS proxy fallback)
   try {
     const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}USDT&interval=${interval}&limit=${limit}`;
-    const r = await fetch(url);
-    if (r.ok) {
+    const r = await fetchWithCorsProxy(url);
+    if (r && r.ok) {
       const raw = await r.json();
       if (Array.isArray(raw) && raw.length) {
         return raw.map(k => ({
@@ -2697,6 +2864,9 @@ async function refreshData() {
 
     coinData.sort((a, b) => b.score - a.score);
 
+    // Expose for the feature panels (Portfolio / Alerts / Scanner / Backtest)
+    window.coinData = coinData;
+
     renderMarketOverview();
     renderMajorsPanel();
     renderCoins();
@@ -2706,6 +2876,12 @@ async function refreshData() {
     document.getElementById('content').style.display = 'block';
     document.getElementById('lastUpdate').textContent = `Last updated: ${new Date().toLocaleString()}`;
     LAST_REFRESH_TS = Date.now();
+    window.LAST_REFRESH_TS = LAST_REFRESH_TS;
+
+    // Run alert checks against fresh data
+    if (typeof alCheck === 'function') {
+      try { alCheck(); } catch (e) { console.warn('Alert check failed:', e); }
+    }
 
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -3392,40 +3568,18 @@ function filterCoins(filter, button) {
   renderCoins();
 }
 
-// --- Auto-refresh every 10 minutes with visible countdown ---
-const REFRESH_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
-let LAST_REFRESH_TS = null;
-
-function updateCountdown() {
-  if (!LAST_REFRESH_TS) return;
-  const remaining = Math.max(0, REFRESH_INTERVAL_MS - (Date.now() - LAST_REFRESH_TS));
-  const mm = Math.floor(remaining / 60000);
-  const ss = String(Math.floor((remaining % 60000) / 1000)).padStart(2, '0');
-  const el = document.getElementById('lastUpdate');
-  if (el && el.textContent.startsWith('Last updated')) {
-    const base = el.textContent.split(' · ')[0];
-    el.textContent = `${base} · next refresh in ${mm}:${ss}`;
-  }
-}
-
-refreshData();
-setInterval(refreshData, REFRESH_INTERVAL_MS);
-setInterval(updateCountdown, 1000);
-
-// ============================================
-// NEW PROFESSIONAL FEATURES INITIALIZATION
-// ============================================
-
-// Load configuration
+// ===== Professional Trading Features =====
+// Configuration management
 async function loadConfig() {
   try {
     const response = await fetch('config.js');
+    if (!response.ok) throw new Error('Config not found');
     const configText = await response.text();
-    // Simple config extraction (basic parsing)
-    const configMatch = configText.match(/const config = ({[\s\S]*?});/);
-    if (configMatch) {
-      window.appConfig = eval('(' + configMatch[1] + ')');
-    }
+    // Remove potential export statements and parse as object
+    const configContent = configText
+      .replace(/export\s+const\s+config\s*=/, '')
+      .replace(/;$/, '');
+    window.appConfig = JSON.parse(configContent);
   } catch (error) {
     console.warn('Config loading failed, using defaults');
     window.appConfig = {
@@ -3445,137 +3599,564 @@ async function initializeNewFeatures() {
 
   // Show initialization notification
   showFeatureNotification('Professional features loaded: Alerts, Portfolio, Scanner ready');
-
-  // Add feature buttons to header
-  addFeatureButtons();
-
-  // Initialize portfolio tracking (if enabled)
-  if (window.appConfig?.portfolio?.enabled) {
-    initializePortfolioTracking();
-  }
-
-  // Initialize alerts (if enabled)
-  if (window.appConfig?.alerts?.enabled) {
-    initializeAlerts();
-  }
-
-  // Initialize scanner (if enabled)
-  if (window.appConfig?.scanner?.enabled) {
-    initializeScanner();
-  }
-}
-
-function addFeatureButtons() {
-  const header = document.querySelector('.header');
-  if (!header) return;
-
-  const buttonsHTML = `
-    <div style="display: flex; gap: 10px; align-items: center;">
-      <button onclick="openPortfolioPanel()" style="background: var(--success); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500;">
-        📊 Portfolio
-      </button>
-      <button onclick="openAlertsPanel()" style="background: var(--info-border); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500;">
-        🔔 Alerts
-      </button>
-      <button onclick="openScannerPanel()" style="background: #9333ea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500;">
-        🔍 Scanner
-      </button>
-      <button onclick="openBacktestPanel()" style="background: #f59e0b; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500;">
-        🧪 Backtest
-      </button>
-    </div>
-  `;
-
-  header.innerHTML += buttonsHTML;
 }
 
 function showFeatureNotification(message) {
-  // Create notification element
   const notification = document.createElement('div');
   notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: var(--info-bg);
-    color: var(--info-text);
-    padding: 12px 20px;
-    border-radius: 8px;
-    border-left: 4px solid var(--info-border);
-    font-size: 12px;
-    z-index: 1000;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    animation: slideIn 0.3s ease-out;
+    position: fixed; bottom: 20px; right: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white; padding: 16px 24px; border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000;
+    font-size: 14px; font-weight: 500; animation: slideIn 0.3s ease-out;
   `;
   notification.textContent = message;
   document.body.appendChild(notification);
 
-  // Remove after 5 seconds
   setTimeout(() => notification.remove(), 5000);
 }
 
+// ============================================
+// FEATURE PANELS — real modals with working logic
+// ============================================
+
+function openFeatureModal(title, html) {
+  document.getElementById('featureModalTitle').textContent = title;
+  document.getElementById('featureModalBody').innerHTML = html;
+  document.getElementById('featureModal').classList.add('open');
+}
+function closeFeatureModal() {
+  document.getElementById('featureModal').classList.remove('open');
+}
+// Close on Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeFeatureModal();
+});
+
+function currentPriceOf(symbol) {
+  const c = (window.coinData || []).find(x => x.symbol === symbol);
+  return c ? c.avgPrice : null;
+}
+function fmtUsd(n, digits = 2) {
+  if (n == null || isNaN(n)) return '—';
+  return '$' + Number(n).toLocaleString('en-US', { maximumFractionDigits: digits, minimumFractionDigits: digits });
+}
+function fmtPct(n) {
+  if (n == null || isNaN(n)) return '—';
+  const s = (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+  return s;
+}
+function loadedSymbols() {
+  return (window.coinData || []).map(c => c.symbol);
+}
+
+// ===== Portfolio =====
+// Saved in localStorage (per-origin). For backup, use Export/Import below.
+const PF_KEY = 'cd_portfolio';
+
+function pfLoad() {
+  try {
+    const raw = localStorage.getItem(PF_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (raw) console.log(`📊 Portfolio loaded: ${parsed.length} position(s) from localStorage`);
+    return parsed;
+  } catch (e) {
+    console.warn('📊 Portfolio load failed:', e);
+    return [];
+  }
+}
+function pfSave(p) {
+  try {
+    localStorage.setItem(PF_KEY, JSON.stringify(p));
+    console.log(`📊 Portfolio saved: ${p.length} position(s) to localStorage`);
+  } catch (e) {
+    console.error('📊 Portfolio save FAILED — localStorage may be disabled:', e);
+    alert('Could not save portfolio — localStorage may be disabled or full. Try a non-private browser window.');
+  }
+}
+
+function pfExport() {
+  const positions = pfLoad();
+  const blob = new Blob([JSON.stringify({ positions, exportedAt: new Date().toISOString() }, null, 2)],
+    { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `crypto-portfolio-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function pfImport() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json,.json';
+  input.onchange = async () => {
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const positions = Array.isArray(parsed) ? parsed : parsed.positions;
+      if (!Array.isArray(positions)) throw new Error('No positions array found');
+      const existing = pfLoad();
+      if (existing.length && !confirm(`Replace ${existing.length} existing position(s) with ${positions.length} from file? Click Cancel to merge instead.`)) {
+        pfSave([...existing, ...positions]);
+      } else {
+        pfSave(positions);
+      }
+      renderPortfolio();
+    } catch (e) {
+      alert('Import failed: ' + e.message);
+    }
+  };
+  input.click();
+}
+
 function openPortfolioPanel() {
-  showFeatureNotification('📊 Portfolio tracking: Add positions via the console (portfolio.addPosition())');
-  console.log('📊 Portfolio Tracking Available:');
-  console.log('Add position: portfolio.addPosition({ symbol: "BTC", entryPrice: 50000, amount: 0.1 })');
-  console.log('View portfolio: portfolio.getPortfolioSummary()');
+  renderPortfolio();
 }
 
-function openAlertsPanel() {
-  showFeatureNotification('🔔 Alerts: Create alerts for price, volume, RSI thresholds');
-  console.log('🔔 Alert System Available:');
-  console.log('Create alert: alerts.createAlert({ symbol: "BTC", type: "price", condition: "above", threshold: 60000 })');
+async function pfRefreshPrices() {
+  const btn = document.getElementById('pfRefreshBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Fetching…'; }
+  try {
+    await refreshData();
+  } catch (e) {
+    console.warn('Refresh failed:', e);
+  }
+  renderPortfolio();
 }
 
-function openScannerPanel() {
-  showFeatureNotification('🔍 Scanner: Automatically scans for trading opportunities');
-  console.log('🔍 Market Scanner Available:');
-  console.log('Run scan: scanner.scanMarket()');
-  console.log('View results: scanner.getScanResults()');
+function renderPortfolio() {
+  const positions = pfLoad();
+  const symbols = loadedSymbols();
+  let totCost = 0, totValue = 0;
+  const rows = positions.map((p, i) => {
+    const cur = currentPriceOf(p.symbol);
+    const cost = p.qty * p.entry;
+    const value = cur != null ? p.qty * cur : null;
+    const pl = value != null ? value - cost : null;
+    const plPct = value != null && cost > 0 ? (pl / cost) * 100 : null;
+    totCost += cost;
+    if (value != null) totValue += value;
+    const plClass = pl == null ? '' : (pl >= 0 ? 'pill-success' : 'pill-danger');
+    return `
+      <tr>
+        <td><strong>${p.symbol}</strong></td>
+        <td>${p.qty}</td>
+        <td>${fmtUsd(p.entry, 4)}</td>
+        <td>${cur != null ? fmtUsd(cur, 4) : '<span class="pill pill-warning">no price</span>'}</td>
+        <td>${value != null ? fmtUsd(value) : '—'}</td>
+        <td>${pl != null ? `<span class="pill ${plClass}">${fmtUsd(pl)} (${fmtPct(plPct)})</span>` : '—'}</td>
+        <td><button class="modal-btn danger" onclick="pfRemove(${i})">✕</button></td>
+      </tr>`;
+  }).join('');
+  const totalPl = totValue - totCost;
+  const totalPlPct = totCost > 0 ? (totalPl / totCost) * 100 : 0;
+  const symbolOptions = symbols.map(s => `<option value="${s}">${s}</option>`).join('');
+  // Show last-refresh timestamp so user knows how stale prices are
+  const lastRefresh = window.LAST_REFRESH_TS ? new Date(window.LAST_REFRESH_TS).toLocaleTimeString() : 'never';
+  const html = `
+    <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:12px;">
+      <button class="modal-btn" id="pfRefreshBtn" onclick="pfRefreshPrices()">🔄 Refresh P/L</button>
+      <button class="modal-btn secondary" onclick="pfExport()" title="Download portfolio as JSON backup">⬇ Export</button>
+      <button class="modal-btn secondary" onclick="pfImport()" title="Restore portfolio from a JSON file">⬆ Import</button>
+    </div>
+    <div style="font-size:11px;color:var(--text-2); margin-bottom:8px;">
+      Prices last updated: ${lastRefresh}. <strong>Storage:</strong> this browser only — export a backup if you switch devices.
+    </div>
+    <div class="summary-grid">
+      <div class="summary-card"><div class="lbl">Positions</div><div class="val">${positions.length}</div></div>
+      <div class="summary-card"><div class="lbl">Cost basis</div><div class="val">${fmtUsd(totCost)}</div></div>
+      <div class="summary-card"><div class="lbl">Current value</div><div class="val">${fmtUsd(totValue)}</div></div>
+      <div class="summary-card"><div class="lbl">P/L</div><div class="val" style="color:${totalPl>=0?'var(--success)':'var(--danger)'}">${fmtUsd(totalPl)} (${fmtPct(totalPlPct)})</div></div>
+    </div>
+    <div class="modal-section">
+      <h4>Add position</h4>
+      <div class="modal-form">
+        <label>Symbol
+          <select id="pfSym">${symbolOptions || '<option value="">— load coins first —</option>'}</select>
+        </label>
+        <label>Quantity<input type="number" id="pfQty" step="any" placeholder="0.5" /></label>
+        <label>Entry price (USD)<input type="number" id="pfEntry" step="any" placeholder="auto = current" /></label>
+        <label>&nbsp;<button class="modal-btn" onclick="pfAdd()">+ Add Position</button></label>
+      </div>
+      <div style="font-size: 11px; color: var(--text-2);">Tip: leave entry blank to use the current price. Positions are saved in this browser only.</div>
+    </div>
+    <div class="modal-section">
+      <h4>Holdings</h4>
+      ${positions.length === 0 ? '<div class="modal-empty">No positions yet. Add one above.</div>' : `
+        <table class="modal-table">
+          <thead><tr><th>Symbol</th><th>Qty</th><th>Entry</th><th>Price</th><th>Value</th><th>P/L</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`}
+    </div>
+  `;
+  openFeatureModal('📊 Portfolio', html);
+}
+function pfAdd() {
+  const sym = document.getElementById('pfSym').value;
+  const qty = parseFloat(document.getElementById('pfQty').value);
+  let entry = parseFloat(document.getElementById('pfEntry').value);
+  if (!sym || !qty || qty <= 0) { alert('Pick a symbol and enter a quantity > 0'); return; }
+  if (isNaN(entry) || entry <= 0) entry = currentPriceOf(sym);
+  if (!entry) { alert('Could not determine entry price — type one in.'); return; }
+  const positions = pfLoad();
+  positions.push({ symbol: sym, qty, entry, addedAt: Date.now() });
+  pfSave(positions);
+  renderPortfolio();
+}
+function pfRemove(i) {
+  const positions = pfLoad();
+  positions.splice(i, 1);
+  pfSave(positions);
+  renderPortfolio();
 }
 
-function openBacktestPanel() {
-  showFeatureNotification('🧪 Backtest: Test strategies on historical data');
-  console.log('🧪 Backtesting Available:');
-  console.log('Test strategy: backtest.runBacktest("staged_deployment", { symbol: "BTCUSDT" })');
-}
+// ===== Alerts =====
+function alLoad() { try { return JSON.parse(localStorage.getItem('cd_alerts') || '[]'); } catch { return []; } }
+function alSave(a) { localStorage.setItem('cd_alerts', JSON.stringify(a)); }
 
-function initializePortfolioTracking() {
-  console.log('📊 Portfolio tracking initialized');
-  // Portfolio functionality available via console
-  window.portfolio = {
-    addPosition: (data) => {
-      showFeatureNotification(`Position added: ${data.symbol} @ $${data.entryPrice}`);
-      console.log('Position added:', data);
-    },
-    getSummary: () => {
-      console.log('Portfolio summary available - see INTEGRATION_GUIDE.md');
+function openAlertsPanel() { renderAlerts(); }
+function renderAlerts() {
+  const alerts = alLoad();
+  const symbols = loadedSymbols();
+  const symbolOptions = symbols.map(s => `<option value="${s}">${s}</option>`).join('');
+  const rows = alerts.map((a, i) => {
+    const cur = currentPriceOf(a.symbol);
+    const coin = (window.coinData || []).find(c => c.symbol === a.symbol);
+    const rsi = coin?.timeframes?.['1d']?.rsi;
+    let statusPill = '<span class="pill pill-info">waiting</span>';
+    if (a.triggered) statusPill = `<span class="pill pill-success">triggered ${new Date(a.triggered).toLocaleString()}</span>`;
+    let condition = '';
+    if (a.type === 'price') condition = `price ${a.dir} ${fmtUsd(a.threshold, 4)} (now ${fmtUsd(cur, 4)})`;
+    else if (a.type === 'rsi') condition = `RSI(1d) ${a.dir} ${a.threshold} (now ${rsi != null ? rsi.toFixed(1) : '—'})`;
+    else if (a.type === 'change') condition = `24h change ${a.dir} ${a.threshold}% (now ${fmtPct(coin?.avgChange24h)})`;
+    return `
+      <tr>
+        <td><strong>${a.symbol}</strong></td>
+        <td>${condition}</td>
+        <td>${statusPill}</td>
+        <td><button class="modal-btn danger" onclick="alRemove(${i})">✕</button></td>
+      </tr>`;
+  }).join('');
+  const html = `
+    <div class="modal-section">
+      <h4>Create alert</h4>
+      <div class="modal-form">
+        <label>Symbol<select id="alSym">${symbolOptions || '<option value="">— load coins first —</option>'}</select></label>
+        <label>Type
+          <select id="alType" onchange="document.getElementById('alHelp').textContent=alTypeHelp(this.value)">
+            <option value="price">Price</option>
+            <option value="rsi">RSI (1d)</option>
+            <option value="change">24h change %</option>
+          </select>
+        </label>
+        <label>Direction
+          <select id="alDir">
+            <option value="above">above</option>
+            <option value="below">below</option>
+          </select>
+        </label>
+        <label>Threshold<input type="number" id="alThresh" step="any" placeholder="e.g. 70000" /></label>
+        <label>&nbsp;<button class="modal-btn" onclick="alAdd()">+ Add Alert</button></label>
+      </div>
+      <div id="alHelp" style="font-size:11px;color:var(--text-2)">Threshold is the USD price. Alerts fire on the next data refresh.</div>
+    </div>
+    <div class="modal-section">
+      <h4>Active alerts</h4>
+      ${alerts.length === 0 ? '<div class="modal-empty">No alerts set.</div>' : `
+        <table class="modal-table">
+          <thead><tr><th>Symbol</th><th>Condition</th><th>Status</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`}
+    </div>
+  `;
+  openFeatureModal('🔔 Alerts', html);
+}
+function alTypeHelp(t) {
+  if (t === 'price') return 'Threshold is the USD price. Alerts fire on the next data refresh.';
+  if (t === 'rsi') return 'Threshold is the RSI value (0–100). Use ≤30 for oversold, ≥70 for overbought.';
+  return 'Threshold is the 24h % change (e.g. 5 for +5%, -5 for −5%).';
+}
+function alAdd() {
+  const sym = document.getElementById('alSym').value;
+  const type = document.getElementById('alType').value;
+  const dir = document.getElementById('alDir').value;
+  const threshold = parseFloat(document.getElementById('alThresh').value);
+  if (!sym || isNaN(threshold)) { alert('Pick a symbol and enter a threshold.'); return; }
+  const alerts = alLoad();
+  alerts.push({ symbol: sym, type, dir, threshold, triggered: null, createdAt: Date.now() });
+  alSave(alerts);
+  renderAlerts();
+}
+function alRemove(i) {
+  const alerts = alLoad();
+  alerts.splice(i, 1);
+  alSave(alerts);
+  renderAlerts();
+}
+// Check alerts against current data — called from refreshData after coins load
+function alCheck() {
+  const alerts = alLoad();
+  let changed = false, fired = 0;
+  for (const a of alerts) {
+    if (a.triggered) continue;
+    const coin = (window.coinData || []).find(c => c.symbol === a.symbol);
+    if (!coin) continue;
+    let cur;
+    if (a.type === 'price') cur = coin.avgPrice;
+    else if (a.type === 'rsi') cur = coin.timeframes?.['1d']?.rsi;
+    else if (a.type === 'change') cur = coin.avgChange24h;
+    if (cur == null || isNaN(cur)) continue;
+    const fires = (a.dir === 'above' && cur >= a.threshold) || (a.dir === 'below' && cur <= a.threshold);
+    if (fires) {
+      a.triggered = Date.now();
+      changed = true; fired++;
+      showFeatureNotification(`🔔 ${a.symbol} ${a.type} ${a.dir} ${a.threshold} — now ${typeof cur === 'number' ? cur.toFixed(2) : cur}`);
     }
-  };
+  }
+  if (changed) alSave(alerts);
+  return fired;
 }
 
-function initializeAlerts() {
-  console.log('🔔 Alert system initialized');
-  // Alert functionality available via console
-  window.alerts = {
-    create: (data) => {
-      showFeatureNotification(`Alert created for ${data.symbol}`);
-      console.log('Alert created:', data);
-    },
-    getStats: () => {
-      console.log('Alert stats available - see INTEGRATION_GUIDE.md');
-    }
+// ===== Scanner =====
+// Scanner filter state — persisted across re-renders so unchecking sticks
+let _scannerFilters = { oversold: true, overbought: true, volSpike: true, strongTrend: true };
+
+function openScannerPanel() { renderScanner(); }
+function renderScanner(results) {
+  const coins = window.coinData || [];
+  if (!results) results = runScannerOnce(coins, _scannerFilters);
+  const rows = results.length === 0 ?
+    '<tr><td colspan="5" class="modal-empty">No setups found in current data. Try toggling filters or refreshing.</td></tr>' :
+    results.map(r => `
+      <tr>
+        <td><strong>${r.symbol}</strong></td>
+        <td>${r.signals.map(s => `<span class="pill ${s.cls}">${s.label}</span>`).join(' ')}</td>
+        <td>${fmtUsd(r.price, 4)}</td>
+        <td>${r.rsi != null ? r.rsi.toFixed(1) : '—'}</td>
+        <td><strong>${r.score.toFixed ? r.score.toFixed(1) : r.score}</strong></td>
+      </tr>`).join('');
+  const c = key => _scannerFilters[key] ? 'checked' : '';
+  const html = `
+    <div class="modal-section">
+      <h4>Filters</h4>
+      <div class="modal-form">
+        <label><input type="checkbox" id="scOversold" ${c('oversold')} onchange="rerunScanner()"> RSI ≤ 30 (oversold)</label>
+        <label><input type="checkbox" id="scOverbought" ${c('overbought')} onchange="rerunScanner()"> RSI ≥ 70 (overbought)</label>
+        <label><input type="checkbox" id="scVolSpike" ${c('volSpike')} onchange="rerunScanner()"> Volume sentiment ≥ 65</label>
+        <label><input type="checkbox" id="scStrongTrend" ${c('strongTrend')} onchange="rerunScanner()"> LuxAlgo TS ≥ 70 or ≤ 30</label>
+        <label>&nbsp;<button class="modal-btn" onclick="rerunScanner()">🔍 Re-scan</button></label>
+      </div>
+      <div style="font-size:11px;color:var(--text-2)">Scans the ${coins.length} loaded coins. Toggling a filter re-scans instantly.</div>
+    </div>
+    <div class="modal-section">
+      <h4>Setups found (${results.length})</h4>
+      <table class="modal-table">
+        <thead><tr><th>Symbol</th><th>Signals</th><th>Price</th><th>RSI 1d</th><th>Score</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+  openFeatureModal('🔍 Scanner', html);
+}
+function rerunScanner() {
+  // Capture checkbox state BEFORE re-rendering so unchecked filters persist
+  const get = id => {
+    const el = document.getElementById(id);
+    return el ? el.checked : _scannerFilters[id.replace('sc','').toLowerCase()];
   };
+  _scannerFilters = {
+    oversold: get('scOversold'),
+    overbought: get('scOverbought'),
+    volSpike: get('scVolSpike'),
+    strongTrend: get('scStrongTrend'),
+  };
+  const results = runScannerOnce(window.coinData || [], _scannerFilters);
+  renderScanner(results);
+}
+function runScannerOnce(coins, filters) {
+  filters = filters || { oversold: true, overbought: true, volSpike: true, strongTrend: true };
+  const out = [];
+  for (const c of coins) {
+    const rsi = c.timeframes?.['1d']?.rsi;
+    const vs = c.timeframes?.['1d']?.volumeSentiment ?? c.timeframes?.['1d']?.volSentiment;
+    const lux = (typeof LUXALGO_SNAPSHOT !== 'undefined' && LUXALGO_SNAPSHOT?.[c.symbol]?.['1d']) || null;
+    const ts = lux?.trendStrength;
+    const signals = [];
+    if (filters.oversold && rsi != null && rsi <= 30) signals.push({ label: `oversold RSI ${rsi.toFixed(1)}`, cls: 'pill-success' });
+    if (filters.overbought && rsi != null && rsi >= 70) signals.push({ label: `overbought RSI ${rsi.toFixed(1)}`, cls: 'pill-danger' });
+    if (filters.volSpike && vs != null && vs >= 65) signals.push({ label: `vol buy ${vs}`, cls: 'pill-success' });
+    if (filters.volSpike && vs != null && vs <= 35) signals.push({ label: `vol sell ${vs}`, cls: 'pill-danger' });
+    if (filters.strongTrend && ts != null && ts >= 70) signals.push({ label: `TS ${ts.toFixed(0)} bull`, cls: 'pill-success' });
+    if (filters.strongTrend && ts != null && ts <= 30) signals.push({ label: `TS ${ts.toFixed(0)} bear`, cls: 'pill-danger' });
+    if (signals.length > 0) {
+      out.push({
+        symbol: c.symbol,
+        price: c.avgPrice,
+        rsi,
+        signals,
+        score: signals.length * 10 + (c.score || 0) / 10
+      });
+    }
+  }
+  out.sort((a, b) => b.score - a.score);
+  return out;
 }
 
-function initializeScanner() {
-  console.log('🔍 Market scanner initialized');
-  // Scanner functionality available via console
-  window.scanner = {
-    scan: () => {
-      showFeatureNotification('Market scan complete - check console for results');
-      console.log('🔍 Scan results available - see INTEGRATION_GUIDE.md');
-    }
+// ===== Backtest =====
+function openBacktestPanel() { renderBacktest(); }
+function renderBacktest(result) {
+  const symbols = loadedSymbols();
+  const symbolOptions = symbols.map(s => `<option value="${s}">${s}</option>`).join('');
+  const resultsHtml = !result ? '<div class="modal-empty">Pick a symbol and strategy, then run.</div>' : `
+    <div class="summary-grid">
+      <div class="summary-card"><div class="lbl">Trades</div><div class="val">${result.trades}</div></div>
+      <div class="summary-card"><div class="lbl">Win rate</div><div class="val">${result.winRate.toFixed(1)}%</div></div>
+      <div class="summary-card"><div class="lbl">Total return</div><div class="val" style="color:${result.totalReturn>=0?'var(--success)':'var(--danger)'}">${result.totalReturn.toFixed(2)}%</div></div>
+      <div class="summary-card"><div class="lbl">Max drawdown</div><div class="val" style="color:var(--danger)">${result.maxDD.toFixed(2)}%</div></div>
+      <div class="summary-card"><div class="lbl">Buy & hold</div><div class="val">${result.buyHold.toFixed(2)}%</div></div>
+      <div class="summary-card"><div class="lbl">Vs B&H</div><div class="val" style="color:${(result.totalReturn-result.buyHold)>=0?'var(--success)':'var(--danger)'}">${(result.totalReturn-result.buyHold).toFixed(2)}%</div></div>
+    </div>
+    ${result.tradeLog && result.tradeLog.length ? `
+      <h4 style="margin-top:16px;font-size:13px;color:var(--text-2)">Trade log (last 20)</h4>
+      <table class="modal-table">
+        <thead><tr><th>#</th><th>Entry</th><th>Exit</th><th>Bars held</th><th>P/L %</th></tr></thead>
+        <tbody>
+          ${result.tradeLog.slice(-20).map((t, i) => `
+            <tr>
+              <td>${i + 1}</td>
+              <td>${fmtUsd(t.entry, 4)}</td>
+              <td>${fmtUsd(t.exit, 4)}</td>
+              <td>${t.bars}</td>
+              <td style="color:${t.pl>=0?'var(--success)':'var(--danger)'}">${t.pl.toFixed(2)}%</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>` : ''}
+  `;
+  const html = `
+    <div class="modal-section">
+      <h4>Configure backtest</h4>
+      <div class="modal-form">
+        <label>Symbol<select id="btSym">${symbolOptions || '<option value="">— load coins first —</option>'}</select></label>
+        <label>Strategy
+          <select id="btStrat">
+            <option value="rsi">RSI mean reversion (buy ≤30, sell ≥70)</option>
+            <option value="ma">SMA crossover (20/50)</option>
+            <option value="bh">Buy & hold (baseline)</option>
+          </select>
+        </label>
+        <label>Interval
+          <select id="btInterval">
+            <option value="1d" selected>1d</option>
+            <option value="4h">4h</option>
+            <option value="1h">1h</option>
+          </select>
+        </label>
+        <label>Bars
+          <select id="btBars">
+            <option value="90">90</option>
+            <option value="180" selected>180</option>
+            <option value="365">365</option>
+          </select>
+        </label>
+        <label>&nbsp;<button class="modal-btn" onclick="runBacktestUI()">🧪 Run</button></label>
+      </div>
+      <div style="font-size:11px;color:var(--text-2)" id="btStatus">Pulls historical OHLCV from Binance (with proxy fallback).</div>
+    </div>
+    <div class="modal-section">
+      <h4>Results</h4>
+      ${resultsHtml}
+    </div>
+  `;
+  openFeatureModal('🧪 Backtest', html);
+}
+async function runBacktestUI() {
+  const sym = document.getElementById('btSym').value;
+  const strat = document.getElementById('btStrat').value;
+  const interval = document.getElementById('btInterval').value;
+  const bars = parseInt(document.getElementById('btBars').value, 10);
+  const status = document.getElementById('btStatus');
+  if (!sym) { alert('Pick a symbol'); return; }
+  status.textContent = `Fetching ${bars} ${interval} bars for ${sym}…`;
+  const candles = await fetchBinanceKlines(sym, interval, bars);
+  if (!candles || candles.length < 30) {
+    status.textContent = 'Could not fetch enough historical data — try a different symbol or interval.';
+    return;
+  }
+  status.textContent = `Loaded ${candles.length} bars. Running ${strat}…`;
+  const result = runStrategy(strat, candles);
+  renderBacktest(result);
+}
+function runStrategy(strat, candles) {
+  // Buy & hold baseline
+  const buyHold = ((candles[candles.length - 1].close - candles[0].close) / candles[0].close) * 100;
+  let entry = null, equity = 100, peak = 100, maxDD = 0;
+  const tradeLog = [];
+  const sma = (arr, n, i) => {
+    if (i + 1 < n) return null;
+    let s = 0;
+    for (let k = i - n + 1; k <= i; k++) s += arr[k].close;
+    return s / n;
   };
+  // RSI helper
+  const rsi = (arr, n, i) => {
+    if (i < n) return null;
+    let g = 0, l = 0;
+    for (let k = i - n + 1; k <= i; k++) {
+      const d = arr[k].close - arr[k - 1].close;
+      if (d > 0) g += d; else l -= d;
+    }
+    const ag = g / n, al = l / n;
+    if (al === 0) return 100;
+    return 100 - (100 / (1 + ag / al));
+  };
+
+  if (strat === 'bh') {
+    return { trades: 1, winRate: buyHold > 0 ? 100 : 0, totalReturn: buyHold, maxDD: 0, buyHold, tradeLog: [{ entry: candles[0].close, exit: candles[candles.length - 1].close, bars: candles.length, pl: buyHold }] };
+  }
+
+  for (let i = 1; i < candles.length; i++) {
+    let signal = null;
+    if (strat === 'rsi') {
+      const r = rsi(candles, 14, i);
+      if (r != null) {
+        if (entry == null && r <= 30) signal = 'buy';
+        else if (entry != null && r >= 70) signal = 'sell';
+      }
+    } else if (strat === 'ma') {
+      const fast = sma(candles, 20, i), slow = sma(candles, 50, i);
+      const fastPrev = sma(candles, 20, i - 1), slowPrev = sma(candles, 50, i - 1);
+      if (fast != null && slow != null && fastPrev != null && slowPrev != null) {
+        if (entry == null && fastPrev <= slowPrev && fast > slow) signal = 'buy';
+        else if (entry != null && fastPrev >= slowPrev && fast < slow) signal = 'sell';
+      }
+    }
+    if (signal === 'buy') {
+      entry = { price: candles[i].close, idx: i };
+    } else if (signal === 'sell' && entry) {
+      const pl = ((candles[i].close - entry.price) / entry.price) * 100;
+      equity *= (1 + pl / 100);
+      tradeLog.push({ entry: entry.price, exit: candles[i].close, bars: i - entry.idx, pl });
+      entry = null;
+      if (equity > peak) peak = equity;
+      const dd = ((peak - equity) / peak) * 100;
+      if (dd > maxDD) maxDD = dd;
+    }
+  }
+  // Close any open position at the end
+  if (entry) {
+    const pl = ((candles[candles.length - 1].close - entry.price) / entry.price) * 100;
+    equity *= (1 + pl / 100);
+    tradeLog.push({ entry: entry.price, exit: candles[candles.length - 1].close, bars: candles.length - 1 - entry.idx, pl });
+  }
+  const totalReturn = equity - 100;
+  const wins = tradeLog.filter(t => t.pl > 0).length;
+  const winRate = tradeLog.length ? (wins / tradeLog.length) * 100 : 0;
+  return { trades: tradeLog.length, winRate, totalReturn, maxDD, buyHold, tradeLog };
 }
 
 // Initialize new features when page loads
@@ -3588,8 +4169,26 @@ if (document.readyState === 'loading') {
 console.log('🎉 Professional Trading Features Loaded!');
 console.log('📚 Full integration guide: INTEGRATION_GUIDE.md');
 console.log('🔧 Configuration: Edit config.js to customize');
-console.log('💡 Quick start: Use the new buttons in the header');
 
+// --- Auto-refresh every 10 minutes with visible countdown ---
+const REFRESH_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+let LAST_REFRESH_TS = null;
+
+function updateCountdown() {
+  if (!LAST_REFRESH_TS) return;
+  const remaining = Math.max(0, REFRESH_INTERVAL_MS - (Date.now() - LAST_REFRESH_TS));
+  const mm = Math.floor(remaining / 60000);
+  const ss = String(Math.floor((remaining % 60000) / 1000)).padStart(2, '0');
+  const el = document.getElementById('lastUpdate');
+  if (el && el.textContent.startsWith('Last updated')) {
+    const base = el.textContent.split(' · ')[0];
+    el.textContent = `${base} · next refresh in ${mm}:${ss}`;
+  }
+}
+
+refreshData();
+setInterval(refreshData, REFRESH_INTERVAL_MS);
+setInterval(updateCountdown, 1000);
 </script>
 </body>
 </html>
