@@ -1,16 +1,11 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "public": true,
   "cleanUrls": true,
-  "git": {
-    "submodules": false
-  },
-  "buildCommand": null,
-  "outputDirectory": "./",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
+  "functions": {
+    "api/prices.js": {
+      "runtime": "nodejs22.x"
     }
-  ]
+  }
 }
