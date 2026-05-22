@@ -2,10 +2,5 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "public": true,
-  "cleanUrls": true,
-  "functions": {
-    "api/prices.js": {
-      "runtime": "nodejs22.x"
-    }
-  }
+  "cleanUrls": true
 }
