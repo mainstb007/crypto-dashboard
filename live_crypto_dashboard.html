@@ -3730,10 +3730,17 @@ async function pfRefreshPrices() {
 }
 
 function renderPortfolio() {
-  const positions = pfLoad();
-  const symbols = loadedSymbols();
+  // Load + always keep an index reference so the X button removes the right row
+  const rawPositions = pfLoad();
+  // Sort positions alphabetically for display, but keep original index for removal
+  const positions = rawPositions
+    .map((p, originalIdx) => ({ ...p, _idx: originalIdx }))
+    .sort((a, b) => a.symbol.localeCompare(b.symbol));
+  // Sort symbols alphabetically too — native HTML <select> supports first-letter
+  // type-to-select once options are in alphabetical order (e.g. press "B" → jumps to BTC)
+  const symbols = loadedSymbols().slice().sort((a, b) => a.localeCompare(b));
   let totCost = 0, totValue = 0;
-  const rows = positions.map((p, i) => {
+  const rows = positions.map(p => {
     const cur = currentPriceOf(p.symbol);
     const cost = p.qty * p.entry;
     const value = cur != null ? p.qty * cur : null;
@@ -3750,7 +3757,7 @@ function renderPortfolio() {
         <td>${cur != null ? fmtUsd(cur, 4) : '<span class="pill pill-warning">no price</span>'}</td>
         <td>${value != null ? fmtUsd(value) : '—'}</td>
         <td>${pl != null ? `<span class="pill ${plClass}">${fmtUsd(pl)} (${fmtPct(plPct)})</span>` : '—'}</td>
-        <td><button class="modal-btn danger" onclick="pfRemove(${i})">✕</button></td>
+        <td><button class="modal-btn danger" onclick="pfRemove(${p._idx})">✕</button></td>
       </tr>`;
   }).join('');
   const totalPl = totValue - totCost;
@@ -3822,7 +3829,8 @@ function alSave(a) { localStorage.setItem('cd_alerts', JSON.stringify(a)); }
 function openAlertsPanel() { renderAlerts(); }
 function renderAlerts() {
   const alerts = alLoad();
-  const symbols = loadedSymbols();
+  // Alphabetize so native <select> first-letter type-to-select works
+  const symbols = loadedSymbols().slice().sort((a, b) => a.localeCompare(b));
   const symbolOptions = symbols.map(s => `<option value="${s}">${s}</option>`).join('');
   const rows = alerts.map((a, i) => {
     const cur = currentPriceOf(a.symbol);
@@ -3926,32 +3934,54 @@ function alCheck() {
 // Scanner filter state — persisted across re-renders so unchecking sticks
 let _scannerFilters = { oversold: true, overbought: true, volSpike: true, strongTrend: true };
 
+// Read current checkbox state (called before re-render)
+function _captureScannerFilters() {
+  const get = id => {
+    const el = document.getElementById(id);
+    return el ? el.checked : false;
+  };
+  if (document.getElementById('scOversold')) {
+    _scannerFilters = {
+      oversold: get('scOversold'),
+      overbought: get('scOverbought'),
+      volSpike: get('scVolSpike'),
+      strongTrend: get('scStrongTrend'),
+    };
+  }
+}
+
 function openScannerPanel() { renderScanner(); }
+
 function renderScanner(results) {
   const coins = window.coinData || [];
   if (!results) results = runScannerOnce(coins, _scannerFilters);
   const rows = results.length === 0 ?
-    '<tr><td colspan="5" class="modal-empty">No setups found in current data. Try toggling filters or refreshing.</td></tr>' :
+    '<tr><td colspan="5" class="modal-empty">No setups found. Try toggling filters or hit Re-scan to refresh prices.</td></tr>' :
     results.map(r => `
       <tr>
         <td><strong>${r.symbol}</strong></td>
         <td>${r.signals.map(s => `<span class="pill ${s.cls}">${s.label}</span>`).join(' ')}</td>
         <td>${fmtUsd(r.price, 4)}</td>
         <td>${r.rsi != null ? r.rsi.toFixed(1) : '—'}</td>
-        <td><strong>${r.score.toFixed ? r.score.toFixed(1) : r.score}</strong></td>
+        <td><strong>${typeof r.score === 'number' ? r.score.toFixed(1) : r.score}</strong></td>
       </tr>`).join('');
   const c = key => _scannerFilters[key] ? 'checked' : '';
+  const allOn = Object.values(_scannerFilters).every(v => v);
+  const lastRefresh = window.LAST_REFRESH_TS ? new Date(window.LAST_REFRESH_TS).toLocaleTimeString() : 'never';
   const html = `
+    <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:12px;">
+      <button class="modal-btn secondary" onclick="scannerToggleAll()" id="scToggleAll">${allOn ? '☐ Deselect all' : '☑ Select all'}</button>
+      <button class="modal-btn" id="scRescanBtn" onclick="rerunScanner(true)">🔄 Re-scan (refetch prices)</button>
+    </div>
     <div class="modal-section">
       <h4>Filters</h4>
       <div class="modal-form">
-        <label><input type="checkbox" id="scOversold" ${c('oversold')} onchange="rerunScanner()"> RSI ≤ 30 (oversold)</label>
-        <label><input type="checkbox" id="scOverbought" ${c('overbought')} onchange="rerunScanner()"> RSI ≥ 70 (overbought)</label>
-        <label><input type="checkbox" id="scVolSpike" ${c('volSpike')} onchange="rerunScanner()"> Volume sentiment ≥ 65</label>
-        <label><input type="checkbox" id="scStrongTrend" ${c('strongTrend')} onchange="rerunScanner()"> LuxAlgo TS ≥ 70 or ≤ 30</label>
-        <label>&nbsp;<button class="modal-btn" onclick="rerunScanner()">🔍 Re-scan</button></label>
+        <label><input type="checkbox" id="scOversold" ${c('oversold')} onchange="rerunScanner(false)"> RSI ≤ 30 (oversold)</label>
+        <label><input type="checkbox" id="scOverbought" ${c('overbought')} onchange="rerunScanner(false)"> RSI ≥ 70 (overbought)</label>
+        <label><input type="checkbox" id="scVolSpike" ${c('volSpike')} onchange="rerunScanner(false)"> Volume sentiment ≥ 65 or ≤ 35</label>
+        <label><input type="checkbox" id="scStrongTrend" ${c('strongTrend')} onchange="rerunScanner(false)"> LuxAlgo TS ≥ 70 or ≤ 30</label>
       </div>
-      <div style="font-size:11px;color:var(--text-2)">Scans the ${coins.length} loaded coins. Toggling a filter re-scans instantly.</div>
+      <div style="font-size:11px;color:var(--text-2)">Scans the ${coins.length} loaded coins. Prices last refreshed: ${lastRefresh}. Toggling a filter re-scans instantly. Re-scan button refetches live prices first.</div>
     </div>
     <div class="modal-section">
       <h4>Setups found (${results.length})</h4>
@@ -3963,17 +3993,28 @@ function renderScanner(results) {
   `;
   openFeatureModal('🔍 Scanner', html);
 }
-function rerunScanner() {
-  // Capture checkbox state BEFORE re-rendering so unchecked filters persist
-  const get = id => {
-    const el = document.getElementById(id);
-    return el ? el.checked : _scannerFilters[id.replace('sc','').toLowerCase()];
-  };
+
+// rerunScanner(refetch): refetch=true → fresh data, refetch=false → just re-filter
+async function rerunScanner(refetch) {
+  console.log('🔍 rerunScanner called, refetch=', refetch);
+  _captureScannerFilters();
+  if (refetch) {
+    const btn = document.getElementById('scRescanBtn');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Refetching prices…'; }
+    try { await refreshData(); }
+    catch (e) { console.warn('refresh failed:', e); }
+  }
+  const results = runScannerOnce(window.coinData || [], _scannerFilters);
+  renderScanner(results);
+}
+
+// Select-all / Deselect-all toggle
+function scannerToggleAll() {
+  _captureScannerFilters();
+  const allOn = Object.values(_scannerFilters).every(v => v);
+  const newVal = !allOn;
   _scannerFilters = {
-    oversold: get('scOversold'),
-    overbought: get('scOverbought'),
-    volSpike: get('scVolSpike'),
-    strongTrend: get('scStrongTrend'),
+    oversold: newVal, overbought: newVal, volSpike: newVal, strongTrend: newVal,
   };
   const results = runScannerOnce(window.coinData || [], _scannerFilters);
   renderScanner(results);
@@ -4010,7 +4051,8 @@ function runScannerOnce(coins, filters) {
 // ===== Backtest =====
 function openBacktestPanel() { renderBacktest(); }
 function renderBacktest(result) {
-  const symbols = loadedSymbols();
+  // Alphabetize so native <select> first-letter type-to-select works
+  const symbols = loadedSymbols().slice().sort((a, b) => a.localeCompare(b));
   const symbolOptions = symbols.map(s => `<option value="${s}">${s}</option>`).join('');
   const resultsHtml = !result ? '<div class="modal-empty">Pick a symbol and strategy, then run.</div>' : `
     <div class="summary-grid">
