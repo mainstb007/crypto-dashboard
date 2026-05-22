@@ -1,1 +1,1588 @@
-{"BTC":{"1d":{"trendStrength":67.45,"pacDiscountTop":61896.22,"pacEqBottom":78014.13,"pacEqTop":79910.36,"pacPremiumBottom":96028.27,"hyperWave":26.13,"moneyFlow":56.97,"confluence":42.86},"4h":{"trendStrength":76.44,"pacDiscountTop":65892.5,"pacEqBottom":73478.75,"pacEqTop":74371.25,"pacPremiumBottom":81957.5,"hyperWave":69.9,"moneyFlow":43.01,"confluence":57.14}},"ETH":{"1d":{"trendStrength":27.67,"pacDiscountTop":1832.78,"pacEqBottom":2555.13,"pacEqTop":2640.11,"pacPremiumBottom":3362.46,"hyperWave":14.03,"moneyFlow":51.11,"confluence":42.86},"4h":{"trendStrength":89.47,"pacDiscountTop":2094.56,"pacEqBottom":2241.82,"pacEqTop":2259.15,"pacPremiumBottom":2406.41,"hyperWave":59.73,"moneyFlow":52.47,"confluence":71.43}},"SOL":{"1d":{"trendStrength":0.55,"pacDiscountTop":69.05,"pacEqBottom":82.18,"pacEqTop":83.73,"pacPremiumBottom":96.86,"hyperWave":28.29,"moneyFlow":54.9,"confluence":42.86},"4h":{"trendStrength":81.28,"pacDiscountTop":82.25,"pacEqBottom":89.48,"pacEqTop":90.33,"pacPremiumBottom":97.56,"hyperWave":70.88,"moneyFlow":32.26,"confluence":57.14}},"LINK":{"1d":{"trendStrength":37.25,"pacDiscountTop":8.33,"pacEqBottom":9.47,"pacEqTop":9.6,"pacPremiumBottom":10.74,"hyperWave":30.18,"moneyFlow":49.35,"confluence":28.57},"4h":{"trendStrength":78.7,"pacDiscountTop":9.01,"pacEqBottom":9.84,"pacEqTop":9.94,"pacPremiumBottom":10.77,"hyperWave":58.5,"moneyFlow":46.13,"confluence":57.14}},"TAO":{"1d":{"trendStrength":0.4,"pacDiscountTop":154.6,"pacEqBottom":254.4,"pacEqTop":266.2,"pacPremiumBottom":366,"hyperWave":22.2,"moneyFlow":54.4,"confluence":42.9},"4h":{"trendStrength":83.4,"pacDiscountTop":242.3,"pacEqBottom":283,"pacEqTop":287.8,"pacPremiumBottom":328.5,"hyperWave":79.2,"moneyFlow":44.8,"confluence":57.1}},"NEAR":{"1d":{"trendStrength":41.54,"pacDiscountTop":0.966,"pacEqBottom":2.029,"pacEqTop":2.154,"pacPremiumBottom":3.217,"hyperWave":68.713,"moneyFlow":40.483,"confluence":57.143},"4h":{"trendStrength":4.056,"pacDiscountTop":1.269,"pacEqBottom":1.475,"pacEqTop":1.499,"pacPremiumBottom":1.705,"hyperWave":78.928,"moneyFlow":48.816,"confluence":57.143}},"FET":{"1d":{"trendStrength":0.8278,"pacDiscountTop":0.1408,"pacEqBottom":0.1985,"pacEqTop":0.2052,"pacPremiumBottom":0.2629,"hyperWave":18.4267,"moneyFlow":41.5757,"confluence":28.5714},"4h":{"trendStrength":91.4306,"pacDiscountTop":0.1879,"pacEqBottom":0.2152,"pacEqTop":0.2184,"pacPremiumBottom":0.2457,"hyperWave":58.9354,"moneyFlow":34.8315,"confluence":57.1429}},"SUI":{"1d":{"trendStrength":20.4018,"pacDiscountTop":0.8498,"pacEqBottom":1.1059,"pacEqTop":1.1361,"pacPremiumBottom":1.3922,"hyperWave":41.1382,"moneyFlow":47.317,"confluence":28.5714},"4h":{"trendStrength":34.6723,"pacDiscountTop":0.9085,"pacEqBottom":1.1384,"pacEqTop":1.1654,"pacPremiumBottom":1.3953,"hyperWave":62.9517,"moneyFlow":29.5558,"confluence":57.1429}},"RENDER":{"1d":{"trendStrength":16.785,"pacDiscountTop":1.303,"pacEqBottom":2.83,"pacEqTop":3.009,"pacPremiumBottom":4.536,"hyperWave":37.344,"moneyFlow":43.355,"confluence":42.857},"4h":{"trendStrength":62.823,"pacDiscountTop":1.677,"pacEqBottom":1.86,"pacEqTop":1.881,"pacPremiumBottom":2.064,"hyperWave":81.505,"moneyFlow":54.86,"confluence":71.429}},"HBAR":{"1d":{"trendStrength":4.97105,"pacDiscountTop":0.0848,"pacEqBottom":0.095,"pacEqTop":0.0962,"pacPremiumBottom":0.1064,"hyperWave":31.68249,"moneyFlow":57.99968,"confluence":42.85714},"4h":{"trendStrength":65.07279,"pacDiscountTop":0.08765,"pacEqBottom":0.09302,"pacEqTop":0.09365,"pacPremiumBottom":0.09902,"hyperWave":48.96596,"moneyFlow":38.82946,"confluence":42.85714}},"AR":{"1d":{"trendStrength":54.04,"pacDiscountTop":1.85,"pacEqBottom":4.93,"pacEqTop":5.29,"pacPremiumBottom":8.37,"hyperWave":29.77,"moneyFlow":45.01,"confluence":42.86},"4h":{"trendStrength":81.56,"pacDiscountTop":1.84,"pacEqBottom":2.27,"pacEqTop":2.32,"pacPremiumBottom":2.75,"hyperWave":75.61,"moneyFlow":40.95,"confluence":57.14}},"SEI":{"1d":{"trendStrength":2.25845,"pacDiscountTop":0.06418,"pacEqBottom":0.19826,"pacEqTop":0.21404,"pacPremiumBottom":0.34812,"hyperWave":32.94861,"moneyFlow":48.15021,"confluence":28.57143},"4h":{"trendStrength":71.72983,"pacDiscountTop":0.05755,"pacEqBottom":0.06762,"pacEqTop":0.06881,"pacPremiumBottom":0.07888,"hyperWave":61.85974,"moneyFlow":40.95264,"confluence":57.14286}},"ZEC":{"1d":{"trendStrength":80.94,"pacDiscountTop":216.94,"pacEqBottom":428.57,"pacEqTop":453.47,"pacPremiumBottom":665.1,"hyperWave":68.2,"moneyFlow":54.07,"confluence":71.43},"4h":{"trendStrength":2.71,"pacDiscountTop":319.1,"pacEqBottom":485.03,"pacEqTop":504.55,"pacPremiumBottom":670.48,"hyperWave":93.44,"moneyFlow":53.14,"confluence":71.43}},"APT":{"1d":{"trendStrength":9.342,"pacDiscountTop":1.033,"pacEqBottom":3.098,"pacEqTop":3.34,"pacPremiumBottom":5.405,"hyperWave":23.046,"moneyFlow":51.396,"confluence":42.857},"4h":{"trendStrength":85.524,"pacDiscountTop":0.913,"pacEqBottom":1.059,"pacEqTop":1.076,"pacPremiumBottom":1.222,"hyperWave":69.836,"moneyFlow":39.616,"confluence":50}},"OP":{"1d":{"trendStrength":30.4563,"pacDiscountTop":0.138,"pacEqBottom":0.4717,"pacEqTop":0.511,"pacPremiumBottom":0.8447,"hyperWave":25.8465,"moneyFlow":44.183,"confluence":28.5714},"4h":{"trendStrength":95.0749,"pacDiscountTop":0.1188,"pacEqBottom":0.147,"pacEqTop":0.1504,"pacPremiumBottom":0.1786,"hyperWave":59.8177,"moneyFlow":32.2429,"confluence":50}},"ARB":{"1d":{"trendStrength":58.5703,"pacDiscountTop":0.1127,"pacEqBottom":0.3417,"pacEqTop":0.3687,"pacPremiumBottom":0.5977,"hyperWave":20.3237,"moneyFlow":38.8766,"confluence":28.5714},"4h":{"trendStrength":94.8329,"pacDiscountTop":0.1126,"pacEqBottom":0.1291,"pacEqTop":0.1311,"pacPremiumBottom":0.1476,"hyperWave":14.4274,"moneyFlow":27.8514,"confluence":21.4286}},"XRP":{"1d":{"trendStrength":1.3319,"pacDiscountTop":1.2868,"pacEqBottom":1.4301,"pacEqTop":1.4469,"pacPremiumBottom":1.5902,"hyperWave":31.8327,"moneyFlow":49.7717,"confluence":28.5714},"4h":{"trendStrength":44.4827,"pacDiscountTop":1.356,"pacEqBottom":1.4426,"pacEqTop":1.4528,"pacPremiumBottom":1.5394,"hyperWave":41.4926,"moneyFlow":39.7228,"confluence":35.7143}},"ADA":{"1d":{"trendStrength":1.0638,"pacDiscountTop":0.2368,"pacEqBottom":0.2712,"pacEqTop":0.2752,"pacPremiumBottom":0.3096,"hyperWave":24.5904,"moneyFlow":47.4352,"confluence":28.5714},"4h":{"trendStrength":83.3224,"pacDiscountTop":0.2408,"pacEqBottom":0.2622,"pacEqTop":0.2648,"pacPremiumBottom":0.2862,"hyperWave":48.2972,"moneyFlow":35.0156,"confluence":35.7143}},"AVAX":{"1d":{"trendStrength":0.07,"pacDiscountTop":8.48,"pacEqBottom":9.41,"pacEqTop":9.51,"pacPremiumBottom":10.44,"hyperWave":27.14,"moneyFlow":46.49,"confluence":28.57},"4h":{"trendStrength":79.73,"pacDiscountTop":9,"pacEqBottom":9.67,"pacEqTop":9.74,"pacPremiumBottom":10.41,"hyperWave":67.48,"moneyFlow":35.31,"confluence":57.14}},"DOT":{"1d":{"trendStrength":31.88,"pacDiscountTop":1.134,"pacEqBottom":1.41,"pacEqTop":1.443,"pacPremiumBottom":1.719,"hyperWave":25.85,"moneyFlow":40.705,"confluence":28.571},"4h":{"trendStrength":75.221,"pacDiscountTop":1.192,"pacEqBottom":1.302,"pacEqTop":1.315,"pacPremiumBottom":1.425,"hyperWave":63.748,"moneyFlow":32.568,"confluence":50}},"ATOM":{"1d":{"trendStrength":40.76,"pacDiscountTop":1.652,"pacEqBottom":2.037,"pacEqTop":2.082,"pacPremiumBottom":2.467,"hyperWave":60.352,"moneyFlow":53.229,"confluence":57.143},"4h":{"trendStrength":6.499,"pacDiscountTop":1.858,"pacEqBottom":2.027,"pacEqTop":2.046,"pacPremiumBottom":2.215,"hyperWave":28.41,"moneyFlow":49.203,"confluence":28.571}},"ICP":{"1d":{"trendStrength":15.062,"pacDiscountTop":2.245,"pacEqBottom":3.071,"pacEqTop":3.169,"pacPremiumBottom":3.995,"hyperWave":25.612,"moneyFlow":32.501,"confluence":28.571},"4h":{"trendStrength":90.91,"pacDiscountTop":2.405,"pacEqBottom":3.16,"pacEqTop":3.248,"pacPremiumBottom":4.003,"hyperWave":57.487,"moneyFlow":38.585,"confluence":57.143}},"STX":{"1d":{"trendStrength":0.2999,"pacDiscountTop":0.2368,"pacEqBottom":0.5411,"pacEqTop":0.5769,"pacPremiumBottom":0.8812,"hyperWave":26.8905,"moneyFlow":51.1966,"confluence":42.8571},"4h":{"trendStrength":66.7394,"pacDiscountTop":0.2354,"pacEqBottom":0.2965,"pacEqTop":0.3037,"pacPremiumBottom":0.3648,"hyperWave":69.5987,"moneyFlow":35.0126,"confluence":57.1429}},"WLD":{"1d":{"trendStrength":57.6819,"pacDiscountTop":0.3259,"pacEqBottom":1.1692,"pacEqTop":1.2685,"pacPremiumBottom":2.1118,"hyperWave":31.7752,"moneyFlow":38.3282,"confluence":42.8571},"4h":{"trendStrength":76.4927,"pacDiscountTop":0.2301,"pacEqBottom":0.2594,"pacEqTop":0.2629,"pacPremiumBottom":0.2922,"hyperWave":73.4771,"moneyFlow":40.9305,"confluence":57.1429}},"FIL":{"1d":{"trendStrength":37.283,"pacDiscountTop":0.802,"pacEqBottom":1.036,"pacEqTop":1.063,"pacPremiumBottom":1.297,"hyperWave":26.493,"moneyFlow":42.223,"confluence":28.571},"4h":{"trendStrength":90.659,"pacDiscountTop":0.895,"pacEqBottom":1.087,"pacEqTop":1.109,"pacPremiumBottom":1.301,"hyperWave":65.764,"moneyFlow":42.294,"confluence":57.143}},"GRT":{"1d":{"trendStrength":1.7437,"pacDiscountTop":0.0233,"pacEqBottom":0.02647,"pacEqTop":0.02684,"pacPremiumBottom":0.03001,"hyperWave":25.76809,"moneyFlow":43.21619,"confluence":28.57143},"4h":{"trendStrength":65.24346,"pacDiscountTop":0.02421,"pacEqBottom":0.02697,"pacEqTop":0.0273,"pacPremiumBottom":0.03006,"hyperWave":57.65438,"moneyFlow":43.87624,"confluence":57.14286}},"THETA":{"1d":{"trendStrength":52.693,"pacDiscountTop":0.181,"pacEqBottom":0.516,"pacEqTop":0.555,"pacPremiumBottom":0.89,"hyperWave":26.381,"moneyFlow":44.817,"confluence":28.571},"4h":{"trendStrength":75.762,"pacDiscountTop":0.193,"pacEqBottom":0.223,"pacEqTop":0.226,"pacPremiumBottom":0.256,"hyperWave":65.648,"moneyFlow":33.02,"confluence":50}},"ALGO":{"1d":{"trendStrength":57.316,"pacDiscountTop":0.0922,"pacEqBottom":0.2013,"pacEqTop":0.2141,"pacPremiumBottom":0.3232,"hyperWave":34.589,"moneyFlow":44.0838,"confluence":42.8571},"4h":{"trendStrength":75.6499,"pacDiscountTop":0.1066,"pacEqBottom":0.1202,"pacEqTop":0.1219,"pacPremiumBottom":0.1355,"hyperWave":83.5363,"moneyFlow":43.441,"confluence":35.7143}},"VET":{"1d":{"trendStrength":1.474398,"pacDiscountTop":0.006527,"pacEqBottom":0.007611,"pacEqTop":0.007738,"pacPremiumBottom":0.008822,"hyperWave":13.832021,"moneyFlow":45.61552,"confluence":28.571429},"4h":{"trendStrength":91.18591,"pacDiscountTop":0.006486,"pacEqBottom":0.007221,"pacEqTop":0.007307,"pacPremiumBottom":0.008043,"hyperWave":47.418075,"moneyFlow":40.58969,"confluence":42.857143}},"TRX":{"1d":{"trendStrength":91.0782,"pacDiscountTop":0.2729,"pacEqBottom":0.3118,"pacEqTop":0.3164,"pacPremiumBottom":0.3553,"hyperWave":91.6181,"moneyFlow":65.1147,"confluence":78.5714},"4h":{"trendStrength":69.4249,"pacDiscountTop":0.3218,"pacEqBottom":0.3388,"pacEqTop":0.3409,"pacPremiumBottom":0.3579,"hyperWave":77.8267,"moneyFlow":50.4005,"confluence":71.4286}},"DOGE":{"1d":{"trendStrength":58.51058,"pacDiscountTop":0.08826,"pacEqBottom":0.10184,"pacEqTop":0.10343,"pacPremiumBottom":0.11701,"hyperWave":29.82285,"moneyFlow":52.04197,"confluence":42.85714},"4h":{"trendStrength":29.52203,"pacDiscountTop":0.09385,"pacEqBottom":0.10493,"pacEqTop":0.10623,"pacPremiumBottom":0.11731,"hyperWave":41.55718,"moneyFlow":37.30176,"confluence":35.71429}},"MOVR":{"1d":{"trendStrength":70.715,"pacDiscountTop":1.327,"pacEqBottom":4.294,"pacEqTop":4.644,"pacPremiumBottom":7.611,"hyperWave":27.931,"moneyFlow":41.89,"confluence":28.571},"4h":{"trendStrength":77.815,"pacDiscountTop":2.138,"pacEqBottom":2.474,"pacEqTop":2.514,"pacPremiumBottom":2.85,"hyperWave":48.35,"moneyFlow":38.859,"confluence":28.571}},"CFX":{"1d":{"trendStrength":19.9112,"pacDiscountTop":0.04574,"pacEqBottom":0.09193,"pacEqTop":0.09737,"pacPremiumBottom":0.14356,"hyperWave":32.71342,"moneyFlow":46.26881,"confluence":28.57143},"4h":{"trendStrength":30.91581,"pacDiscountTop":0.05738,"pacEqBottom":0.06696,"pacEqTop":0.06809,"pacPremiumBottom":0.07767,"hyperWave":50.90218,"moneyFlow":40.2644,"confluence":57.14286}},"PYTH":{"1d":{"trendStrength":18.799,"pacDiscountTop":0.0377,"pacEqBottom":0.0491,"pacEqTop":0.0505,"pacPremiumBottom":0.0619,"hyperWave":15.6742,"moneyFlow":42.3578,"confluence":28.5714},"4h":{"trendStrength":94.9168,"pacDiscountTop":0.0393,"pacEqBottom":0.05,"pacEqTop":0.0512,"pacPremiumBottom":0.0619,"hyperWave":48.8718,"moneyFlow":34.0423,"confluence":42.8571}},"TON":{"1d":{"trendStrength":49.39,"pacDiscountTop":1.273,"pacEqBottom":2.004,"pacEqTop":2.09,"pacPremiumBottom":2.821,"hyperWave":39.725,"moneyFlow":45.967,"confluence":42.857},"4h":{"trendStrength":79.126,"pacDiscountTop":1.367,"pacEqBottom":2.056,"pacEqTop":2.137,"pacPremiumBottom":2.826,"hyperWave":61.33,"moneyFlow":48.574,"confluence":57.143}},"TRB":{"1d":{"trendStrength":43.64,"pacDiscountTop":13.89,"pacEqBottom":28.76,"pacEqTop":30.5,"pacPremiumBottom":45.37,"hyperWave":17.79,"moneyFlow":48.13,"confluence":42.86},"4h":{"trendStrength":87.95,"pacDiscountTop":16.62,"pacEqBottom":18.85,"pacEqTop":19.11,"pacPremiumBottom":21.34,"hyperWave":79.21,"moneyFlow":51.45,"confluence":71.43}},"POL":{"1d":{"trendStrength":0.0338,"pacDiscountTop":0.0831,"pacEqBottom":0.0989,"pacEqTop":0.1007,"pacPremiumBottom":0.1165,"hyperWave":18.6974,"moneyFlow":54.1771,"confluence":42.8571},"4h":{"trendStrength":85.0033,"pacDiscountTop":0.0824,"pacEqBottom":0.0925,"pacEqTop":0.0937,"pacPremiumBottom":0.1038,"hyperWave":57.6975,"moneyFlow":53.9887,"confluence":71.4286}},"ZK":{"1d":{"trendStrength":16.6709,"pacDiscountTop":0.00779,"pacEqBottom":0.04233,"pacEqTop":0.0464,"pacPremiumBottom":0.08094,"hyperWave":15.83449,"moneyFlow":49.4227,"confluence":28.57143},"4h":{"trendStrength":91.15337,"pacDiscountTop":0.01494,"pacEqBottom":0.01724,"pacEqTop":0.01751,"pacPremiumBottom":0.01981,"hyperWave":68.80643,"moneyFlow":34.7665,"confluence":57.14286}}}
+{
+  "BTC": {
+    "1h": {
+      "trendStrength": 31.95,
+      "pacDiscountTop": 76372.42,
+      "pacEqBottom": 79104.45,
+      "pacEqTop": 79425.87,
+      "pacPremiumBottom": 82157.9,
+      "hyperWave": 48.5,
+      "moneyFlow": 44.59,
+      "confluence": 42.86
+    },
+    "4h": {
+      "trendStrength": 76.34,
+      "pacDiscountTop": 65892.5,
+      "pacEqBottom": 73478.75,
+      "pacEqTop": 74371.25,
+      "pacPremiumBottom": 81957.5,
+      "hyperWave": 50.62,
+      "moneyFlow": 55.37,
+      "confluence": 57.14
+    },
+    "1d": {
+      "trendStrength": 66.41,
+      "pacDiscountTop": 61896.22,
+      "pacEqBottom": 78014.13,
+      "pacEqTop": 79910.36,
+      "pacPremiumBottom": 96028.27,
+      "hyperWave": 29.54,
+      "moneyFlow": 55.08,
+      "confluence": 57.14
+    },
+    "1w": {
+      "trendStrength": 22.74,
+      "pacDiscountTop": 21012.18,
+      "pacEqBottom": 68069.72,
+      "pacEqTop": 73605.91,
+      "pacPremiumBottom": 120663.45,
+      "hyperWave": 64.92,
+      "moneyFlow": 41.48,
+      "confluence": 42.86
+    }
+  },
+  "ETH": {
+    "1h": {
+      "trendStrength": 23.22,
+      "pacDiscountTop": 2092.5,
+      "pacEqBottom": 2222.25,
+      "pacEqTop": 2237.51,
+      "pacPremiumBottom": 2367.27,
+      "hyperWave": 54.42,
+      "moneyFlow": 49.21,
+      "confluence": 57.14
+    },
+    "4h": {
+      "trendStrength": 86.94,
+      "pacDiscountTop": 2094.56,
+      "pacEqBottom": 2241.82,
+      "pacEqTop": 2259.15,
+      "pacPremiumBottom": 2406.41,
+      "hyperWave": 50.77,
+      "moneyFlow": 57.6,
+      "confluence": 57.14
+    },
+    "1d": {
+      "trendStrength": 18.41,
+      "pacDiscountTop": 1832.78,
+      "pacEqBottom": 2555.13,
+      "pacEqTop": 2640.11,
+      "pacPremiumBottom": 3362.46,
+      "hyperWave": 16.41,
+      "moneyFlow": 51.35,
+      "confluence": 57.14
+    },
+    "1w": {
+      "trendStrength": 0.24,
+      "pacDiscountTop": 1085.32,
+      "pacEqBottom": 2817.29,
+      "pacEqTop": 3021.05,
+      "pacPremiumBottom": 4753.02,
+      "hyperWave": 48.99,
+      "moneyFlow": 37.86,
+      "confluence": 21.43
+    }
+  },
+  "SOL": {
+    "1h": {
+      "trendStrength": 81.57,
+      "pacDiscountTop": 84.25,
+      "pacEqBottom": 90.58,
+      "pacEqTop": 91.33,
+      "pacPremiumBottom": 97.66,
+      "hyperWave": 72.14,
+      "moneyFlow": 50.12,
+      "confluence": 71.43
+    },
+    "4h": {
+      "trendStrength": 74.94,
+      "pacDiscountTop": 82.25,
+      "pacEqBottom": 89.48,
+      "pacEqTop": 90.33,
+      "pacPremiumBottom": 97.56,
+      "hyperWave": 68.43,
+      "moneyFlow": 41.96,
+      "confluence": 57.14
+    },
+    "1d": {
+      "trendStrength": 0.65,
+      "pacDiscountTop": 77.79,
+      "pacEqBottom": 87.01,
+      "pacEqTop": 88.1,
+      "pacPremiumBottom": 97.32,
+      "hyperWave": 37.27,
+      "moneyFlow": 55.03,
+      "confluence": 57.14
+    },
+    "1w": {
+      "trendStrength": 39.35,
+      "pacDiscountTop": 22.39,
+      "pacEqBottom": 144.72,
+      "pacEqTop": 159.11,
+      "pacPremiumBottom": 281.44,
+      "hyperWave": 45.81,
+      "moneyFlow": 33.46,
+      "confluence": 35.71
+    }
+  },
+  "LINK": {
+    "1h": {
+      "trendStrength": 78.598,
+      "pacDiscountTop": 9.412,
+      "pacEqBottom": 9.687,
+      "pacEqTop": 9.72,
+      "pacPremiumBottom": 9.995,
+      "hyperWave": 90.576,
+      "moneyFlow": 52.141,
+      "confluence": 71.429
+    },
+    "4h": {
+      "trendStrength": 68.593,
+      "pacDiscountTop": 9.008,
+      "pacEqBottom": 9.841,
+      "pacEqTop": 9.939,
+      "pacPremiumBottom": 10.772,
+      "hyperWave": 77.943,
+      "moneyFlow": 53.39,
+      "confluence": 71.429
+    },
+    "1d": {
+      "trendStrength": 38.976,
+      "pacDiscountTop": 8.333,
+      "pacEqBottom": 9.468,
+      "pacEqTop": 9.602,
+      "pacPremiumBottom": 10.737,
+      "hyperWave": 40.06,
+      "moneyFlow": 48.881,
+      "confluence": 42.857
+    },
+    "1w": {
+      "trendStrength": 32.429,
+      "pacDiscountTop": 6.07,
+      "pacEqBottom": 17.196,
+      "pacEqTop": 18.505,
+      "pacPremiumBottom": 29.631,
+      "hyperWave": 60.392,
+      "moneyFlow": 35.026,
+      "confluence": 50
+    }
+  },
+  "TAO": {
+    "1h": {
+      "trendStrength": 86.7,
+      "pacDiscountTop": 258.3,
+      "pacEqBottom": 291.9,
+      "pacEqTop": 295.8,
+      "pacPremiumBottom": 329.4,
+      "hyperWave": 77.5,
+      "moneyFlow": 50.9,
+      "confluence": 71.4
+    },
+    "4h": {
+      "trendStrength": 61.7,
+      "pacDiscountTop": 242.3,
+      "pacEqBottom": 283,
+      "pacEqTop": 287.8,
+      "pacPremiumBottom": 328.5,
+      "hyperWave": 82.8,
+      "moneyFlow": 54.7,
+      "confluence": 71.4
+    },
+    "1d": {
+      "trendStrength": 0.3,
+      "pacDiscountTop": 154.6,
+      "pacEqBottom": 254.4,
+      "pacEqTop": 266.2,
+      "pacPremiumBottom": 366,
+      "hyperWave": 39.6,
+      "moneyFlow": 53.3,
+      "confluence": 57.1
+    },
+    "1w": {
+      "trendStrength": 24.4,
+      "pacDiscountTop": 170.4,
+      "pacEqBottom": 428.9,
+      "pacEqTop": 459.4,
+      "pacPremiumBottom": 717.9,
+      "hyperWave": 58.3,
+      "moneyFlow": 46.6,
+      "confluence": 42.9
+    }
+  },
+  "NEAR": {
+    "1h": {
+      "trendStrength": 77.521,
+      "pacDiscountTop": 1.512,
+      "pacEqBottom": 1.881,
+      "pacEqTop": 1.925,
+      "pacPremiumBottom": 2.294,
+      "hyperWave": 93.731,
+      "moneyFlow": 69.904,
+      "confluence": 64.286
+    },
+    "4h": {
+      "trendStrength": 33.444,
+      "pacDiscountTop": 1.3,
+      "pacEqBottom": 1.764,
+      "pacEqTop": 1.818,
+      "pacPremiumBottom": 2.282,
+      "hyperWave": 99.094,
+      "moneyFlow": 60.741,
+      "confluence": 71.429
+    },
+    "1d": {
+      "trendStrength": 39.605,
+      "pacDiscountTop": 0.966,
+      "pacEqBottom": 2.029,
+      "pacEqTop": 2.154,
+      "pacPremiumBottom": 3.217,
+      "hyperWave": 87.742,
+      "moneyFlow": 41.534,
+      "confluence": 57.143
+    },
+    "1w": {
+      "trendStrength": 64.237,
+      "pacDiscountTop": 1.249,
+      "pacEqBottom": 4.721,
+      "pacEqTop": 5.13,
+      "pacPremiumBottom": 8.602,
+      "hyperWave": 78.777,
+      "moneyFlow": 39.742,
+      "confluence": 57.143
+    }
+  },
+  "FET": {
+    "1h": {
+      "trendStrength": 55.9286,
+      "pacDiscountTop": 0.1893,
+      "pacEqBottom": 0.2046,
+      "pacEqTop": 0.2064,
+      "pacPremiumBottom": 0.2217,
+      "hyperWave": 92.8861,
+      "moneyFlow": 56.178,
+      "confluence": 57.1429
+    },
+    "4h": {
+      "trendStrength": 63.5114,
+      "pacDiscountTop": 0.1879,
+      "pacEqBottom": 0.2152,
+      "pacEqTop": 0.2184,
+      "pacPremiumBottom": 0.2457,
+      "hyperWave": 91.6021,
+      "moneyFlow": 42.7157,
+      "confluence": 57.1429
+    },
+    "1d": {
+      "trendStrength": 8.8343,
+      "pacDiscountTop": 0.1408,
+      "pacEqBottom": 0.1985,
+      "pacEqTop": 0.2052,
+      "pacPremiumBottom": 0.2629,
+      "hyperWave": 33.0476,
+      "moneyFlow": 41.1921,
+      "confluence": 42.8571
+    },
+    "1w": {
+      "trendStrength": 71.6515,
+      "pacDiscountTop": 0.2241,
+      "pacEqBottom": 1.6807,
+      "pacEqTop": 1.852,
+      "pacPremiumBottom": 3.3086,
+      "hyperWave": 51.6461,
+      "moneyFlow": 33.3745,
+      "confluence": 42.8571
+    }
+  },
+  "SUI": {
+    "1h": {
+      "trendStrength": 65.92,
+      "pacDiscountTop": 1.0314,
+      "pacEqBottom": 1.2063,
+      "pacEqTop": 1.2268,
+      "pacPremiumBottom": 1.4017,
+      "hyperWave": 65.0469,
+      "moneyFlow": 58.854,
+      "confluence": 71.4286
+    },
+    "4h": {
+      "trendStrength": 63.4319,
+      "pacDiscountTop": 0.9085,
+      "pacEqBottom": 1.1384,
+      "pacEqTop": 1.1654,
+      "pacPremiumBottom": 1.3953,
+      "hyperWave": 58.893,
+      "moneyFlow": 41.835,
+      "confluence": 42.8571
+    },
+    "1d": {
+      "trendStrength": 25.6909,
+      "pacDiscountTop": 0.8498,
+      "pacEqBottom": 1.1059,
+      "pacEqTop": 1.1361,
+      "pacPremiumBottom": 1.3922,
+      "hyperWave": 49.2032,
+      "moneyFlow": 48.0362,
+      "confluence": 42.8571
+    },
+    "1w": {
+      "trendStrength": 60.7912,
+      "pacDiscountTop": 0.3634,
+      "pacEqBottom": 2.6026,
+      "pacEqTop": 2.8661,
+      "pacPremiumBottom": 5.1053,
+      "hyperWave": 59.9961,
+      "moneyFlow": 39.7881,
+      "confluence": 57.1429
+    }
+  },
+  "RENDER": {
+    "1h": {
+      "trendStrength": 80.576,
+      "pacDiscountTop": 1.75,
+      "pacEqBottom": 1.907,
+      "pacEqTop": 1.926,
+      "pacPremiumBottom": 2.083,
+      "hyperWave": 92.719,
+      "moneyFlow": 56.698,
+      "confluence": 71.429
+    },
+    "4h": {
+      "trendStrength": 2.831,
+      "pacDiscountTop": 1.678,
+      "pacEqBottom": 1.867,
+      "pacEqTop": 1.89,
+      "pacPremiumBottom": 2.079,
+      "hyperWave": 84.547,
+      "moneyFlow": 57.581,
+      "confluence": 71.429
+    },
+    "1d": {
+      "trendStrength": 14.051,
+      "pacDiscountTop": 1.303,
+      "pacEqBottom": 2.83,
+      "pacEqTop": 3.009,
+      "pacPremiumBottom": 4.536,
+      "hyperWave": 61.557,
+      "moneyFlow": 45.211,
+      "confluence": 57.143
+    },
+    "1w": {
+      "trendStrength": 70.535,
+      "pacDiscountTop": 0.952,
+      "pacEqBottom": 6.717,
+      "pacEqTop": 7.395,
+      "pacPremiumBottom": 13.16,
+      "hyperWave": 63.609,
+      "moneyFlow": 41.629,
+      "confluence": 57.143
+    }
+  },
+  "HBAR": {
+    "1h": {
+      "trendStrength": 46.64432,
+      "pacDiscountTop": 0.08843,
+      "pacEqBottom": 0.09345,
+      "pacEqTop": 0.09404,
+      "pacPremiumBottom": 0.09906,
+      "hyperWave": 72.75586,
+      "moneyFlow": 47.18374,
+      "confluence": 57.14286
+    },
+    "4h": {
+      "trendStrength": 79.10451,
+      "pacDiscountTop": 0.08765,
+      "pacEqBottom": 0.09302,
+      "pacEqTop": 0.09365,
+      "pacPremiumBottom": 0.09902,
+      "hyperWave": 70.97766,
+      "moneyFlow": 43.94069,
+      "confluence": 57.14286
+    },
+    "1d": {
+      "trendStrength": 3.14153,
+      "pacDiscountTop": 0.0848,
+      "pacEqBottom": 0.095,
+      "pacEqTop": 0.0962,
+      "pacPremiumBottom": 0.1064,
+      "hyperWave": 35.45655,
+      "moneyFlow": 57.58119,
+      "confluence": 57.14286
+    },
+    "1w": {
+      "trendStrength": 58.96419,
+      "pacDiscountTop": 0.05389,
+      "pacEqBottom": 0.20935,
+      "pacEqTop": 0.22764,
+      "pacPremiumBottom": 0.3831,
+      "hyperWave": 43.1343,
+      "moneyFlow": 38.2075,
+      "confluence": 35.71429
+    }
+  },
+  "AR": {
+    "1h": {
+      "trendStrength": 47.25,
+      "pacDiscountTop": 2.07,
+      "pacEqBottom": 2.4,
+      "pacEqTop": 2.43,
+      "pacPremiumBottom": 2.76,
+      "hyperWave": 77.34,
+      "moneyFlow": 35.74,
+      "confluence": 57.14
+    },
+    "4h": {
+      "trendStrength": 55.67,
+      "pacDiscountTop": 1.84,
+      "pacEqBottom": 2.27,
+      "pacEqTop": 2.32,
+      "pacPremiumBottom": 2.75,
+      "hyperWave": 68.01,
+      "moneyFlow": 48.35,
+      "confluence": 57.14
+    },
+    "1d": {
+      "trendStrength": 54.27,
+      "pacDiscountTop": 1.85,
+      "pacEqBottom": 4.93,
+      "pacEqTop": 5.29,
+      "pacPremiumBottom": 8.37,
+      "hyperWave": 38.77,
+      "moneyFlow": 45.95,
+      "confluence": 42.86
+    },
+    "1w": {
+      "trendStrength": 73.45,
+      "pacDiscountTop": 3.67,
+      "pacEqBottom": 24.2,
+      "pacEqTop": 26.61,
+      "pacPremiumBottom": 47.14,
+      "hyperWave": 59.01,
+      "moneyFlow": 45.43,
+      "confluence": 57.14
+    }
+  },
+  "SEI": {
+    "1h": {
+      "trendStrength": 88.74213,
+      "pacDiscountTop": 0.06039,
+      "pacEqBottom": 0.06919,
+      "pacEqTop": 0.07022,
+      "pacPremiumBottom": 0.07902,
+      "hyperWave": 82.48421,
+      "moneyFlow": 62.57441,
+      "confluence": 71.42857
+    },
+    "4h": {
+      "trendStrength": 69.37522,
+      "pacDiscountTop": 0.05755,
+      "pacEqBottom": 0.06762,
+      "pacEqTop": 0.06881,
+      "pacPremiumBottom": 0.07888,
+      "hyperWave": 86.11686,
+      "moneyFlow": 51.23064,
+      "confluence": 71.42857
+    },
+    "1d": {
+      "trendStrength": 4.47493,
+      "pacDiscountTop": 0.06418,
+      "pacEqBottom": 0.19826,
+      "pacEqTop": 0.21404,
+      "pacPremiumBottom": 0.34812,
+      "hyperWave": 41.9817,
+      "moneyFlow": 48.92172,
+      "confluence": 42.85714
+    },
+    "1w": {
+      "trendStrength": 54.07333,
+      "pacDiscountTop": 0.10323,
+      "pacEqBottom": 0.56929,
+      "pacEqTop": 0.62412,
+      "pacPremiumBottom": 1.09017,
+      "hyperWave": 45.1923,
+      "moneyFlow": 28.92759,
+      "confluence": 35.71429
+    }
+  },
+  "ZEC": {
+    "1h": {
+      "trendStrength": 58.55,
+      "pacDiscountTop": 496.78,
+      "pacEqBottom": 583.22,
+      "pacEqTop": 593.39,
+      "pacPremiumBottom": 679.83,
+      "hyperWave": 19.97,
+      "moneyFlow": 39.09,
+      "confluence": 35.71
+    },
+    "4h": {
+      "trendStrength": 28.69,
+      "pacDiscountTop": 319.1,
+      "pacEqBottom": 485.03,
+      "pacEqTop": 504.55,
+      "pacPremiumBottom": 670.48,
+      "hyperWave": 54.96,
+      "moneyFlow": 52.07,
+      "confluence": 57.14
+    },
+    "1d": {
+      "trendStrength": 82.44,
+      "pacDiscountTop": 216.94,
+      "pacEqBottom": 428.57,
+      "pacEqTop": 453.47,
+      "pacPremiumBottom": 665.1,
+      "hyperWave": 76.23,
+      "moneyFlow": 55.28,
+      "confluence": 71.43
+    },
+    "1w": {
+      "trendStrength": 55.99,
+      "pacDiscountTop": 52.49,
+      "pacEqBottom": 364.53,
+      "pacEqTop": 401.25,
+      "pacPremiumBottom": 713.29,
+      "hyperWave": 87.78,
+      "moneyFlow": 44.23,
+      "confluence": 57.14
+    }
+  },
+  "APT": {
+    "1h": {
+      "trendStrength": 85.769,
+      "pacDiscountTop": 0.913,
+      "pacEqBottom": 1.059,
+      "pacEqTop": 1.076,
+      "pacPremiumBottom": 1.222,
+      "hyperWave": 80.552,
+      "moneyFlow": 62.413,
+      "confluence": 78.571
+    },
+    "4h": {
+      "trendStrength": 69.154,
+      "pacDiscountTop": 0.913,
+      "pacEqBottom": 1.059,
+      "pacEqTop": 1.076,
+      "pacPremiumBottom": 1.222,
+      "hyperWave": 82.691,
+      "moneyFlow": 50.229,
+      "confluence": 71.429
+    },
+    "1d": {
+      "trendStrength": 9.79,
+      "pacDiscountTop": 1.033,
+      "pacEqBottom": 3.098,
+      "pacEqTop": 3.34,
+      "pacPremiumBottom": 5.405,
+      "hyperWave": 34.803,
+      "moneyFlow": 51.971,
+      "confluence": 57.143
+    },
+    "1w": {
+      "trendStrength": 89.467,
+      "pacDiscountTop": 1.73,
+      "pacEqBottom": 10.082,
+      "pacEqTop": 11.065,
+      "pacPremiumBottom": 19.417,
+      "hyperWave": 47.458,
+      "moneyFlow": 33.019,
+      "confluence": 35.714
+    }
+  },
+  "OP": {
+    "1h": {
+      "trendStrength": 82.1162,
+      "pacDiscountTop": 0.1267,
+      "pacEqBottom": 0.1514,
+      "pacEqTop": 0.1543,
+      "pacPremiumBottom": 0.179,
+      "hyperWave": 84.5152,
+      "moneyFlow": 53.679,
+      "confluence": 71.4286
+    },
+    "4h": {
+      "trendStrength": 78.3701,
+      "pacDiscountTop": 0.1188,
+      "pacEqBottom": 0.147,
+      "pacEqTop": 0.1504,
+      "pacPremiumBottom": 0.1786,
+      "hyperWave": 82.0618,
+      "moneyFlow": 34.193,
+      "confluence": 57.1429
+    },
+    "1d": {
+      "trendStrength": 32.0506,
+      "pacDiscountTop": 0.138,
+      "pacEqBottom": 0.4717,
+      "pacEqTop": 0.511,
+      "pacPremiumBottom": 0.8447,
+      "hyperWave": 33.8754,
+      "moneyFlow": 44.1577,
+      "confluence": 42.8571
+    },
+    "1w": {
+      "trendStrength": 80.0711,
+      "pacDiscountTop": 0.337,
+      "pacEqBottom": 2.3627,
+      "pacEqTop": 2.601,
+      "pacPremiumBottom": 4.6267,
+      "hyperWave": 44.6736,
+      "moneyFlow": 36.0999,
+      "confluence": 35.7143
+    }
+  },
+  "ARB": {
+    "1h": {
+      "trendStrength": 3.0876,
+      "pacDiscountTop": 0.1103,
+      "pacEqBottom": 0.1263,
+      "pacEqTop": 0.1282,
+      "pacPremiumBottom": 0.1442,
+      "hyperWave": 66.6228,
+      "moneyFlow": 49.5673,
+      "confluence": 57.1429
+    },
+    "4h": {
+      "trendStrength": 91.8731,
+      "pacDiscountTop": 0.1105,
+      "pacEqBottom": 0.1279,
+      "pacEqTop": 0.13,
+      "pacPremiumBottom": 0.1474,
+      "hyperWave": 63.9344,
+      "moneyFlow": 36.4366,
+      "confluence": 57.1429
+    },
+    "1d": {
+      "trendStrength": 53.109,
+      "pacDiscountTop": 0.1127,
+      "pacEqBottom": 0.3417,
+      "pacEqTop": 0.3687,
+      "pacPremiumBottom": 0.5977,
+      "hyperWave": 20.3638,
+      "moneyFlow": 37.668,
+      "confluence": 42.8571
+    },
+    "1w": {
+      "trendStrength": 64.211,
+      "pacDiscountTop": 0.2028,
+      "pacEqBottom": 1.1969,
+      "pacEqTop": 1.3139,
+      "pacPremiumBottom": 2.308,
+      "hyperWave": 54.6853,
+      "moneyFlow": 38.7255,
+      "confluence": 42.8571
+    }
+  },
+  "XRP": {
+    "1h": {
+      "trendStrength": 5.2044,
+      "pacDiscountTop": 1.3578,
+      "pacEqBottom": 1.4436,
+      "pacEqTop": 1.4537,
+      "pacPremiumBottom": 1.5395,
+      "hyperWave": 42.834,
+      "moneyFlow": 40.8925,
+      "confluence": 42.8571
+    },
+    "4h": {
+      "trendStrength": 75.8913,
+      "pacDiscountTop": 1.356,
+      "pacEqBottom": 1.4426,
+      "pacEqTop": 1.4528,
+      "pacPremiumBottom": 1.5394,
+      "hyperWave": 43.5919,
+      "moneyFlow": 39.4373,
+      "confluence": 21.4286
+    },
+    "1d": {
+      "trendStrength": 0.5785,
+      "pacDiscountTop": 1.2868,
+      "pacEqBottom": 1.4301,
+      "pacEqTop": 1.4469,
+      "pacPremiumBottom": 1.5902,
+      "hyperWave": 29.4658,
+      "moneyFlow": 48.039,
+      "confluence": 28.5714
+    },
+    "1w": {
+      "trendStrength": 44.0126,
+      "pacDiscountTop": 0.5462,
+      "pacEqBottom": 1.9395,
+      "pacEqTop": 2.1035,
+      "pacPremiumBottom": 3.4968,
+      "hyperWave": 42.8769,
+      "moneyFlow": 26.5796,
+      "confluence": 35.7143
+    }
+  },
+  "ADA": {
+    "1h": {
+      "trendStrength": 32.2811,
+      "pacDiscountTop": 0.2462,
+      "pacEqBottom": 0.25,
+      "pacEqTop": 0.2504,
+      "pacPremiumBottom": 0.2542,
+      "hyperWave": 75.229,
+      "moneyFlow": 46.7092,
+      "confluence": 57.1429
+    },
+    "4h": {
+      "trendStrength": 83.3928,
+      "pacDiscountTop": 0.2408,
+      "pacEqBottom": 0.2622,
+      "pacEqTop": 0.2648,
+      "pacPremiumBottom": 0.2862,
+      "hyperWave": 68.1192,
+      "moneyFlow": 39.5418,
+      "confluence": 57.1429
+    },
+    "1d": {
+      "trendStrength": 0.8824,
+      "pacDiscountTop": 0.2368,
+      "pacEqBottom": 0.2712,
+      "pacEqTop": 0.2752,
+      "pacPremiumBottom": 0.3096,
+      "hyperWave": 27.3218,
+      "moneyFlow": 47.2326,
+      "confluence": 42.8571
+    },
+    "1w": {
+      "trendStrength": 68.1894,
+      "pacDiscountTop": 0.2753,
+      "pacEqBottom": 0.7455,
+      "pacEqTop": 0.8009,
+      "pacPremiumBottom": 1.2711,
+      "hyperWave": 40.9857,
+      "moneyFlow": 38.1869,
+      "confluence": 42.8571
+    }
+  },
+  "AVAX": {
+    "1h": {
+      "trendStrength": 89.601,
+      "pacDiscountTop": 9.037,
+      "pacEqBottom": 9.687,
+      "pacEqTop": 9.763,
+      "pacPremiumBottom": 10.414,
+      "hyperWave": 75.002,
+      "moneyFlow": 51.319,
+      "confluence": 71.429
+    },
+    "4h": {
+      "trendStrength": 63.092,
+      "pacDiscountTop": 8.999,
+      "pacEqBottom": 9.666,
+      "pacEqTop": 9.744,
+      "pacPremiumBottom": 10.412,
+      "hyperWave": 78.771,
+      "moneyFlow": 48.871,
+      "confluence": 57.143
+    },
+    "1d": {
+      "trendStrength": 0.393,
+      "pacDiscountTop": 8.479,
+      "pacEqBottom": 9.406,
+      "pacEqTop": 9.515,
+      "pacPremiumBottom": 10.441,
+      "hyperWave": 40.995,
+      "moneyFlow": 46.729,
+      "confluence": 42.857
+    },
+    "1w": {
+      "trendStrength": 59.814,
+      "pacDiscountTop": 10.442,
+      "pacEqBottom": 35.024,
+      "pacEqTop": 37.916,
+      "pacPremiumBottom": 62.498,
+      "hyperWave": 48.203,
+      "moneyFlow": 35.97,
+      "confluence": 35.714
+    }
+  },
+  "DOT": {
+    "1h": {
+      "trendStrength": 85.027,
+      "pacDiscountTop": 1.226,
+      "pacEqBottom": 1.321,
+      "pacEqTop": 1.332,
+      "pacPremiumBottom": 1.427,
+      "hyperWave": 86.494,
+      "moneyFlow": 55.602,
+      "confluence": 71.429
+    },
+    "4h": {
+      "trendStrength": 50.778,
+      "pacDiscountTop": 1.192,
+      "pacEqBottom": 1.302,
+      "pacEqTop": 1.315,
+      "pacPremiumBottom": 1.425,
+      "hyperWave": 84.045,
+      "moneyFlow": 43.802,
+      "confluence": 57.143
+    },
+    "1d": {
+      "trendStrength": 25.064,
+      "pacDiscountTop": 1.134,
+      "pacEqBottom": 1.41,
+      "pacEqTop": 1.443,
+      "pacPremiumBottom": 1.719,
+      "hyperWave": 44.983,
+      "moneyFlow": 40.044,
+      "confluence": 42.857
+    },
+    "1w": {
+      "trendStrength": 86.461,
+      "pacDiscountTop": 1.196,
+      "pacEqBottom": 5.98,
+      "pacEqTop": 6.542,
+      "pacPremiumBottom": 11.326,
+      "hyperWave": 35.533,
+      "moneyFlow": 31.169,
+      "confluence": 35.714
+    }
+  },
+  "ATOM": {
+    "1h": {
+      "trendStrength": 37.774,
+      "pacDiscountTop": 1.99,
+      "pacEqBottom": 2.079,
+      "pacEqTop": 2.09,
+      "pacPremiumBottom": 2.179,
+      "hyperWave": 83.226,
+      "moneyFlow": 49.891,
+      "confluence": 35.714
+    },
+    "4h": {
+      "trendStrength": 3.095,
+      "pacDiscountTop": 1.858,
+      "pacEqBottom": 2.027,
+      "pacEqTop": 2.046,
+      "pacPremiumBottom": 2.215,
+      "hyperWave": 78.093,
+      "moneyFlow": 54.817,
+      "confluence": 71.429
+    },
+    "1d": {
+      "trendStrength": 46.249,
+      "pacDiscountTop": 1.652,
+      "pacEqBottom": 2.037,
+      "pacEqTop": 2.082,
+      "pacPremiumBottom": 2.467,
+      "hyperWave": 63.706,
+      "moneyFlow": 52.435,
+      "confluence": 71.429
+    },
+    "1w": {
+      "trendStrength": 82.022,
+      "pacDiscountTop": 0.861,
+      "pacEqBottom": 8.17,
+      "pacEqTop": 9.029,
+      "pacPremiumBottom": 16.338,
+      "hyperWave": 62.349,
+      "moneyFlow": 37.474,
+      "confluence": 57.143
+    }
+  },
+  "ICP": {
+    "1h": {
+      "trendStrength": 69.639,
+      "pacDiscountTop": 2.471,
+      "pacEqBottom": 2.596,
+      "pacEqTop": 2.611,
+      "pacPremiumBottom": 2.736,
+      "hyperWave": 70.212,
+      "moneyFlow": 49.778,
+      "confluence": 57.143
+    },
+    "4h": {
+      "trendStrength": 74.454,
+      "pacDiscountTop": 2.405,
+      "pacEqBottom": 3.16,
+      "pacEqTop": 3.248,
+      "pacPremiumBottom": 4.003,
+      "hyperWave": 77.381,
+      "moneyFlow": 41.552,
+      "confluence": 57.143
+    },
+    "1d": {
+      "trendStrength": 15.913,
+      "pacDiscountTop": 2.245,
+      "pacEqBottom": 3.071,
+      "pacEqTop": 3.169,
+      "pacPremiumBottom": 3.995,
+      "hyperWave": 31.727,
+      "moneyFlow": 33.792,
+      "confluence": 42.857
+    },
+    "1w": {
+      "trendStrength": 73.931,
+      "pacDiscountTop": 2.151,
+      "pacEqBottom": 10.577,
+      "pacEqTop": 11.568,
+      "pacPremiumBottom": 19.994,
+      "hyperWave": 58.717,
+      "moneyFlow": 37.656,
+      "confluence": 57.143
+    }
+  },
+  "STX": {
+    "1h": {
+      "trendStrength": 90.2047,
+      "pacDiscountTop": 0.2317,
+      "pacEqBottom": 0.2615,
+      "pacEqTop": 0.2651,
+      "pacPremiumBottom": 0.2949,
+      "hyperWave": 87.487,
+      "moneyFlow": 56.9312,
+      "confluence": 71.4286
+    },
+    "4h": {
+      "trendStrength": 49.459,
+      "pacDiscountTop": 0.2317,
+      "pacEqBottom": 0.2615,
+      "pacEqTop": 0.2651,
+      "pacPremiumBottom": 0.2949,
+      "hyperWave": 87.4035,
+      "moneyFlow": 46.1462,
+      "confluence": 57.1429
+    },
+    "1d": {
+      "trendStrength": 2.6894,
+      "pacDiscountTop": 0.2368,
+      "pacEqBottom": 0.5411,
+      "pacEqTop": 0.5769,
+      "pacPremiumBottom": 0.8812,
+      "hyperWave": 45.5201,
+      "moneyFlow": 52.0663,
+      "confluence": 57.1429
+    },
+    "1w": {
+      "trendStrength": 76.5233,
+      "pacDiscountTop": 0.3814,
+      "pacEqBottom": 1.9315,
+      "pacEqTop": 2.1139,
+      "pacPremiumBottom": 3.664,
+      "hyperWave": 51.4142,
+      "moneyFlow": 31.7694,
+      "confluence": 50
+    }
+  },
+  "WLD": {
+    "1h": {
+      "trendStrength": 90.6888,
+      "pacDiscountTop": 0.2301,
+      "pacEqBottom": 0.2594,
+      "pacEqTop": 0.2629,
+      "pacPremiumBottom": 0.2922,
+      "hyperWave": 81.4827,
+      "moneyFlow": 63.7592,
+      "confluence": 78.5714
+    },
+    "4h": {
+      "trendStrength": 14.7874,
+      "pacDiscountTop": 0.2301,
+      "pacEqBottom": 0.2594,
+      "pacEqTop": 0.2629,
+      "pacPremiumBottom": 0.2922,
+      "hyperWave": 98.4311,
+      "moneyFlow": 52.6992,
+      "confluence": 71.4286
+    },
+    "1d": {
+      "trendStrength": 49.8862,
+      "pacDiscountTop": 0.3259,
+      "pacEqBottom": 1.1692,
+      "pacEqTop": 1.2685,
+      "pacPremiumBottom": 2.1118,
+      "hyperWave": 60.0873,
+      "moneyFlow": 38.1978,
+      "confluence": 57.1429
+    },
+    "1w": {
+      "trendStrength": 63.7732,
+      "pacDiscountTop": 0.7411,
+      "pacEqBottom": 5.7654,
+      "pacEqTop": 6.3566,
+      "pacPremiumBottom": 11.3809,
+      "hyperWave": 21.4238,
+      "moneyFlow": 23.6263,
+      "confluence": 35.7143
+    }
+  },
+  "FIL": {
+    "1h": {
+      "trendStrength": 94.239,
+      "pacDiscountTop": 0.929,
+      "pacEqBottom": 1.106,
+      "pacEqTop": 1.126,
+      "pacPremiumBottom": 1.303,
+      "hyperWave": 84.8,
+      "moneyFlow": 56.885,
+      "confluence": 71.429
+    },
+    "4h": {
+      "trendStrength": 62.833,
+      "pacDiscountTop": 0.895,
+      "pacEqBottom": 1.087,
+      "pacEqTop": 1.109,
+      "pacPremiumBottom": 1.301,
+      "hyperWave": 89.497,
+      "moneyFlow": 51.326,
+      "confluence": 71.429
+    },
+    "1d": {
+      "trendStrength": 38.367,
+      "pacDiscountTop": 0.802,
+      "pacEqBottom": 1.036,
+      "pacEqTop": 1.063,
+      "pacPremiumBottom": 1.297,
+      "hyperWave": 40.548,
+      "moneyFlow": 42.887,
+      "confluence": 42.857
+    },
+    "1w": {
+      "trendStrength": 83.759,
+      "pacDiscountTop": 0.897,
+      "pacEqBottom": 5.797,
+      "pacEqTop": 6.373,
+      "pacPremiumBottom": 11.273,
+      "hyperWave": 57.302,
+      "moneyFlow": 37.206,
+      "confluence": 57.143
+    }
+  },
+  "GRT": {
+    "1h": {
+      "trendStrength": 64.74042,
+      "pacDiscountTop": 0.02462,
+      "pacEqBottom": 0.02605,
+      "pacEqTop": 0.02622,
+      "pacPremiumBottom": 0.02765,
+      "hyperWave": 93.96116,
+      "moneyFlow": 54.43448,
+      "confluence": 57.14286
+    },
+    "4h": {
+      "trendStrength": 63.18658,
+      "pacDiscountTop": 0.02421,
+      "pacEqBottom": 0.02697,
+      "pacEqTop": 0.0273,
+      "pacPremiumBottom": 0.03006,
+      "hyperWave": 85.54055,
+      "moneyFlow": 48.96624,
+      "confluence": 57.14286
+    },
+    "1d": {
+      "trendStrength": 2.92433,
+      "pacDiscountTop": 0.0233,
+      "pacEqBottom": 0.02647,
+      "pacEqTop": 0.02684,
+      "pacPremiumBottom": 0.03001,
+      "hyperWave": 39.18877,
+      "moneyFlow": 43.20992,
+      "confluence": 42.85714
+    },
+    "1w": {
+      "trendStrength": 80.99168,
+      "pacDiscountTop": 0.04612,
+      "pacEqBottom": 0.24649,
+      "pacEqTop": 0.27006,
+      "pacPremiumBottom": 0.47043,
+      "hyperWave": 44.59039,
+      "moneyFlow": 38.81007,
+      "confluence": 35.71429
+    }
+  },
+  "THETA": {
+    "1h": {
+      "trendStrength": 69.901,
+      "pacDiscountTop": 0.193,
+      "pacEqBottom": 0.223,
+      "pacEqTop": 0.226,
+      "pacPremiumBottom": 0.256,
+      "hyperWave": 83.425,
+      "moneyFlow": 36.383,
+      "confluence": 57.143
+    },
+    "4h": {
+      "trendStrength": 68.549,
+      "pacDiscountTop": 0.193,
+      "pacEqBottom": 0.223,
+      "pacEqTop": 0.226,
+      "pacPremiumBottom": 0.256,
+      "hyperWave": 72.716,
+      "moneyFlow": 34.422,
+      "confluence": 57.143
+    },
+    "1d": {
+      "trendStrength": 54.864,
+      "pacDiscountTop": 0.181,
+      "pacEqBottom": 0.516,
+      "pacEqTop": 0.555,
+      "pacPremiumBottom": 0.89,
+      "hyperWave": 34.914,
+      "moneyFlow": 45.181,
+      "confluence": 42.857
+    },
+    "1w": {
+      "trendStrength": 75.908,
+      "pacDiscountTop": 0.326,
+      "pacEqBottom": 1.889,
+      "pacEqTop": 2.073,
+      "pacPremiumBottom": 3.636,
+      "hyperWave": 55.858,
+      "moneyFlow": 33.802,
+      "confluence": 42.857
+    }
+  },
+  "ALGO": {
+    "1h": {
+      "trendStrength": 20.5563,
+      "pacDiscountTop": 0.1066,
+      "pacEqBottom": 0.1202,
+      "pacEqTop": 0.1219,
+      "pacPremiumBottom": 0.1355,
+      "hyperWave": 88.2398,
+      "moneyFlow": 45.5059,
+      "confluence": 57.1429
+    },
+    "4h": {
+      "trendStrength": 37.2042,
+      "pacDiscountTop": 0.1066,
+      "pacEqBottom": 0.1202,
+      "pacEqTop": 0.1219,
+      "pacPremiumBottom": 0.1355,
+      "hyperWave": 61.9975,
+      "moneyFlow": 43.7213,
+      "confluence": 57.1429
+    },
+    "1d": {
+      "trendStrength": 54.63,
+      "pacDiscountTop": 0.0922,
+      "pacEqBottom": 0.2013,
+      "pacEqTop": 0.2141,
+      "pacPremiumBottom": 0.3232,
+      "hyperWave": 46.2189,
+      "moneyFlow": 44.2785,
+      "confluence": 42.8571
+    },
+    "1w": {
+      "trendStrength": 64.6866,
+      "pacDiscountTop": 0.1061,
+      "pacEqBottom": 0.3333,
+      "pacEqTop": 0.36,
+      "pacPremiumBottom": 0.5872,
+      "hyperWave": 62.2017,
+      "moneyFlow": 23.8786,
+      "confluence": 35.7143
+    }
+  },
+  "VET": {
+    "1h": {
+      "trendStrength": 50.420349,
+      "pacDiscountTop": 0.006482,
+      "pacEqBottom": 0.007185,
+      "pacEqTop": 0.007267,
+      "pacPremiumBottom": 0.00797,
+      "hyperWave": 71.297168,
+      "moneyFlow": 49.463137,
+      "confluence": 57.142857
+    },
+    "4h": {
+      "trendStrength": 85.544384,
+      "pacDiscountTop": 0.006486,
+      "pacEqBottom": 0.007221,
+      "pacEqTop": 0.007307,
+      "pacPremiumBottom": 0.008043,
+      "hyperWave": 72.034781,
+      "moneyFlow": 41.92734,
+      "confluence": 57.142857
+    },
+    "1d": {
+      "trendStrength": 0.179163,
+      "pacDiscountTop": 0.006527,
+      "pacEqBottom": 0.007611,
+      "pacEqTop": 0.007738,
+      "pacPremiumBottom": 0.008822,
+      "hyperWave": 21.637272,
+      "moneyFlow": 46.491744,
+      "confluence": 42.857143
+    },
+    "1w": {
+      "trendStrength": 84.556589,
+      "pacDiscountTop": 0.010079,
+      "pacEqBottom": 0.041359,
+      "pacEqTop": 0.04504,
+      "pacPremiumBottom": 0.07632,
+      "hyperWave": 37.858951,
+      "moneyFlow": 34.573978,
+      "confluence": 28.571429
+    }
+  },
+  "TRX": {
+    "1h": {
+      "trendStrength": 94.3301,
+      "pacDiscountTop": 0.3498,
+      "pacEqBottom": 0.3573,
+      "pacEqTop": 0.3581,
+      "pacPremiumBottom": 0.3656,
+      "hyperWave": 35.5828,
+      "moneyFlow": 54.0946,
+      "confluence": 42.8571
+    },
+    "4h": {
+      "trendStrength": 81.5736,
+      "pacDiscountTop": 0.3221,
+      "pacEqBottom": 0.342,
+      "pacEqTop": 0.3443,
+      "pacPremiumBottom": 0.3642,
+      "hyperWave": 88.8092,
+      "moneyFlow": 57.404,
+      "confluence": 57.1429
+    },
+    "1d": {
+      "trendStrength": 90.9641,
+      "pacDiscountTop": 0.2732,
+      "pacEqBottom": 0.3149,
+      "pacEqTop": 0.3199,
+      "pacPremiumBottom": 0.3616,
+      "hyperWave": 95.5682,
+      "moneyFlow": 66.5815,
+      "confluence": 78.5714
+    },
+    "1w": {
+      "trendStrength": 47.1141,
+      "pacDiscountTop": 0.2135,
+      "pacEqBottom": 0.3193,
+      "pacEqTop": 0.3318,
+      "pacPremiumBottom": 0.4376,
+      "hyperWave": 92.978,
+      "moneyFlow": 52.7238,
+      "confluence": 71.4286
+    }
+  },
+  "DOGE": {
+    "1h": {
+      "trendStrength": 76.5735,
+      "pacDiscountTop": 0.10274,
+      "pacEqBottom": 0.10984,
+      "pacEqTop": 0.11067,
+      "pacPremiumBottom": 0.11777,
+      "hyperWave": 76.96609,
+      "moneyFlow": 50.65699,
+      "confluence": 71.42857
+    },
+    "4h": {
+      "trendStrength": 52.40452,
+      "pacDiscountTop": 0.09385,
+      "pacEqBottom": 0.10493,
+      "pacEqTop": 0.10623,
+      "pacPremiumBottom": 0.11731,
+      "hyperWave": 71.6392,
+      "moneyFlow": 41.7457,
+      "confluence": 57.14286
+    },
+    "1d": {
+      "trendStrength": 59.37352,
+      "pacDiscountTop": 0.08826,
+      "pacEqBottom": 0.10184,
+      "pacEqTop": 0.10343,
+      "pacPremiumBottom": 0.11701,
+      "hyperWave": 33.77,
+      "moneyFlow": 51.3559,
+      "confluence": 57.14286
+    },
+    "1w": {
+      "trendStrength": 57.15243,
+      "pacDiscountTop": 0.07457,
+      "pacEqBottom": 0.25789,
+      "pacEqTop": 0.27945,
+      "pacPremiumBottom": 0.46277,
+      "hyperWave": 65.89583,
+      "moneyFlow": 32.78719,
+      "confluence": 50
+    }
+  },
+  "MOVR": {
+    "1h": {
+      "trendStrength": 71.906,
+      "pacDiscountTop": 2.187,
+      "pacEqBottom": 2.501,
+      "pacEqTop": 2.537,
+      "pacPremiumBottom": 2.851,
+      "hyperWave": 41.289,
+      "moneyFlow": 51.887,
+      "confluence": 42.857
+    },
+    "4h": {
+      "trendStrength": 68.835,
+      "pacDiscountTop": 2.138,
+      "pacEqBottom": 2.474,
+      "pacEqTop": 2.514,
+      "pacPremiumBottom": 2.85,
+      "hyperWave": 62.018,
+      "moneyFlow": 50.859,
+      "confluence": 57.143
+    },
+    "1d": {
+      "trendStrength": 71.033,
+      "pacDiscountTop": 1.327,
+      "pacEqBottom": 4.294,
+      "pacEqTop": 4.644,
+      "pacPremiumBottom": 7.611,
+      "hyperWave": 34.684,
+      "moneyFlow": 41.911,
+      "confluence": 42.857
+    },
+    "1w": {
+      "trendStrength": 80.702,
+      "pacDiscountTop": 3.129,
+      "pacEqBottom": 21.413,
+      "pacEqTop": 23.565,
+      "pacPremiumBottom": 41.849,
+      "hyperWave": 73.661,
+      "moneyFlow": 32.072,
+      "confluence": 42.857
+    }
+  },
+  "CFX": {
+    "1h": {
+      "trendStrength": 0.07925,
+      "pacDiscountTop": 0.05576,
+      "pacEqBottom": 0.05792,
+      "pacEqTop": 0.05818,
+      "pacPremiumBottom": 0.06035,
+      "hyperWave": 94.50032,
+      "moneyFlow": 48.62441,
+      "confluence": 57.14286
+    },
+    "4h": {
+      "trendStrength": 51.223,
+      "pacDiscountTop": 0.05667,
+      "pacEqBottom": 0.06657,
+      "pacEqTop": 0.06773,
+      "pacPremiumBottom": 0.07764,
+      "hyperWave": 65.65292,
+      "moneyFlow": 44.46834,
+      "confluence": 57.14286
+    },
+    "1d": {
+      "trendStrength": 14.27789,
+      "pacDiscountTop": 0.04574,
+      "pacEqBottom": 0.09193,
+      "pacEqTop": 0.09737,
+      "pacPremiumBottom": 0.14356,
+      "hyperWave": 29.7905,
+      "moneyFlow": 44.94682,
+      "confluence": 28.57143
+    },
+    "1w": {
+      "trendStrength": 18.01406,
+      "pacDiscountTop": 0.06579,
+      "pacEqBottom": 0.28241,
+      "pacEqTop": 0.30789,
+      "pacPremiumBottom": 0.52451,
+      "hyperWave": 59.11442,
+      "moneyFlow": 35.23191,
+      "confluence": 50
+    }
+  },
+  "PYTH": {
+    "1h": {
+      "trendStrength": 82.1731,
+      "pacDiscountTop": 0.0393,
+      "pacEqBottom": 0.0494,
+      "pacEqTop": 0.0506,
+      "pacPremiumBottom": 0.0607,
+      "hyperWave": 57.4138,
+      "moneyFlow": 44.5436,
+      "confluence": 57.1429
+    },
+    "4h": {
+      "trendStrength": 85.814,
+      "pacDiscountTop": 0.0393,
+      "pacEqBottom": 0.05,
+      "pacEqTop": 0.0512,
+      "pacPremiumBottom": 0.0619,
+      "hyperWave": 68.1308,
+      "moneyFlow": 43.7766,
+      "confluence": 42.8571
+    },
+    "1d": {
+      "trendStrength": 17.1739,
+      "pacDiscountTop": 0.0377,
+      "pacEqBottom": 0.0491,
+      "pacEqTop": 0.0505,
+      "pacPremiumBottom": 0.0619,
+      "hyperWave": 23.283,
+      "moneyFlow": 43.2273,
+      "confluence": 42.8571
+    },
+    "1w": {
+      "trendStrength": 72.0066,
+      "pacDiscountTop": 0.0922,
+      "pacEqBottom": 0.5703,
+      "pacEqTop": 0.6265,
+      "pacPremiumBottom": 1.1046,
+      "hyperWave": 49.8887,
+      "moneyFlow": 33.1483,
+      "confluence": 28.5714
+    }
+  },
+  "TON": {
+    "1h": {
+      "trendStrength": 15.975,
+      "pacDiscountTop": 1.906,
+      "pacEqBottom": 2.306,
+      "pacEqTop": 2.353,
+      "pacPremiumBottom": 2.753,
+      "hyperWave": 38.547,
+      "moneyFlow": 46.49,
+      "confluence": 42.857
+    },
+    "4h": {
+      "trendStrength": 54.498,
+      "pacDiscountTop": 1.367,
+      "pacEqBottom": 2.056,
+      "pacEqTop": 2.137,
+      "pacPremiumBottom": 2.826,
+      "hyperWave": 46.531,
+      "moneyFlow": 56.751,
+      "confluence": 42.857
+    },
+    "1d": {
+      "trendStrength": 52.838,
+      "pacDiscountTop": 1.273,
+      "pacEqBottom": 2.004,
+      "pacEqTop": 2.09,
+      "pacPremiumBottom": 2.821,
+      "hyperWave": 44.269,
+      "moneyFlow": 47.109,
+      "confluence": 42.857
+    },
+    "1w": {
+      "trendStrength": 78.408,
+      "pacDiscountTop": 0.89,
+      "pacEqBottom": 3.744,
+      "pacEqTop": 4.079,
+      "pacPremiumBottom": 6.933,
+      "hyperWave": 75.289,
+      "moneyFlow": 42.21,
+      "confluence": 57.143
+    }
+  },
+  "TRB": {
+    "1h": {
+      "trendStrength": 64.16,
+      "pacDiscountTop": 16.6,
+      "pacEqBottom": 18.65,
+      "pacEqTop": 18.9,
+      "pacPremiumBottom": 20.95,
+      "hyperWave": 73.94,
+      "moneyFlow": 43.42,
+      "confluence": 57.14
+    },
+    "4h": {
+      "trendStrength": 66.02,
+      "pacDiscountTop": 16.62,
+      "pacEqBottom": 18.85,
+      "pacEqTop": 19.11,
+      "pacPremiumBottom": 21.34,
+      "hyperWave": 70.34,
+      "moneyFlow": 61.61,
+      "confluence": 78.57
+    },
+    "1d": {
+      "trendStrength": 41.38,
+      "pacDiscountTop": 13.89,
+      "pacEqBottom": 28.76,
+      "pacEqTop": 30.5,
+      "pacPremiumBottom": 45.37,
+      "hyperWave": 33.75,
+      "moneyFlow": 48.86,
+      "confluence": 42.86
+    },
+    "1w": {
+      "trendStrength": 59.1,
+      "pacDiscountTop": 38.46,
+      "pacEqBottom": 302.67,
+      "pacEqTop": 333.75,
+      "pacPremiumBottom": 597.96,
+      "hyperWave": 61.33,
+      "moneyFlow": 40.51,
+      "confluence": 42.86
+    }
+  },
+  "ZK": {
+    "1h": {
+      "trendStrength": 75.39385,
+      "pacDiscountTop": 0.01494,
+      "pacEqBottom": 0.01724,
+      "pacEqTop": 0.01751,
+      "pacPremiumBottom": 0.01981,
+      "hyperWave": 65.68066,
+      "moneyFlow": 53.38364,
+      "confluence": 71.42857
+    },
+    "4h": {
+      "trendStrength": 80.6919,
+      "pacDiscountTop": 0.01494,
+      "pacEqBottom": 0.01724,
+      "pacEqTop": 0.01751,
+      "pacPremiumBottom": 0.01981,
+      "hyperWave": 69.68593,
+      "moneyFlow": 41.86735,
+      "confluence": 57.14286
+    },
+    "1d": {
+      "trendStrength": 15.54058,
+      "pacDiscountTop": 0.00779,
+      "pacEqBottom": 0.04233,
+      "pacEqTop": 0.0464,
+      "pacPremiumBottom": 0.08094,
+      "hyperWave": 24.50139,
+      "moneyFlow": 49.00986,
+      "confluence": 42.85714
+    },
+    "1w": {
+      "trendStrength": 70.75326,
+      "pacDiscountTop": 0.01829,
+      "pacEqBottom": 0.14208,
+      "pacEqTop": 0.15665,
+      "pacPremiumBottom": 0.28044,
+      "hyperWave": 34.39455,
+      "moneyFlow": 34.01636,
+      "confluence": 42.85714
+    }
+  },
+  "POL": {
+    "4h": {
+      "trendStrength": 67.52294,
+      "pacDiscountTop": 0.08239,
+      "pacEqBottom": 0.09251,
+      "pacEqTop": 0.0937,
+      "pacPremiumBottom": 0.10381,
+      "hyperWave": 74.40672,
+      "moneyFlow": 55.40807,
+      "confluence": 71.42857
+    },
+    "1d": {
+      "trendStrength": 0.00723,
+      "pacDiscountTop": 0.08306,
+      "pacEqBottom": 0.09887,
+      "pacEqTop": 0.10073,
+      "pacPremiumBottom": 0.11654,
+      "hyperWave": 29.57348,
+      "moneyFlow": 55.10015,
+      "confluence": 57.14286
+    },
+    "1w": {
+      "trendStrength": 70.35059,
+      "pacDiscountTop": 0.12714,
+      "pacEqBottom": 0.51763,
+      "pacEqTop": 0.56357,
+      "pacPremiumBottom": 0.95406,
+      "hyperWave": 45.0885,
+      "moneyFlow": 27.21171,
+      "confluence": 35.71429
+    }
+  }
+}
