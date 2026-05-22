@@ -171,6 +171,18 @@
   .zone-light { background: #FAEEDA; color: #633806; }
   .zone-heavy { background: #EAF3DE; color: #27500A; }
   .zone-max { background: #EEEDFE; color: #3C3489; }
+  .zone-ob { background: #DDF4FF; color: #044F75; border: 1px dashed #378ADD; }
+  [data-theme="dark"] .zone-ob, @media (prefers-color-scheme: dark) {
+    .zone-ob { background: #073047; color: #B8E5FF; border-color: #378ADD; }
+  }
+  .ob-badge {
+    display: inline-block; font-size: 10px; padding: 2px 7px;
+    border-radius: 999px; font-weight: 500; margin-left: 4px;
+    background: rgba(55, 138, 221, 0.18); color: var(--info-border);
+    border: 1px solid rgba(55, 138, 221, 0.35);
+  }
+  .ob-badge.fresh { background: rgba(15, 110, 86, 0.15); color: var(--success); border-color: rgba(15, 110, 86, 0.35); }
+  .ob-badge.bear  { background: rgba(163, 45, 45, 0.15); color: var(--danger);  border-color: rgba(163, 45, 45, 0.35); }
   .zone-price { flex: 1; text-align: center; font-weight: 500; }
   .zone-alloc { width: 40px; text-align: right; color: var(--text-2); }
 
@@ -1679,27 +1691,134 @@ function findStructure(candles, n = 5) {
 }
 
 // Order blocks — last opposite-color candle preceding a strong impulse.
-function findOrderBlocks(candles, lookback = 50, max = 5) {
-  if (!candles || candles.length < 10) return [];
-  const out = [];
-  const start = Math.max(1, candles.length - lookback);
-  for (let i = start; i < candles.length - 1; i++) {
-    const prev = candles[i - 1];
-    const cur  = candles[i];
-    const next = candles[i + 1];
-    if (!prev) continue;
-    const bodyPrev = Math.abs(prev.close - prev.open);
-    const bodyCur  = Math.abs(cur.close - cur.open);
-    // Bullish OB: previous bearish candle, then strong bullish engulfing impulse
-    if (prev.close < prev.open && cur.close > cur.open && bodyCur > bodyPrev * 1.5 && next?.close > cur.close) {
-      out.push({ type: 'bull', lo: prev.low, hi: prev.high, atIndex: i });
+// Detect institutional Order Blocks using Break of Structure (BoS) logic.
+// An Order Block is the last opposite-color candle before a strong
+// displacement that breaks the most recent swing high/low.
+// We mark each OB as "fresh" (price hasn't returned to mitigate it) or "tested".
+// Fresh OBs are the most actionable — institutions still have orders parked there.
+//
+// Returns: [{ type:'bull'|'bear', lo, hi, atIndex, bosAt, displacement, fresh, age }]
+function findOrderBlocks(candles, lookback = 100, max = 6) {
+  if (!candles || candles.length < 20) return [];
+
+  // Compute ATR for displacement filter — we only want STRONG impulses
+  const atrPeriod = Math.min(14, candles.length - 1);
+  let atrSum = 0;
+  for (let i = candles.length - atrPeriod; i < candles.length; i++) {
+    if (i < 1) continue;
+    const tr = Math.max(
+      candles[i].high - candles[i].low,
+      Math.abs(candles[i].high - candles[i - 1].close),
+      Math.abs(candles[i].low - candles[i - 1].close)
+    );
+    atrSum += tr;
+  }
+  const atr = atrSum / atrPeriod;
+  if (!atr || isNaN(atr)) return [];
+
+  const obs = [];
+  const start = Math.max(12, candles.length - lookback);
+  const swingWindow = 10; // bars to look back for the "swing"
+  const obSearchBack = 6; // how far back to find the OB candle before BoS
+
+  for (let i = start; i < candles.length; i++) {
+    const cur = candles[i];
+    const body = Math.abs(cur.close - cur.open);
+    const displacement = body / atr;
+    if (displacement < 1.3) continue; // skip weak breaks
+
+    const before = candles.slice(Math.max(0, i - swingWindow), i);
+    if (before.length < 3) continue;
+    const recentHigh = Math.max(...before.map(c => c.high));
+    const recentLow = Math.min(...before.map(c => c.low));
+
+    // Bullish BoS: bullish candle closing above recent high
+    if (cur.close > cur.open && cur.close > recentHigh) {
+      for (let j = i - 1; j >= Math.max(0, i - obSearchBack); j--) {
+        if (candles[j].close < candles[j].open) {
+          const lo = candles[j].low, hi = candles[j].high;
+          // Fresh = no subsequent candle has dipped back INTO the OB zone
+          let fresh = true;
+          for (let k = i + 1; k < candles.length; k++) {
+            if (candles[k].low <= hi) { fresh = false; break; }
+          }
+          obs.push({
+            type: 'bull', lo, hi,
+            atIndex: j, bosAt: i,
+            displacement: +displacement.toFixed(2),
+            fresh,
+            age: candles.length - 1 - j,
+          });
+          break;
+        }
+      }
     }
-    // Bearish OB: previous bullish, then strong bearish impulse
-    if (prev.close > prev.open && cur.close < cur.open && bodyCur > bodyPrev * 1.5 && next?.close < cur.close) {
-      out.push({ type: 'bear', lo: prev.low, hi: prev.high, atIndex: i });
+
+    // Bearish BoS: bearish candle closing below recent low
+    if (cur.close < cur.open && cur.close < recentLow) {
+      for (let j = i - 1; j >= Math.max(0, i - obSearchBack); j--) {
+        if (candles[j].close > candles[j].open) {
+          const lo = candles[j].low, hi = candles[j].high;
+          let fresh = true;
+          for (let k = i + 1; k < candles.length; k++) {
+            if (candles[k].high >= lo) { fresh = false; break; }
+          }
+          obs.push({
+            type: 'bear', lo, hi,
+            atIndex: j, bosAt: i,
+            displacement: +displacement.toFixed(2),
+            fresh,
+            age: candles.length - 1 - j,
+          });
+          break;
+        }
+      }
     }
   }
-  return out.slice(-max);
+
+  // Dedupe by (type, atIndex) — keep most recent
+  const seen = new Set();
+  const unique = obs.slice().reverse().filter(ob => {
+    const key = `${ob.type}-${ob.atIndex}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).reverse();
+  return unique.slice(-max);
+}
+
+// Analyze where current price sits relative to known Order Blocks.
+// Combines OBs from multiple timeframes (4H primary, 1D for swing context).
+// Returns null if no actionable OBs found.
+function evaluateOrderBlocks(currentPrice, orderBlocks4h, orderBlocks1d) {
+  const tagged = [];
+  if (Array.isArray(orderBlocks4h)) orderBlocks4h.forEach(ob => tagged.push({ ...ob, tf: '4h' }));
+  if (Array.isArray(orderBlocks1d)) orderBlocks1d.forEach(ob => tagged.push({ ...ob, tf: '1d' }));
+  if (tagged.length === 0) return null;
+
+  // Currently inside a bullish OB — strong long bias signal
+  const insideBull = tagged
+    .filter(ob => ob.type === 'bull' && currentPrice >= ob.lo && currentPrice <= ob.hi)
+    .sort((a, b) => (b.fresh - a.fresh) || (a.age - b.age))[0] || null;
+
+  // Currently inside a bearish OB — rejection / short bias
+  const insideBear = tagged
+    .filter(ob => ob.type === 'bear' && currentPrice >= ob.lo && currentPrice <= ob.hi)
+    .sort((a, b) => (b.fresh - a.fresh) || (a.age - b.age))[0] || null;
+
+  // Nearest unmitigated bullish OB below current price (potential pullback entry)
+  const bullsBelow = tagged
+    .filter(ob => ob.type === 'bull' && ob.hi < currentPrice && ob.fresh)
+    .sort((a, b) => b.hi - a.hi);
+  const nearestBullBelow = bullsBelow[0] || null;
+
+  // Nearest unmitigated bearish OB above current price (potential rejection level)
+  const bearsAbove = tagged
+    .filter(ob => ob.type === 'bear' && ob.lo > currentPrice && ob.fresh)
+    .sort((a, b) => a.lo - b.lo);
+  const nearestBearAbove = bearsAbove[0] || null;
+
+  return { insideBull, insideBear, nearestBullBelow, nearestBearAbove, all: tagged };
 }
 
 // Stochastic RSI — Stochastic applied to RSI values. More sensitive than plain Stoch.
@@ -2127,6 +2246,33 @@ function computeCompositeSignal(coin) {
   if (openBullFVG && !openBearFVG) { score += 3; reasons.push('Open bullish FVG below (+3)'); }
   if (openBearFVG && !openBullFVG) { score -= 3; reasons.push('Open bearish FVG above (−3)'); }
 
+  // ---- Order Blocks (institutional zones) — ±10 max
+  // Fresh OBs are where institutional orders are still parked. Price tagging
+  // a fresh bullish OB is one of the highest-conviction long signals; tagging
+  // a fresh bearish OB above is a strong rejection level.
+  const cpNow = tf1d?.currentPrice;
+  const obA = cpNow ? evaluateOrderBlocks(cpNow, tf4h?.orderBlocks, tf1d?.orderBlocks) : null;
+  if (obA) {
+    if (obA.insideBull) {
+      const bump = obA.insideBull.fresh ? 8 : 4;
+      score += bump;
+      reasons.push(`Price inside ${obA.insideBull.fresh ? 'fresh' : 'tested'} bullish OB on ${obA.insideBull.tf} (+${bump})`);
+    } else if (obA.nearestBullBelow) {
+      const distPct = (cpNow - obA.nearestBullBelow.hi) / cpNow * 100;
+      if (distPct < 3) { score += 5; reasons.push(`Near fresh bullish OB on ${obA.nearestBullBelow.tf} (${distPct.toFixed(1)}% above) (+5)`); }
+      else if (distPct < 8) { score += 2; reasons.push(`Fresh bullish OB ${distPct.toFixed(1)}% below — pullback target (+2)`); }
+    }
+    if (obA.insideBear) {
+      const bump = obA.insideBear.fresh ? 8 : 4;
+      score -= bump;
+      reasons.push(`Price inside ${obA.insideBear.fresh ? 'fresh' : 'tested'} bearish OB on ${obA.insideBear.tf} (−${bump})`);
+    } else if (obA.nearestBearAbove) {
+      const distPct = (obA.nearestBearAbove.lo - cpNow) / cpNow * 100;
+      if (distPct < 3) { score -= 5; reasons.push(`Near fresh bearish OB on ${obA.nearestBearAbove.tf} (${distPct.toFixed(1)}% above) (−5)`); }
+      else if (distPct < 8) { score -= 2; reasons.push(`Fresh bearish OB ${distPct.toFixed(1)}% above — rejection target (−2)`); }
+    }
+  }
+
   // ---- Oscillator confluence: RSI + Stoch RSI + MACD + Stoch (±12)
   const rsi = tf1d.rsi ?? 50;
   const macd = tf1d.macd;
@@ -2241,7 +2387,7 @@ function computeCompositeSignal(coin) {
   else if (score >= 35) label = 'Hold';
   else                  label = 'Consider Selling';
 
-  return { score, label, reasons, real, real1h, real4h, real1w };
+  return { score, label, reasons, real, real1h, real4h, real1w, orderBlocks: obA };
 }
 
 // Apply volume sentiment + price-action structural confirmation as a verdict modifier.
@@ -2356,8 +2502,35 @@ function computeActionVerdict(tier, entryLabel) {
   return (map[t]?.[e]) || { tag: '⏸️ Hold', cls: 'av-hold', note: 'No clear verdict' };
 }
 
-function calculateBuyZones(currentPrice, supportLevels, rsi, vwapAnalysis) {
+function calculateBuyZones(currentPrice, supportLevels, rsi, vwapAnalysis, orderBlocks) {
   const zones = [];
+
+  // ===== Order Block injection =====
+  // If we have a fresh untested bullish OB below current price within 15%,
+  // it's the highest-conviction entry zone — institutional buyers have pending
+  // orders parked there. Add it as a "MAX" zone (deepest, most aggressive).
+  let obZone = null;
+  if (orderBlocks && Array.isArray(orderBlocks) && orderBlocks.length > 0) {
+    const bullsBelow = orderBlocks
+      .filter(ob => ob.type === 'bull' && ob.hi < currentPrice && (currentPrice - ob.hi) / currentPrice <= 0.15)
+      .sort((a, b) => {
+        // Fresh first, then highest hi (closest to current price)
+        if (a.fresh !== b.fresh) return b.fresh - a.fresh;
+        return b.hi - a.hi;
+      });
+    if (bullsBelow[0]) {
+      const ob = bullsBelow[0];
+      const distPct = ((currentPrice - ob.hi) / currentPrice * 100).toFixed(1);
+      obZone = {
+        type: 'ob',
+        name: 'OB',
+        price: ob.lo,
+        priceHigh: ob.hi,
+        allocation: 30,
+        reason: `${ob.fresh ? '🟢 Untested' : '⚪ Tested'} bullish Order Block (${ob.tf || '4h'}, −${distPct}%) — institutional buy zone`,
+      };
+    }
+  }
 
   // Incorporate VWAP into buy zone calculations
   const vwap = vwapAnalysis?.vwap;
@@ -2457,6 +2630,23 @@ function calculateBuyZones(currentPrice, supportLevels, rsi, vwapAnalysis) {
       allocation: 25,
       reason: 'Third support level'
     });
+  }
+
+  // Append the Order Block zone if found. Place it intelligently:
+  //  - If OB sits between existing zones, it adds a sharper level
+  //  - If OB is deeper than Z3 (max), promote it to an additional Z4
+  //  - If OB is the most actionable (fresh + within 5%), put it first
+  if (obZone) {
+    const obMid = (obZone.price + obZone.priceHigh) / 2;
+    const distPctRaw = (currentPrice - obZone.priceHigh) / currentPrice;
+    // Fresh + very close → highest priority
+    if (distPctRaw < 0.05 && obZone.reason.includes('Untested')) {
+      zones.unshift(obZone);
+    } else {
+      zones.push(obZone);
+    }
+    // Cap at 4 zones to keep UI tidy
+    if (zones.length > 4) zones.length = 4;
   }
 
   return zones;
@@ -2784,17 +2974,25 @@ async function fetchCoinData(coin) {
     timeframes['1d'].luxAlgo1h = composite.real1h || null;
     timeframes['1d'].luxAlgo4h = composite.real4h || null;
     timeframes['1d'].luxAlgo1w = composite.real1w || null;
+    timeframes['1d'].obSummary = composite.orderBlocks || null;
   }
 
   const supportResistance = d1.status === 'fulfilled' ?
     calculateSupportResistance(d1.value) :
     { support: [], resistance: [] };
 
+  // Combine OBs from 4H and 1D for buy-zone injection. 4H first (more actionable
+  // for swing entries), then 1D (broader institutional levels).
+  const _obs4h = (timeframes['4h']?.orderBlocks || []).map(ob => ({ ...ob, tf: '4h' }));
+  const _obs1d = (timeframes['1d']?.orderBlocks || []).map(ob => ({ ...ob, tf: '1d' }));
+  const combinedOBs = [..._obs4h, ..._obs1d];
+
   const buyZones = calculateBuyZones(
     avgPrice,
     supportResistance.support,
     timeframes['1d']?.rsi || 50,
-    timeframes['1d'] // Pass full timeframe analysis including VWAP
+    timeframes['1d'], // Pass full timeframe analysis including VWAP
+    combinedOBs       // NEW: order blocks for institutional entry zones
   );
 
   return {
@@ -3243,11 +3441,31 @@ function renderCoins() {
                   return `<span class="tf-mini ${cls}" title="Trend ${lux.raw.trendStrength.toFixed(1)} · HW ${lux.raw.hyperWave.toFixed(1)} · MF ${lux.raw.moneyFlow.toFixed(1)}">${label} <strong>${lux.score}</strong></span>`;
                 }
                 const strip = `<div class="lux-tf-strip">${tfBadge('1H', lux1h)}${tfBadge('4H', lux4h)}${tfBadge('1D', real)}${tfBadge('1W', lux1w)}</div>`;
+
+                // Order Block badges — show the most actionable OB read on this card
+                const ob = analysis1d.obSummary;
+                let obBadges = '';
+                if (ob) {
+                  const fmt = v => v < 1 ? v.toFixed(4) : v < 100 ? v.toFixed(2) : v.toLocaleString('en-US', { maximumFractionDigits: 2 });
+                  if (ob.insideBull) {
+                    obBadges += `<span class="ob-badge fresh" title="Price is currently inside a ${ob.insideBull.fresh ? 'fresh untested' : 'tested'} bullish Order Block on ${ob.insideBull.tf}">📦 IN BULL OB (${ob.insideBull.tf}) ${fmt(ob.insideBull.lo)}–${fmt(ob.insideBull.hi)}</span>`;
+                  } else if (ob.nearestBullBelow) {
+                    obBadges += `<span class="ob-badge fresh" title="Fresh bullish Order Block below current price — institutional buy zone">📦 OB↓ (${ob.nearestBullBelow.tf}) ${fmt(ob.nearestBullBelow.lo)}–${fmt(ob.nearestBullBelow.hi)}</span>`;
+                  }
+                  if (ob.insideBear) {
+                    obBadges += `<span class="ob-badge bear" title="Price is currently inside a ${ob.insideBear.fresh ? 'fresh untested' : 'tested'} bearish Order Block on ${ob.insideBear.tf}">📦 IN BEAR OB (${ob.insideBear.tf}) ${fmt(ob.insideBear.lo)}–${fmt(ob.insideBear.hi)}</span>`;
+                  } else if (ob.nearestBearAbove) {
+                    obBadges += `<span class="ob-badge bear" title="Fresh bearish Order Block above — rejection level">📦 OB↑ (${ob.nearestBearAbove.tf}) ${fmt(ob.nearestBearAbove.lo)}–${fmt(ob.nearestBearAbove.hi)}</span>`;
+                  }
+                }
+                const obRow = obBadges ? `<div class="luxalgo-real" style="background:transparent;border:none;padding:4px 0">${obBadges}</div>` : '';
+
                 return `<div class="luxalgo-real ${zoneCls}">
                   <span><span class="lux-badge">🟣 LIVE PINE</span> LuxAlgo · TS <strong>${real.raw.trendStrength.toFixed(1)}</strong> · HW <strong>${real.raw.hyperWave.toFixed(1)}</strong> · MF <strong>${real.raw.moneyFlow.toFixed(1)}</strong> · PAC <strong>${zoneTxt}</strong></span>
                   <span style="margin-left:auto; font-size:10px; opacity:0.85;">Snapshot ${real.score}/100 · ${real.label}</span>
                 </div>
-                ${strip}`;
+                ${strip}
+                ${obRow}`;
               })()}
               ${flagsHtml ? `<div class="confirmation-flags">${flagsHtml}</div>` : ''}
             `;
@@ -3484,7 +3702,7 @@ function renderCoins() {
       </div>
 
       <div class="analysis-section">
-        <div class="section-title">Recommended Buy Zones (VWAP-Adjusted)</div>
+        <div class="section-title">Recommended Buy Zones <span style="font-weight:400;color:var(--text-2);font-size:10px;">· VWAP + Support + 📦 Order Blocks</span></div>
         <div class="buy-zones">
           ${coin.buyZones.map(zone => `
             <div class="zone-row">
