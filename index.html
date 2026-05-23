@@ -2378,14 +2378,149 @@ function computeCompositeSignal(coin) {
     else if (real1w.score <= 35 && real1d.score > 55) { score -= 4; reasons.push(`LuxAlgo 1W bearish but 1D bouncing — distribution risk (−4)`); }
   }
 
+  // ====================================================================
+  // EXTRA CONFIRMATION LAYERS — fold in everything else that's been measured
+  // ====================================================================
+
+  // ---- (A) Support / Resistance proximity (1D dynamic S/R) — ±8
+  // Price sitting ON support is a high-quality long; price right under resistance is a sell hint.
+  const sr = tf1d?.dynamicSR;
+  if (sr && cpNow) {
+    if (sr.nearestSupport) {
+      const distToSup = (cpNow - sr.nearestSupport) / cpNow * 100;
+      if (distToSup >= 0 && distToSup < 1.5) { score += 7; reasons.push(`Right on 1D support ${sr.nearestSupport.toFixed(4)} (+7)`); }
+      else if (distToSup < 3) { score += 4; reasons.push(`Within 3% of 1D support (+4)`); }
+      else if (distToSup < 6) { score += 2; reasons.push(`Near 1D support (+2)`); }
+    }
+    if (sr.nearestResistance) {
+      const distToRes = (sr.nearestResistance - cpNow) / cpNow * 100;
+      if (distToRes >= 0 && distToRes < 1.5) { score -= 7; reasons.push(`Right under 1D resistance ${sr.nearestResistance.toFixed(4)} (−7)`); }
+      else if (distToRes < 3) { score -= 4; reasons.push(`Within 3% of 1D resistance (−4)`); }
+      else if (distToRes < 6) { score -= 2; reasons.push(`Near 1D resistance (−2)`); }
+    }
+    // Stacked supports = stronger floor
+    if ((sr.support?.length || 0) >= 2 && (sr.resistance?.length || 0) === 0) {
+      score += 2; reasons.push(`Multiple supports below, clear runway above (+2)`);
+    }
+    if ((sr.resistance?.length || 0) >= 2 && (sr.support?.length || 0) === 0) {
+      score -= 2; reasons.push(`Multiple resistances above, no clear support (−2)`);
+    }
+  }
+
+  // ---- (B) Critical SMA tests on 1D — ±6
+  // SMA200 is the institutional dividing line. SMA50 is intermediate trend filter.
+  const smas = tf1d?.smas;
+  if (smas && cpNow) {
+    const aboveSMA200 = smas.sma200 && cpNow > smas.sma200;
+    const aboveSMA50  = smas.sma50  && cpNow > smas.sma50;
+    const aboveSMA20  = smas.sma20  && cpNow > smas.sma20;
+    if (smas.sma200) {
+      const distSma200 = (cpNow - smas.sma200) / smas.sma200 * 100;
+      if (aboveSMA200 && distSma200 < 5) { score += 3; reasons.push(`Above SMA200, within 5% — healthy uptrend test (+3)`); }
+      else if (aboveSMA200) { score += 2; reasons.push(`Price above SMA200 (+2)`); }
+      else if (distSma200 > -3 && distSma200 < 0) { score -= 3; reasons.push(`Just below SMA200 — institutional sell zone (−3)`); }
+      else if (!aboveSMA200) { score -= 2; reasons.push(`Price below SMA200 — macro bearish (−2)`); }
+    }
+    if (smas.sma50 && smas.sma200) {
+      // Golden cross / death cross condition (simple)
+      if (smas.sma50 > smas.sma200 && aboveSMA50) { score += 1; reasons.push(`SMA50 > SMA200 stack (+1)`); }
+      else if (smas.sma50 < smas.sma200 && !aboveSMA50) { score -= 1; reasons.push(`SMA50 < SMA200 stack (−1)`); }
+    }
+  }
+
+  // ---- (C) Bollinger Band positioning on 1D — ±4
+  const bb = tf1d?.bollinger;
+  if (bb && cpNow) {
+    if (cpNow < bb.lower) { score += 4; reasons.push(`Below lower Bollinger band — oversold extreme (+4)`); }
+    else if (cpNow > bb.upper) { score -= 4; reasons.push(`Above upper Bollinger band — overbought extreme (−4)`); }
+    else {
+      // Bollinger width contraction = squeeze, often precedes a breakout (mildly bullish)
+      const bbWidth = (bb.upper - bb.lower) / bb.middle;
+      if (bbWidth < 0.06) { score += 1; reasons.push(`Bollinger squeeze (width ${(bbWidth*100).toFixed(1)}%) — breakout pending (+1)`); }
+    }
+  }
+
+  // ---- (D) Multi-timeframe trend alignment (using approximation trend) — ±8
+  // When 1H, 4H, 1D, 1W all agree on direction, it's a high-conviction read.
+  const trends = ['1h','4h','1d','1w'].map(tf => coin.timeframes?.[tf]?.trend).filter(Boolean);
+  if (trends.length >= 3) {
+    const bullCount = trends.filter(t => t === 'bullish').length;
+    const bearCount = trends.filter(t => t === 'bearish').length;
+    if (bullCount === trends.length) { score += 6; reasons.push(`All ${trends.length} TFs bullish trend (+6)`); }
+    else if (bullCount >= trends.length - 1 && bearCount === 0) { score += 3; reasons.push(`${bullCount}/${trends.length} TFs bullish (+3)`); }
+    else if (bearCount === trends.length) { score -= 6; reasons.push(`All ${trends.length} TFs bearish trend (−6)`); }
+    else if (bearCount >= trends.length - 1 && bullCount === 0) { score -= 3; reasons.push(`${bearCount}/${trends.length} TFs bearish (−3)`); }
+  }
+
+  // ---- (E) LuxAlgo Confluence Meter — explicit weight on 1D Pine confluence — ±5
+  // (The blended LuxAlgo score already uses confluence, but a high confluence value
+  // deserves an extra confidence bump because it means LuxAlgo's own sub-indicators
+  // are all in agreement.)
+  if (real1d?.raw?.confluence != null) {
+    const cf = real1d.raw.confluence;
+    if (cf >= 75) { score += 4; reasons.push(`LuxAlgo Confluence ${cf.toFixed(0)}/100 — high agreement (+4)`); }
+    else if (cf >= 65) { score += 2; reasons.push(`LuxAlgo Confluence ${cf.toFixed(0)}/100 — bullish agreement (+2)`); }
+    else if (cf <= 25) { score -= 4; reasons.push(`LuxAlgo Confluence ${cf.toFixed(0)}/100 — bearish agreement (−4)`); }
+    else if (cf <= 35) { score -= 2; reasons.push(`LuxAlgo Confluence ${cf.toFixed(0)}/100 — weak agreement (−2)`); }
+  }
+
+  // ---- (F) PAC zone alignment 4H vs 1D — ±3
+  // When both timeframes agree on premium / discount, it's a stronger signal.
+  if (real4h?.pacZone && real1d?.pacZone && real4h.pacZone === real1d.pacZone) {
+    if (real1d.pacZone === 'discount') { score += 3; reasons.push(`PAC discount on both 4H + 1D (+3)`); }
+    else if (real1d.pacZone === 'premium') { score -= 3; reasons.push(`PAC premium on both 4H + 1D (−3)`); }
+  }
+
+  // ---- (G) Bullish/bearish signal-count aggregation from analyzeTimeframe — ±4
+  // analyzeTimeframe collects per-TF bull/bear hit counts; combine 1D + 4H.
+  const bull1d = (tf1d?.bullSignals?.length || 0);
+  const bear1d = (tf1d?.bearSignals?.length || 0);
+  const bull4h = (tf4h?.bullSignals?.length || 0);
+  const bear4h = (tf4h?.bearSignals?.length || 0);
+  const totalBull = bull1d + bull4h;
+  const totalBear = bear1d + bear4h;
+  if (totalBull >= 5 && totalBull - totalBear >= 3) {
+    score += 4; reasons.push(`Signal stack: ${totalBull} bull vs ${totalBear} bear (+4)`);
+  } else if (totalBull >= 3 && totalBull > totalBear) {
+    score += 2; reasons.push(`Signal stack: ${totalBull} bull vs ${totalBear} bear (+2)`);
+  } else if (totalBear >= 5 && totalBear - totalBull >= 3) {
+    score -= 4; reasons.push(`Signal stack: ${totalBear} bear vs ${totalBull} bull (−4)`);
+  } else if (totalBear >= 3 && totalBear > totalBull) {
+    score -= 2; reasons.push(`Signal stack: ${totalBear} bear vs ${totalBull} bull (−2)`);
+  }
+
+  // ---- (H) Multi-layer alignment bonus — when 3+ independent confirmation
+  // sources all point the same direction, add a small "high-conviction" stamp.
+  // Sources: LuxAlgo (1D), MA stack, volume sentiment, order blocks, trend
+  const bullVotes = [
+    real1d && real1d.score >= 60,
+    dStack && (dStack.stack === 'mixed_bull' || dStack.stack === 'perfect_bull'),
+    vs1d && vs1d.sign === 'bull',
+    obA && (obA.insideBull || obA.nearestBullBelow),
+    tf1d?.trend === 'bullish',
+  ].filter(Boolean).length;
+  const bearVotes = [
+    real1d && real1d.score <= 40,
+    dStack && (dStack.stack === 'mixed_bear' || dStack.stack === 'perfect_bear'),
+    vs1d && vs1d.sign === 'bear',
+    obA && (obA.insideBear || obA.nearestBearAbove),
+    tf1d?.trend === 'bearish',
+  ].filter(Boolean).length;
+  if (bullVotes >= 4) { score += 6; reasons.push(`🎯 High-conviction bullish: ${bullVotes}/5 confirmation sources aligned (+6)`); }
+  else if (bullVotes === 3) { score += 3; reasons.push(`Confirmation bonus: ${bullVotes}/5 bullish sources (+3)`); }
+  if (bearVotes >= 4) { score -= 6; reasons.push(`🎯 High-conviction bearish: ${bearVotes}/5 confirmation sources aligned (−6)`); }
+  else if (bearVotes === 3) { score -= 3; reasons.push(`Confirmation bonus: ${bearVotes}/5 bearish sources (−3)`); }
+
   score = Math.max(0, Math.min(100, Math.round(score)));
 
   let label;
-  if (score >= 80)      label = 'Excellent';
-  else if (score >= 65) label = 'Good';
+  if (score >= 85)      label = 'Strong Buy';
+  else if (score >= 70) label = 'Excellent';
+  else if (score >= 60) label = 'Good';
   else if (score >= 50) label = 'Fair';
   else if (score >= 35) label = 'Hold';
-  else                  label = 'Consider Selling';
+  else if (score >= 20) label = 'Consider Selling';
+  else                  label = 'Sell';
 
   return { score, label, reasons, real, real1h, real4h, real1w, orderBlocks: obA };
 }
